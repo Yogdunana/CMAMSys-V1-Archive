@@ -64,10 +64,10 @@ interface AIProvider {
 }
 
 interface ProviderType {
-  type: string;
-  name: string;
+  value: string;
+  label: string;
   description: string;
-  requiresKey: boolean;
+  models?: string[];
 }
 
 export default function AIProvidersPage() {
@@ -447,10 +447,10 @@ export default function AIProvidersPage() {
                     <SelectContent>
                       {providerTypes.map((pt) => (
                         <SelectItem
-                          key={pt.type}
-                          value={pt.type}
+                          key={pt.value}
+                          value={pt.value}
                         >
-                          {pt.name}
+                          {pt.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
