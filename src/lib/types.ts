@@ -3,7 +3,53 @@
  * Common types used across the application
  */
 
-import { UserRole, AuthProvider, CompetitionType, ProblemType, TaskStatus } from '@prisma/client';
+// Manual enum definitions (for SQLite compatibility)
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+  TEAM_LEAD = 'TEAM_LEAD',
+  TEAM_MEMBER = 'TEAM_MEMBER',
+}
+
+export enum AuthProvider {
+  LOCAL = 'LOCAL',
+  GOOGLE = 'GOOGLE',
+  GITHUB = 'GITHUB',
+  SSO = 'SSO',
+}
+
+export enum CompetitionType {
+  MCM = 'MCM',
+  ICM = 'ICM',
+  CUMCM = 'CUMCM',
+  SHENZHEN_CUP = 'SHENZHEN_CUP',
+  IMMC = 'IMMC',
+  MATHORCUP = 'MATHORCUP',
+  EMMC = 'EMMC',
+  TEDDY_CUP = 'TEDDY_CUP',
+  BLUE_BRIDGE_MATH = 'BLUE_BRIDGE_MATH',
+  REGIONAL = 'REGIONAL',
+  OTHER = 'OTHER',
+}
+
+export enum ProblemType {
+  EVALUATION = 'EVALUATION',
+  PREDICTION = 'PREDICTION',
+  OPTIMIZATION = 'OPTIMIZATION',
+  CLASSIFICATION = 'CLASSIFICATION',
+  REGRESSION = 'REGRESSION',
+  CLUSTERING = 'CLUSTERING',
+}
+
+export enum TaskStatus {
+  PENDING = 'PENDING',
+  PREPROCESSING = 'PREPROCESSING',
+  MODELING = 'MODELING',
+  EVALUATING = 'EVALUATING',
+  REPORTING = 'REPORTING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
 
 // ============================================
 // API Response Types

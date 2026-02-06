@@ -47,17 +47,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      // Create audit log for failed attempt
-      await prisma.auditLog.create({
-        data: {
-          action: 'LOGIN',
-          success: false,
-          errorMessage: 'User not found',
-          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-          userAgent: request.headers.get('user-agent') || undefined,
-        },
-      });
-
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -112,18 +101,6 @@ export async function POST(request: NextRequest) {
         data: {
           failedLoginAttempts: newFailedAttempts,
           lockedUntil,
-        },
-      });
-
-      // Create audit log
-      await prisma.auditLog.create({
-        data: {
-          userId: user.id,
-          action: 'LOGIN',
-          success: false,
-          errorMessage: 'Invalid password',
-          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-          userAgent: request.headers.get('user-agent') || undefined,
         },
       });
 
@@ -254,17 +231,6 @@ export async function POST(request: NextRequest) {
       refreshToken,
       expiresIn: 15 * 60, // 15 minutes in seconds
     };
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: 'LOGIN',
-        success: true,
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-        userAgent: request.headers.get('user-agent') || undefined,
-      },
-    });
 
     return NextResponse.json<ApiResponse<AuthResponse>>(
       {
