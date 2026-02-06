@@ -228,8 +228,13 @@ export default function AIProvidersPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
+          console.log('Fetched providers:', data.data);
           setProviders(data.data || []);
+        } else {
+          console.error('API returned error:', data.error);
         }
+      } else {
+        console.error('API request failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch providers:', error);
@@ -660,6 +665,7 @@ export default function AIProvidersPage() {
                       </TableHeader>
                       <TableBody>
                         {providers.map((provider) => {
+                          console.log('Rendering provider:', provider);
                           const config = PROVIDER_TYPES[provider.type];
                           const Icon = config?.icon;
                           return (
@@ -675,15 +681,21 @@ export default function AIProvidersPage() {
                               </TableCell>
                               <TableCell>
                                 <div className="flex flex-wrap gap-1">
-                                  {provider.supportedModels.slice(0, 2).map((model) => (
-                                    <Badge key={model} variant="outline" className="text-xs">
-                                      {model}
-                                    </Badge>
-                                  ))}
-                                  {provider.supportedModels.length > 2 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{provider.supportedModels.length - 2}
-                                    </Badge>
+                                  {provider.supportedModels && provider.supportedModels.length > 0 ? (
+                                    <>
+                                      {provider.supportedModels.slice(0, 2).map((model) => (
+                                        <Badge key={model} variant="outline" className="text-xs">
+                                          {model}
+                                        </Badge>
+                                      ))}
+                                      {provider.supportedModels.length > 2 && (
+                                        <Badge variant="outline" className="text-xs">
+                                          +{provider.supportedModels.length - 2}
+                                        </Badge>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">-</span>
                                   )}
                                 </div>
                               </TableCell>
