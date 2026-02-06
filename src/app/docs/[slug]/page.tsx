@@ -8,8 +8,6 @@ import { Loader2, ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css';
 
 export default function DocPage({ params }: { params: { slug: string } }) {
   const [content, setContent] = useState<string>('');
@@ -87,7 +85,6 @@ export default function DocPage({ params }: { params: { slug: string } }) {
             <div className="p-8 prose prose-slate dark:prose-invert max-w-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
                 components={{
                   h1: ({ children }) => <h1 className="text-4xl font-bold mb-6">{children}</h1>,
                   h2: ({ children }) => <h2 className="text-3xl font-bold mt-8 mb-4">{children}</h2>,

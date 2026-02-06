@@ -36,37 +36,42 @@ const learningConfigSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    // 验证认证
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
-          },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
+    // 验证认证（开发模式下跳过）
+    const isDev = process.env.NODE_ENV === 'development';
+    let payload = null;
 
-    const token = authHeader.substring(7);
-    const payload = await verifyAccessToken(token);
-
-    if (!payload) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Invalid or expired token',
+    if (!isDev) {
+      const authHeader = request.headers.get('authorization');
+      if (!authHeader?.startsWith('Bearer ')) {
+        return NextResponse.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Authentication required',
+            },
+            timestamp: new Date().toISOString(),
           },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
+          { status: 401 }
+        );
+      }
+
+      const token = authHeader.substring(7);
+      payload = await verifyAccessToken(token);
+
+      if (!payload) {
+        return NextResponse.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Invalid or expired token',
+            },
+            timestamp: new Date().toISOString(),
+          },
+          { status: 401 }
+        );
+      }
     }
 
     // 获取或创建学习配置
@@ -125,37 +130,42 @@ export async function GET(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    // 验证认证
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
-          },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
+    // 验证认证（开发模式下跳过）
+    const isDev = process.env.NODE_ENV === 'development';
+    let payload = null;
 
-    const token = authHeader.substring(7);
-    const payload = await verifyAccessToken(token);
-
-    if (!payload || payload.role !== 'ADMIN') {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: {
-            code: 'FORBIDDEN',
-            message: 'Admin access required',
+    if (!isDev) {
+      const authHeader = request.headers.get('authorization');
+      if (!authHeader?.startsWith('Bearer ')) {
+        return NextResponse.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Authentication required',
+            },
+            timestamp: new Date().toISOString(),
           },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 403 }
-      );
+          { status: 401 }
+        );
+      }
+
+      const token = authHeader.substring(7);
+      payload = await verifyAccessToken(token);
+
+      if (!payload || payload.role !== 'ADMIN') {
+        return NextResponse.json<ApiResponse>(
+          {
+            success: false,
+            error: {
+              code: 'FORBIDDEN',
+              message: 'Admin access required',
+            },
+            timestamp: new Date().toISOString(),
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // 解析和验证请求体
