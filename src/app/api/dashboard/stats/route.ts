@@ -42,26 +42,25 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      // 统计建模任务
+      // 统计建模任务（非完成状态）
       const modelingTasks = await prisma.modelingTask.count({
         where: {
           status: {
-            in: ['PENDING', 'IN_PROGRESS'],
+            in: ['PENDING', 'PREPROCESSING', 'MODELING', 'EVALUATING', 'REPORTING'],
           },
         },
       });
 
-      // 统计团队成员
+      // 统计团队成员（所有非删除用户）
       const teamMembers = await prisma.user.count({
         where: {
-          isActive: true,
+          deletedAt: null,
         },
       });
 
-      // 统计 AI 请求（从日志中统计）
-      const aiRequests = await prisma.systemLog.count({
+      // 统计 AI 请求（从 AI 请求表统计）
+      const aiRequests = await prisma.aIRequest.count({
         where: {
-          action: 'AI_REQUEST',
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 最近30天
           },
