@@ -6,13 +6,15 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Trophy, Users, Settings, Activity } from 'lucide-react';
+import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
   { href: '/dashboard/competitions', label: '竞赛', icon: Trophy },
   { href: '/dashboard/teams', label: '团队', icon: Users },
   { href: '/dashboard/ai-providers', label: 'AI Provider', icon: Activity },
+  { href: '/learning/knowledge', label: '知识库', icon: BookOpen },
+  { href: '/learning/settings', label: '学习配置', icon: Sliders },
   { href: '/settings', label: '设置', icon: Settings },
 ];
 
