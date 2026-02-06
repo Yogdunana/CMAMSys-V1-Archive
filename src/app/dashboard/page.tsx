@@ -7,14 +7,15 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">仪表盘</h1>
-          <p className="text-muted-foreground">
-            欢迎回到 CMAMSys - 数学建模自动化系统
-          </p>
-        </div>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">仪表盘</h1>
+            <p className="text-muted-foreground">
+              欢迎回到 CMAMSys - 数学建模自动化系统
+            </p>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -135,6 +136,7 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
         </div>
       </main>
     </div>
