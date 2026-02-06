@@ -44,6 +44,13 @@ const PROVIDER_CONFIGS: Record<AIProviderType, AIProviderConfig> = {
         maxTokens: 128000,
       },
       {
+        name: 'deepseek-reasoner',
+        type: AIModelType.CHAT,
+        capabilities: ['chat', 'completion', 'reasoning', 'deep_thinking'],
+        costPerToken: 0.000002,
+        maxTokens: 64000,
+      },
+      {
         name: 'deepseek-coder',
         type: AIModelType.CODE_GENERATION,
         capabilities: ['coding', 'completion'],
