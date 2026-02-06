@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# CMAMSys Deployment Script
-# This script automates the deployment of CMAMSys to a Linux server or NAS
+# CMAMSys Docker Compose Deployment Script
+# Supports deploying Community and Enterprise editions
 
 set -e
 
-# Colors for output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -13,202 +13,210 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_NAME="cmamsys"
-DOCKER_COMPOSE_FILE="docker-compose.yml"
-BACKUP_DIR="/tmp/cmamsys-backup"
-LOG_FILE="/var/log/cmamsys-deploy.log"
+EDITION="${1:-community}"
+COMPOSE_FILE="docker/docker-compose.${EDITION}.yml"
+ENV_FILE=".env.${EDITION}"
 
-# Functions
-log() {
-    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$LOG_FILE"
+# Print banner
+print_banner() {
+  echo -e "${BLUE}"
+  echo "========================================"
+  echo "   CMAMSys Deployment Script"
+  echo "========================================"
+  echo -e "${NC}"
 }
 
-log_success() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} ✓ $1" | tee -a "$LOG_FILE"
+# Print usage
+print_usage() {
+  echo "Usage: $0 <edition> <action> [options]"
+  echo ""
+  echo "Editions:"
+  echo "  community  Deploy Community Edition (default)"
+  echo "  enterprise Deploy Enterprise Edition"
+  echo ""
+  echo "Actions:"
+  echo "  up         Start services"
+  echo "  down       Stop and remove services"
+  echo "  restart    Restart services"
+  echo "  logs       View logs"
+  echo "  status     Show service status"
+  echo "  build      Build and start services"
+  echo "  clean      Remove all volumes and data"
+  echo ""
+  echo "Options:"
+  echo "  --daemon   Run in background (default)"
+  echo "  --foreground Run in foreground"
+  echo "  --with-redis Include Redis service"
+  echo "  --with-minio Include MinIO service (enterprise only)"
+  echo "  --with-nginx Include Nginx service (enterprise only)"
+  echo ""
+  echo "Examples:"
+  echo "  $0 community up"
+  echo "  $0 enterprise up --with-redis --with-minio"
+  echo "  $0 community logs"
+  echo "  $0 enterprise clean"
+  echo ""
 }
 
-log_warning() {
-    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} ⚠ $1" | tee -a "$LOG_FILE"
-}
-
-log_error() {
-    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} ✗ $1" | tee -a "$LOG_FILE"
-}
-
-check_requirements() {
-    log "Checking system requirements..."
-
-    # Check if Docker is installed
-    if ! command -v docker &> /dev/null; then
-        log_error "Docker is not installed. Please install Docker first."
-        exit 1
-    fi
-    log_success "Docker found: $(docker --version)"
-
-    # Check if Docker Compose is installed
-    if ! command -v docker-compose &> /dev/null; then
-        log_error "Docker Compose is not installed. Please install Docker Compose first."
-        exit 1
-    fi
-    log_success "Docker Compose found: $(docker-compose --version)"
-
-    # Check if .env file exists
-    if [ ! -f .env ]; then
-        log_warning ".env file not found. Creating from .env.example..."
-        cp .env.example .env
-        log_warning "Please edit .env file with your configuration before continuing."
-        read -p "Press Enter to continue after editing .env file..."
-    fi
-    log_success ".env file found"
-}
-
-backup_data() {
-    log "Creating backup..."
-    mkdir -p "$BACKUP_DIR"
-
-    # Backup PostgreSQL data
-    if [ -d "docker/postgres_data" ]; then
-        cp -r docker/postgres_data "$BACKUP_DIR/"
-        log_success "PostgreSQL data backed up"
-    fi
-
-    # Backup Redis data
-    if [ -d "docker/redis_data" ]; then
-        cp -r docker/redis_data "$BACKUP_DIR/"
-        log_success "Redis data backed up"
-    fi
-
-    # Backup application data
-    if [ -d "docker/app_data" ]; then
-        cp -r docker/app_data "$BACKUP_DIR/"
-        log_success "Application data backed up"
-    fi
-
-    log_success "Backup created at $BACKUP_DIR"
-}
-
-build_images() {
-    log "Building Docker images..."
-    cd docker
-    docker-compose build --no-cache
-    cd ..
-    log_success "Docker images built successfully"
-}
-
-stop_services() {
-    log "Stopping existing services..."
-    cd docker
-    docker-compose down
-    cd ..
-    log_success "Services stopped"
-}
-
-start_services() {
-    log "Starting services..."
-    cd docker
-    docker-compose up -d
-    cd ..
-    log_success "Services started"
-}
-
-wait_for_services() {
-    log "Waiting for services to be healthy..."
-    local max_attempts=30
-    local attempt=0
-
-    while [ $attempt -lt $max_attempts ]; do
-        if curl -f http://localhost:5000/api/health &> /dev/null; then
-            log_success "All services are healthy!"
-            return 0
-        fi
-        attempt=$((attempt + 1))
-        log "Attempt $attempt/$max_attempts: Waiting for services..."
-        sleep 5
-    done
-
-    log_error "Services failed to start within expected time"
-    return 1
-}
-
-run_migrations() {
-    log "Running database migrations..."
-    cd docker
-    docker-compose exec app npx prisma migrate deploy
-    cd ..
-    log_success "Database migrations completed"
-}
-
-cleanup() {
-    log "Cleaning up old Docker images..."
-    docker image prune -f
-    log_success "Cleanup completed"
-}
-
-show_status() {
-    log "Service status:"
-    cd docker
-    docker-compose ps
-    cd ..
-}
-
-show_logs() {
-    log "Recent logs:"
-    cd docker
-    docker-compose logs --tail=50 app
-    cd ..
-}
-
-# Main deployment flow
-main() {
-    log "Starting CMAMSys deployment..."
-
-    check_requirements
-    backup_data
-    stop_services
-    build_images
-    start_services
-    wait_for_services
-    run_migrations
-    cleanup
-    show_status
-
-    log_success "CMAMSys deployed successfully!"
-    echo ""
-    log "Access your application at: http://localhost:5000"
-    log "For logs, run: cd docker && docker-compose logs -f"
-    log "To stop services, run: cd docker && docker-compose down"
-}
-
-# Parse command line arguments
-case "${1:-deploy}" in
-    deploy)
-        main
-        ;;
-    start)
-        check_requirements
-        start_services
-        wait_for_services
-        ;;
-    stop)
-        stop_services
-        ;;
-    restart)
-        check_requirements
-        stop_services
-        start_services
-        wait_for_services
-        ;;
-    logs)
-        show_logs
-        ;;
-    status)
-        show_status
-        ;;
-    backup)
-        backup_data
-        ;;
+# Parse arguments
+ACTION="${2:-up}"
+DAEMON=true
+PROFILES=""
+shift 2
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --daemon)
+      DAEMON=true
+      shift
+      ;;
+    --foreground)
+      DAEMON=false
+      shift
+      ;;
+    --with-redis)
+      PROFILES="--profile with-redis"
+      shift
+      ;;
+    --with-minio)
+      if [[ "$EDITION" == "community" ]]; then
+        echo -e "${YELLOW}Warning: MinIO is only available in Enterprise Edition${NC}"
+      else
+        PROFILES="$PROFILES --profile with-minio"
+      fi
+      shift
+      ;;
+    --with-nginx)
+      if [[ "$EDITION" == "community" ]]; then
+        echo -e "${YELLOW}Warning: Nginx is only available in Enterprise Edition${NC}"
+      else
+        PROFILES="$PROFILES --profile with-nginx"
+      fi
+      shift
+      ;;
+    -h|--help)
+      print_usage
+      exit 0
+      ;;
     *)
-        echo "Usage: $0 {deploy|start|stop|restart|logs|status|backup}"
-        exit 1
-        ;;
+      echo -e "${RED}Unknown option: $1${NC}"
+      print_usage
+      exit 1
+      ;;
+  esac
+done
+
+# Validate edition
+if [[ "$EDITION" != "community" && "$EDITION" != "enterprise" ]]; then
+  echo -e "${RED}Invalid edition: $EDITION${NC}"
+  echo "Valid editions: community, enterprise"
+  print_usage
+  exit 1
+fi
+
+# Check if compose file exists
+if [[ ! -f "$COMPOSE_FILE" ]]; then
+  echo -e "${RED}Compose file not found: $COMPOSE_FILE${NC}"
+  exit 1
+fi
+
+# Create environment file if not exists
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo -e "${YELLOW}Creating environment file: $ENV_FILE${NC}"
+  cat > "$ENV_FILE" << EOF
+# CMAMSys ${EDITION^} Edition Configuration
+# Database
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=cmamsys
+
+# JWT Secrets (CHANGE THESE IN PRODUCTION!)
+JWT_SECRET=your-super-secret-jwt-key-change-this
+REFRESH_TOKEN_SECRET=your-super-secret-refresh-token-key
+
+# MinIO (Enterprise Only)
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=REDACTED_PASSWORD456
+
+# S3 Configuration (Enterprise Only)
+S3_ENDPOINT=http://minio:9000
+S3_ACCESS_KEY=admin
+S3_SECRET_KEY=REDACTED_PASSWORD456
+S3_BUCKET=cmamsys-uploads
+EOF
+  echo -e "${GREEN}✓ Created environment file${NC}"
+  echo -e "${YELLOW}Please review and update the values before starting!${NC}"
+  echo ""
+fi
+
+# Start deployment
+print_banner
+echo -e "${YELLOW}Deploying CMAMSys ${EDITION^} Edition${NC}"
+echo -e "${BLUE}Compose File: ${COMPOSE_FILE}${NC}"
+echo -e "${BLUE}Environment: ${ENV_FILE}${NC}"
+echo ""
+
+# Docker Compose command
+DOCKER_COMPOSE="docker compose -f $COMPOSE_FILE --env-file $ENV_FILE $PROFILES"
+
+# Execute action
+case $ACTION in
+  up)
+    echo -e "${GREEN}Starting services...${NC}"
+    if [[ "$DAEMON" == true ]]; then
+      $DOCKER_COMPOSE up -d
+      echo ""
+      echo -e "${GREEN}✓ Services started${NC}"
+      echo ""
+      echo -e "${BLUE}Access the application at:${NC}"
+      echo -e "  ${GREEN}http://localhost:5000${NC}"
+      echo ""
+      echo -e "${BLUE}View logs:${NC}"
+      echo -e "  $0 $EDITION logs"
+    else
+      $DOCKER_COMPOSE up
+    fi
+    ;;
+  down)
+    echo -e "${YELLOW}Stopping services...${NC}"
+    $DOCKER_COMPOSE down
+    echo -e "${GREEN}✓ Services stopped${NC}"
+    ;;
+  restart)
+    echo -e "${YELLOW}Restarting services...${NC}"
+    $DOCKER_COMPOSE restart
+    echo -e "${GREEN}✓ Services restarted${NC}"
+    ;;
+  logs)
+    echo -e "${BLUE}Showing logs...${NC}"
+    $DOCKER_COMPOSE logs -f --tail=100
+    ;;
+  status)
+    echo -e "${BLUE}Service status:${NC}"
+    $DOCKER_COMPOSE ps
+    ;;
+  build)
+    echo -e "${GREEN}Building images...${NC}"
+    $DOCKER_COMPOSE build
+    echo -e "${GREEN}✓ Build complete${NC}"
+    echo ""
+    echo -e "${YELLOW}Starting services...${NC}"
+    $DOCKER_COMPOSE up -d
+    echo -e "${GREEN}✓ Services started${NC}"
+    ;;
+  clean)
+    echo -e "${RED}WARNING: This will remove all data including database!${NC}"
+    read -p "Are you sure? (yes/no): " confirm
+    if [[ "$confirm" == "yes" ]]; then
+      echo -e "${YELLOW}Stopping and removing services...${NC}"
+      $DOCKER_COMPOSE down -v
+      echo -e "${GREEN}✓ All data removed${NC}"
+    else
+      echo -e "${YELLOW}Cancelled${NC}"
+    fi
+    ;;
+  *)
+    echo -e "${RED}Unknown action: $ACTION${NC}"
+    print_usage
+    exit 1
+    ;;
 esac

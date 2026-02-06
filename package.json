@@ -9,7 +9,14 @@
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint",
     "start": "bash ./scripts/start.sh",
-    "ts-check": "tsc -p tsconfig.json"
+    "ts-check": "tsc -p tsconfig.json",
+    "docker:build": "bash ./docker/build.sh",
+    "docker:deploy": "bash ./docker/deploy.sh",
+    "docker:dev": "docker compose -f docker/docker-compose.community.yml --env-file docker/.env.community up",
+    "docker:prod": "docker compose -f docker/docker-compose.enterprise.yml --env-file docker/.env.enterprise up",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
