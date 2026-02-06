@@ -446,11 +446,14 @@ export default function AIProvidersPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {providerTypes.map((pt) => (
-                        <SelectItem key={pt.type} value={pt.type}>
-                          <div>
-                            <div className="font-medium">{pt.name}</div>
-                            <div className="text-xs text-muted-foreground">{pt.description}</div>
-                          </div>
+                        <SelectItem
+                          key={pt.type}
+                          value={pt.type}
+                        >
+                          <span className="flex flex-col">
+                            <span className="font-medium">{pt.name}</span>
+                            <span className="text-xs text-muted-foreground">{pt.description}</span>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
