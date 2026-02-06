@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         value: 'VOLCENGINE',
         label: 'VolcEngine',
         description: '火山引擎（豆包）',
-        models: ['doubao-pro-32k', 'doubao-pro-128k'],
+        models: ['doubao-pro-32k', 'doubao-pro-128k', 'doubao-pro-256k', 'doubao-lite-32k', 'doubao-lite-128k', 'doubao-speed-1.5x'],
       },
       {
         value: 'ALIYUN',

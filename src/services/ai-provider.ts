@@ -79,6 +79,34 @@ const PROVIDER_CONFIGS: Record<AIProviderType, AIProviderConfig> = {
         costPerToken: 0.000001,
         maxTokens: 128000,
       },
+      {
+        name: 'doubao-pro-256k',
+        type: AIModelType.CHAT,
+        capabilities: ['chat', 'completion', 'reasoning'],
+        costPerToken: 0.000002,
+        maxTokens: 262144,
+      },
+      {
+        name: 'doubao-lite-32k',
+        type: AIModelType.CHAT,
+        capabilities: ['chat', 'completion'],
+        costPerToken: 0.0000004,
+        maxTokens: 32768,
+      },
+      {
+        name: 'doubao-lite-128k',
+        type: AIModelType.CHAT,
+        capabilities: ['chat', 'completion'],
+        costPerToken: 0.0000005,
+        maxTokens: 128000,
+      },
+      {
+        name: 'doubao-speed-1.5x',
+        type: AIModelType.CHAT,
+        capabilities: ['chat', 'completion'],
+        costPerToken: 0.0000006,
+        maxTokens: 32768,
+      },
     ],
     defaultModel: 'doubao-pro-128k',
   },
@@ -661,8 +689,8 @@ async function makeProviderRequest(
 ): Promise<{ content: string; tokensUsed: number }> {
   const endpoint = provider.endpoint || PROVIDER_CONFIGS[provider.type as AIProviderType]?.endpoint;
 
-  // Use coze-coding-dev-sdk for Aliyun provider
-  if (provider.type === AIProviderType.ALIYUN) {
+  // Use coze-coding-dev-sdk for Aliyun and VolcEngine providers
+  if (provider.type === AIProviderType.ALIYUN || provider.type === AIProviderType.VOLCENGINE) {
     try {
       const config = new Config({
         apiKey: provider.apiKey,
@@ -683,7 +711,7 @@ async function makeProviderRequest(
         tokensUsed: 0, // Token count is not available in the current SDK response
       };
     } catch (error) {
-      logger.error('Aliyun API request failed', error);
+      logger.error(`${provider.type} API request failed`, error);
       throw error;
     }
   }
@@ -794,7 +822,7 @@ export function getAvailableProviderTypes(): {
 
 /**
  * Call AI API with streaming support
- * This function supports streaming output for Aliyun provider using coze-coding-dev-sdk
+ * This function supports streaming output for Aliyun and VolcEngine providers using coze-coding-dev-sdk
  */
 export async function callAIStream(
   providerId: string,
@@ -813,8 +841,8 @@ export async function callAIStream(
     throw new Error('Provider not found');
   }
 
-  // Use coze-coding-dev-sdk for streaming (optimized for Aliyun)
-  if (provider.type === AIProviderType.ALIYUN) {
+  // Use coze-coding-dev-sdk for streaming (optimized for Aliyun and VolcEngine)
+  if (provider.type === AIProviderType.ALIYUN || provider.type === AIProviderType.VOLCENGINE) {
     try {
       const config = new Config({
         apiKey: provider.apiKey,
@@ -842,7 +870,7 @@ export async function callAIStream(
 
       return wrappedStream();
     } catch (error) {
-      logger.error('Aliyun streaming API request failed', error);
+      logger.error(`${provider.type} streaming API request failed`, error);
       throw error;
     }
   }
