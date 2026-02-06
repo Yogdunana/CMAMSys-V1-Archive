@@ -8,7 +8,7 @@ import prisma from '@/lib/prisma';
 import { ApiResponse } from '@/lib/types';
 
 /**
- * GET: 获取最近活动
+ * GET: 获取最近活动（最近查看或创建的题目）
  */
 export async function GET(request: NextRequest) {
   try {
@@ -33,30 +33,37 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      // 获取最近的活动
-      const competitions = await prisma.competition.findMany({
+      // 获取最近创建的题目
+      const problems = await prisma.problem.findMany({
         where: {
-          status: {
-            in: ['DRAFT', 'IN_PROGRESS', 'COMPLETED'],
+          deletedAt: null,
+        },
+        include: {
+          competition: {
+            select: {
+              id: true,
+              name: true,
+              year: true,
+            },
           },
         },
         orderBy: {
-          updatedAt: 'desc',
+          createdAt: 'desc',
         },
         take: 5,
-        select: {
-          id: true,
-          name: true,
-          problem: true,
-          createdAt: true,
-          updatedAt: true,
-        },
       });
 
       return NextResponse.json<ApiResponse>(
         {
           success: true,
-          data: competitions,
+          data: problems.map(p => ({
+            id: p.id,
+            name: `${p.competition.name} - ${p.title}`,
+            problemNumber: p.problemNumber,
+            competitionName: p.competition.name,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+          })),
           timestamp: new Date().toISOString(),
         },
         { status: 200 }
@@ -69,25 +76,20 @@ export async function GET(request: NextRequest) {
           success: true,
           data: [
             {
-              id: '1',
-              name: '2026-MCM-A 问题 A',
-              problem: 'A',
+              id: 'prob-001',
+              name: '2025-MCM-A - 持续捕鱼',
+              problemNumber: 'A',
+              competitionName: '2025-MCM',
               createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
               updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
             },
             {
-              id: '2',
-              name: 'CUMCM-2025-B 问题 B',
-              problem: 'B',
+              id: 'prob-002',
+              name: '2024-MCM-B - 地球生态系统的碳汇',
+              problemNumber: 'B',
+              competitionName: '2024-MCM',
               createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
               updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: '3',
-              name: 'MathorCup-2025-C 问题 C',
-              problem: 'C',
-              createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
             },
           ],
           timestamp: new Date().toISOString(),
