@@ -7,21 +7,12 @@
 import prisma from '@/lib/prisma';
 import { createLogger } from '@/lib/logger';
 import { isFeatureAvailable, FeatureFlag } from '@/lib/features';
+import { searchBilibiliVideosWithBrowser } from './bilibili-browser-search';
 
 const logger = createLogger({ category: 'BILIBILI_LEARNING' });
 
-// B 站 API 端点
-const BILIBILI_API = {
-  SEARCH: 'https://api.bilibili.com/x/web-interface/search/all',
-  VIDEO_INFO: 'https://api.bilibili.com/x/web-interface/view',
-  VIDEO_PLAY_URL: 'https://api.bilibili.com/x/player/playurl',
-};
-
-// B 站 Cookie（从环境变量读取，用于绕过反爬虫）
-const BILIBILI_COOKIE = process.env.BILIBILI_COOKIE || '';
-
 /**
- * 搜索 B 站视频
+ * 搜索 B 站视频（使用 API 方式）
  */
 export async function searchBilibiliVideos(
   keyword: string,
@@ -32,39 +23,29 @@ export async function searchBilibiliVideos(
     minViewCount?: number;
   } = {}
 ) {
-  // 提取参数，确保在 try-catch 块外部可用
   const { limit = 10, minDuration = 300, maxDuration = 3600, minViewCount = 1000 } = options;
 
   try {
-    // 搜索视频 - 添加必要的请求头
-    const headers: Record<string, string> = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json, text/plain, */*',
-      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-      'Origin': 'https://www.bilibili.com',
-      'Referer': 'https://www.bilibili.com/',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-site',
-    };
+    logger.info(`Starting API search for keyword: ${keyword}`);
 
-    // 如果配置了 Cookie，添加到请求头
-    if (BILIBILI_COOKIE) {
-      headers['Cookie'] = BILIBILI_COOKIE;
-    }
-
+    // 使用 API 搜索
     const response = await fetch(
-      `${BILIBILI_API.SEARCH}?keyword=${encodeURIComponent(keyword)}&search_type=video&page=1`,
+      `https://api.bilibili.com/x/web-interface/search/all?keyword=${encodeURIComponent(keyword)}&search_type=video&page=1`,
       {
-        headers,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          'Origin': 'https://www.bilibili.com',
+          'Referer': 'https://www.bilibili.com/',
+        },
       }
     );
 
     const text = await response.text();
 
-    // 检查响应是否为 JSON
     if (!response.ok) {
-      logger.error(`Bilibili API returned status ${response.status}: ${text.substring(0, 200)}`);
+      logger.error(`Bilibili API returned status ${response.status}`);
       throw new Error(`Bilibili API error: HTTP ${response.status}`);
     }
 
@@ -72,35 +53,24 @@ export async function searchBilibiliVideos(
     try {
       data = JSON.parse(text);
     } catch (parseError) {
-      logger.error(`Failed to parse Bilibili API response: ${text.substring(0, 200)}`);
-      throw new Error(`Bilibili API returned invalid JSON. Please check if the API is accessible.`);
+      logger.error(`Failed to parse Bilibili API response`);
+      throw new Error(`Bilibili API returned invalid JSON`);
     }
 
     if (data.code !== 0) {
+      logger.warn(`Bilibili API error: ${data.message || 'Unknown error'}`);
       throw new Error(`Bilibili API error: ${data.message || 'Unknown error'}`);
     }
 
-    // 处理 search/all 的返回结构
-    if (!data.data || !data.data.result) {
-      logger.warn(`Invalid API response structure for keyword: ${keyword}`);
-      return [];
-    }
-
-    const result = data.data.result;
-
-    // 获取视频列表（在 search/all 中，视频在 result.video 字段中）
-    let videoResults: any[] = [];
-    if (result.video && Array.isArray(result.video)) {
-      videoResults = result.video;
-    }
-
-    if (!videoResults || videoResults.length === 0) {
-      logger.info(`No videos found for keyword: ${keyword}`);
+    // 提取视频数据
+    const result = data.data?.result;
+    if (!result || !result.video || !Array.isArray(result.video)) {
+      logger.warn(`No videos found for keyword: ${keyword}`);
       return [];
     }
 
     // 过滤和转换视频数据
-    const videos = videoResults
+    const videos = result.video
       .filter((video: any) => {
         const duration = parseDuration(video.duration);
         return (
@@ -109,10 +79,10 @@ export async function searchBilibiliVideos(
           video.play >= minViewCount
         );
       })
-      .slice(0, limit) // 限制返回数量
+      .slice(0, limit)
       .map((video: any) => ({
         bvid: video.bvid,
-        title: video.title.replace(/<[^>]*>/g, ''), // 移除 HTML 标签
+        title: video.title.replace(/<[^>]*>/g, ''),
         author: video.author,
         duration: parseDuration(video.duration),
         viewCount: video.play || 0,
