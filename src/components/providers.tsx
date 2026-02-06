@@ -7,6 +7,7 @@
 
 import { ReactNode } from 'react';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { AuthProvider } from '@/contexts/auth-context';
 import type { Locale } from '@/i18n/config';
 import { defaultLocale } from '@/i18n/config';
 
@@ -17,8 +18,10 @@ interface ProvidersProps {
 
 export function Providers({ children, initialLocale = defaultLocale }: ProvidersProps) {
   return (
-    <LanguageProvider initialLocale={initialLocale}>
-      {children}
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider initialLocale={initialLocale}>
+        {children}
+      </LanguageProvider>
+    </AuthProvider>
   );
 }

@@ -1,12 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
+import { UserMenu } from '@/components/auth/user-menu';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders } from 'lucide-react';
+import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders, LogIn } from 'lucide-react';
+
+import { useAuth } from '@/contexts/auth-context';
 
 const navItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
@@ -19,6 +22,8 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -56,7 +61,14 @@ export function Header() {
           </div>
           <nav className="flex items-center space-x-2">
             <ThemeToggle />
-            {/* User menu could be added here */}
+            {isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => router.push('/auth/login')}>
+                <LogIn className="mr-2 h-4 w-4" />
+                登录
+              </Button>
+            )}
           </nav>
         </div>
       </div>

@@ -1,14 +1,13 @@
 /**
- * Logout API
- * POST /api/auth/logout - Logout user and revoke refresh token
+ * Verify Access Token API
+ * GET /api/auth/verify - Verify access token is valid
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAccessToken } from '@/lib/jwt';
-import prisma from '@/lib/prisma';
 import { ApiResponse } from '@/lib/types';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
 
@@ -43,21 +42,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Revoke all refresh tokens for this user
-    await prisma.refreshToken.updateMany({
-      where: {
-        userId: payload.userId,
-        revokedAt: null,
-      },
-      data: {
-        revokedAt: new Date(),
-      },
-    });
-
     return NextResponse.json<ApiResponse>(
       {
         success: true,
-        message: 'Logged out successfully',
+        data: {
+          userId: payload.userId,
+          email: payload.email,
+          role: payload.role,
+        },
         timestamp: new Date().toISOString(),
       },
       { status: 200 }
@@ -68,7 +60,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to logout',
+          message: 'Failed to verify token',
           details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
         },
         timestamp: new Date().toISOString(),

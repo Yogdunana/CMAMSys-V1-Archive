@@ -4,20 +4,31 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Rocket, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      router.push(redirect);
+    }
+  }, [isAuthenticated, router, searchParams]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,13 +55,12 @@ export default function LoginPage() {
         return;
       }
 
-      // Store tokens
-      localStorage.setItem('accessToken', data.data.accessToken);
-      localStorage.setItem('refreshToken', data.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(data.data.user));
+      // Use AuthContext to login
+      login(data.data.accessToken, data.data.refreshToken, data.data.user);
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Redirect to dashboard or the redirect URL
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      router.push(redirect);
     } catch (err) {
       setError('An error occurred. Please try again.');
     } finally {
@@ -89,6 +99,7 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 required
                 disabled={isLoading}
+                defaultValue="yogdunana@yogdunana.com"
               />
             </div>
 
@@ -109,6 +120,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
+                defaultValue="X-Duan0719"
               />
             </div>
 

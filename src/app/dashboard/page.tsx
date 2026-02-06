@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/shared/header';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Activity, ArrowRight, Trophy, Users, Zap, Clock } from 'lucide-react';
@@ -104,19 +105,20 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">仪表盘</h1>
-            <p className="text-muted-foreground">
-              欢迎回到 CMAMSys - 数学建模自动化系统
-            </p>
-          </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight">仪表盘</h1>
+              <p className="text-muted-foreground">
+                欢迎回到 CMAMSys - 数学建模自动化系统
+              </p>
+            </div>
 
-          {/* 统计卡片 */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* 统计卡片 */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -283,5 +285,6 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
 }
