@@ -1,7 +1,7 @@
 /**
- * Competitions API
- * GET /api/competitions - 获取竞赛列表
- * POST /api/competitions - 创建竞赛
+ * Modeling Tasks API
+ * GET /api/modeling-tasks - 获取建模任务列表
+ * POST /api/modeling-tasks - 创建建模任务
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,7 +10,7 @@ import { ApiResponse } from '@/lib/types';
 import { verifyAccessToken } from '@/lib/jwt';
 
 /**
- * GET: 获取竞赛列表
+ * GET: 获取建模任务列表
  */
 export async function GET(request: NextRequest) {
   try {
@@ -51,12 +51,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 获取所有竞赛
-    const competitions = await prisma.competition.findMany({
+    // 获取所有建模任务
+    const tasks = await prisma.modelingTask.findMany({
       where: {
         deletedAt: null,
       },
       include: {
+        competition: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         createdBy: {
           select: {
             id: true,
@@ -73,7 +79,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<ApiResponse>(
       {
         success: true,
-        data: competitions,
+        data: tasks.map((task) => ({
+          ...task,
+          competitionName: task.competition?.name,
+        })),
         timestamp: new Date().toISOString(),
       },
       { status: 200 }
@@ -84,7 +93,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: {
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch competitions',
+          message: 'Failed to fetch modeling tasks',
           details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
         },
         timestamp: new Date().toISOString(),
@@ -95,7 +104,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST: 创建竞赛
+ * POST: 创建建模任务
  */
 export async function POST(request: NextRequest) {
   try {
@@ -147,15 +156,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, type, year, problemId, description, startDate, endDate } = body;
+    const { name, description, problemType, competitionId, algorithm, approachNumber } = body;
 
-    if (!name || !problemId) {
+    if (!name) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Name and problem ID are required',
+            message: 'Name is required',
           },
           timestamp: new Date().toISOString(),
         },
@@ -163,18 +172,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 创建竞赛
-    const competition = await prisma.competition.create({
+    // 创建建模任务
+    const task = await prisma.modelingTask.create({
       data: {
         name,
-        type,
-        year: year || new Date().getFullYear(),
-        problemId,
         description,
-        folderPath: `/competitions/${type.toLowerCase()}/${year}`,
-        status: 'DRAFT',
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
+        problemType: problemType || 'EVALUATION',
+        status: 'PENDING',
+        progress: 0,
+        algorithm,
+        approachNumber,
+        competitionId,
+        dataFilePath: `/data/${name.toLowerCase().replace(/\s+/g, '_')}/data.csv`,
+        problemFilePath: `/data/${name.toLowerCase().replace(/\s+/g, '_')}/problem.pdf`,
         createdById: userId,
       },
     });
@@ -182,7 +192,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<ApiResponse>(
       {
         success: true,
-        data: competition,
+        data: task,
         timestamp: new Date().toISOString(),
       },
       { status: 201 }
@@ -193,7 +203,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create competition',
+          message: 'Failed to create modeling task',
           details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
         },
         timestamp: new Date().toISOString(),
