@@ -12,10 +12,13 @@ const logger = createLogger({ category: 'BILIBILI_LEARNING' });
 
 // B 站 API 端点
 const BILIBILI_API = {
-  SEARCH: 'https://api.bilibili.com/x/web-interface/search/type',
+  SEARCH: 'https://api.bilibili.com/x/web-interface/search/all',
   VIDEO_INFO: 'https://api.bilibili.com/x/web-interface/view',
   VIDEO_PLAY_URL: 'https://api.bilibili.com/x/player/playurl',
 };
+
+// B 站 Cookie（从环境变量读取，用于绕过反爬虫）
+const BILIBILI_COOKIE = process.env.BILIBILI_COOKIE || '';
 
 /**
  * 搜索 B 站视频
@@ -34,19 +37,26 @@ export async function searchBilibiliVideos(
 
   try {
     // 搜索视频 - 添加必要的请求头
+    const headers: Record<string, string> = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+      'Origin': 'https://www.bilibili.com',
+      'Referer': 'https://www.bilibili.com/',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-site',
+    };
+
+    // 如果配置了 Cookie，添加到请求头
+    if (BILIBILI_COOKIE) {
+      headers['Cookie'] = BILIBILI_COOKIE;
+    }
+
     const response = await fetch(
-      `${BILIBILI_API.SEARCH}?search_type=video&keyword=${encodeURIComponent(keyword)}&page=1&page_size=${limit}`,
+      `${BILIBILI_API.SEARCH}?keyword=${encodeURIComponent(keyword)}&search_type=video&page=1`,
       {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Origin': 'https://www.bilibili.com',
-          'Referer': 'https://www.bilibili.com/',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-site',
-        },
+        headers,
       }
     );
 
@@ -63,17 +73,34 @@ export async function searchBilibiliVideos(
       data = JSON.parse(text);
     } catch (parseError) {
       logger.error(`Failed to parse Bilibili API response: ${text.substring(0, 200)}`);
-      logger.warn(`Using mock data for keyword: ${keyword}`);
-      return getMockVideos(keyword, limit);
+      throw new Error(`Bilibili API returned invalid JSON. Please check if the API is accessible.`);
     }
 
     if (data.code !== 0) {
-      logger.warn(`Bilibili API error: ${data.message}. Using mock data.`);
-      return getMockVideos(keyword, limit);
+      throw new Error(`Bilibili API error: ${data.message || 'Unknown error'}`);
+    }
+
+    // 处理 search/all 的返回结构
+    if (!data.data || !data.data.result) {
+      logger.warn(`Invalid API response structure for keyword: ${keyword}`);
+      return [];
+    }
+
+    const result = data.data.result;
+
+    // 获取视频列表（在 search/all 中，视频在 result.video 字段中）
+    let videoResults: any[] = [];
+    if (result.video && Array.isArray(result.video)) {
+      videoResults = result.video;
+    }
+
+    if (!videoResults || videoResults.length === 0) {
+      logger.info(`No videos found for keyword: ${keyword}`);
+      return [];
     }
 
     // 过滤和转换视频数据
-    const videos = data.data.result
+    const videos = videoResults
       .filter((video: any) => {
         const duration = parseDuration(video.duration);
         return (
@@ -82,18 +109,19 @@ export async function searchBilibiliVideos(
           video.play >= minViewCount
         );
       })
+      .slice(0, limit) // 限制返回数量
       .map((video: any) => ({
         bvid: video.bvid,
-        title: video.title,
+        title: video.title.replace(/<[^>]*>/g, ''), // 移除 HTML 标签
         author: video.author,
         duration: parseDuration(video.duration),
-        viewCount: video.play,
+        viewCount: video.play || 0,
         danmakuCount: video.video_review || 0,
-        replyCount: video.comment || 0,
+        replyCount: video.review || 0,
         favoriteCount: video.favorites || 0,
-        thumbnail: video.pic,
-        publishDate: new Date(video.pubdate * 1000),
-        description: video.description,
+        thumbnail: video.pic?.startsWith('http') ? video.pic : `https:${video.pic || ''}`,
+        publishDate: new Date((video.pubdate || 0) * 1000),
+        description: video.description || '',
       }));
 
     logger.info(`Found ${videos.length} videos for keyword: ${keyword}`);
@@ -101,58 +129,8 @@ export async function searchBilibiliVideos(
     return videos;
   } catch (error) {
     logger.error(`Failed to search Bilibili videos: ${error}`, error);
-    logger.warn(`Using mock data for keyword: ${keyword}`);
-    return getMockVideos(keyword, limit);
+    throw error;
   }
-}
-
-/**
- * 获取模拟视频数据（用于演示）
- */
-function getMockVideos(keyword: string, limit: number) {
-  const mockVideos = [
-    {
-      bvid: `BV1${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`,
-      title: `${keyword}基础教程 - 第1讲`,
-      author: '数学建模教学',
-      duration: 1800,
-      viewCount: 15000 + Math.floor(Math.random() * 50000),
-      danmakuCount: 500 + Math.floor(Math.random() * 1000),
-      replyCount: 200 + Math.floor(Math.random() * 500),
-      favoriteCount: 1000 + Math.floor(Math.random() * 2000),
-      thumbnail: 'https://via.placeholder.com/320x180',
-      publishDate: new Date(Date.now() - Math.random() * 31536000000),
-      description: `本课程系统讲解${keyword}的基本概念和应用场景`,
-    },
-    {
-      bvid: `BV1${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`,
-      title: `${keyword}进阶实战案例分析`,
-      author: '数模竞赛培训',
-      duration: 2400,
-      viewCount: 25000 + Math.floor(Math.random() * 80000),
-      danmakuCount: 800 + Math.floor(Math.random() * 1500),
-      replyCount: 400 + Math.floor(Math.random() * 800),
-      favoriteCount: 2000 + Math.floor(Math.random() * 3000),
-      thumbnail: 'https://via.placeholder.com/320x180',
-      publishDate: new Date(Date.now() - Math.random() * 31536000000),
-      description: `通过实际案例深入讲解${keyword}的高级应用技巧`,
-    },
-    {
-      bvid: `BV1${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`,
-      title: `${keyword}最新研究成果分享`,
-      author: '学术前沿',
-      duration: 3600,
-      viewCount: 10000 + Math.floor(Math.random() * 30000),
-      danmakuCount: 300 + Math.floor(Math.random() * 600),
-      replyCount: 150 + Math.floor(Math.random() * 300),
-      favoriteCount: 800 + Math.floor(Math.random() * 1500),
-      thumbnail: 'https://via.placeholder.com/320x180',
-      publishDate: new Date(Date.now() - Math.random() * 31536000000),
-      description: `介绍${keyword}领域的最新研究进展和发展趋势`,
-    },
-  ];
-
-  return mockVideos.slice(0, limit);
 }
 
 /**
