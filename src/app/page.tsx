@@ -34,8 +34,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mb-8 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-              Automated mathematical modeling competition platform for teams and individuals.
-              Build, train, and deploy models with enterprise-grade security and collaboration tools.
+              Automated mathematical modeling platform for individuals and teams.
+              Build, train, and deploy models with enterprise-grade security.
             </p>
 
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -43,7 +43,7 @@ export default function HomePage() {
                 <Link href="/auth/register">Get Started Free</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/dashboard">View Demo</Link>
+                <Link href="/auth/login">Sign In</Link>
               </Button>
             </div>
 
@@ -57,8 +57,8 @@ export default function HomePage() {
                 <span>Automated Pipeline</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <span>Team Collaboration</span>
+                <Zap className="h-5 w-5 text-primary" />
+                <span>AI-Powered</span>
               </div>
             </div>
           </div>
@@ -107,16 +107,6 @@ export default function HomePage() {
 
           <Card>
             <CardHeader>
-              <Users className="mb-2 h-12 w-12 text-primary" />
-              <CardTitle>Team Collaboration</CardTitle>
-              <CardDescription>
-                Multi-user support with role-based access control and real-time collaboration
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <FileText className="mb-2 h-12 w-12 text-primary" />
               <CardTitle>Learning Module</CardTitle>
               <CardDescription>
@@ -131,6 +121,16 @@ export default function HomePage() {
               <CardTitle>Enterprise Security</CardTitle>
               <CardDescription>
                 JWT authentication, MFA, SSO, and comprehensive anti-attack measures
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Zap className="mb-2 h-12 w-12 text-primary" />
+              <CardTitle>Real-Time Monitoring</CardTitle>
+              <CardDescription>
+                Live task execution logs, AI thinking process visualization, and real-time progress tracking
               </CardDescription>
             </CardHeader>
           </Card>

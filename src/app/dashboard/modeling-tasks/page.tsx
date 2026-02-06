@@ -298,7 +298,11 @@ export default function ModelingTasksPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredTasks.map((task) => (
-                      <TableRow key={task.id}>
+                      <TableRow
+                        key={task.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => router.push(`/dashboard/modeling-tasks/${task.id}`)}
+                      >
                         <TableCell className="font-medium">
                           <div>
                             <div className="font-semibold">{task.name}</div>
@@ -335,7 +339,7 @@ export default function ModelingTasksPage() {
                         <TableCell>
                           {new Date(task.createdAt).toLocaleDateString('zh-CN')}
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
                             <Button variant="ghost" size="sm">
                               <Settings className="h-4 w-4" />
