@@ -11,7 +11,6 @@ import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders }
 const navItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
   { href: '/dashboard/competitions', label: '竞赛', icon: Trophy },
-  { href: '/dashboard/teams', label: '团队', icon: Users },
   { href: '/dashboard/ai-providers', label: 'AI Provider', icon: Activity },
   { href: '/learning/knowledge', label: '知识库', icon: BookOpen },
   { href: '/learning/settings', label: '学习配置', icon: Sliders },
