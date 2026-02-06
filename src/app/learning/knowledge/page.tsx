@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Header } from '@/components/shared/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -182,8 +183,11 @@ export default function KnowledgeBasePage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">知识库管理</h1>
           <p className="text-muted-foreground mt-2">查看和管理系统学到的知识点</p>
@@ -377,6 +381,8 @@ export default function KnowledgeBasePage() {
           ))}
         </div>
       )}
+      </div>
+      </main>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Header } from '@/components/shared/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,13 +14,13 @@ const docs = [
       {
         title: '安装指南',
         description: '详细的安装步骤和配置说明',
-        path: '/docs/installation-guide.md',
+        path: '/docs/installation-guide',
         icon: Rocket,
       },
       {
         title: '部署指南',
         description: 'Docker 部署和生产环境配置',
-        path: '/docs/deployment-guide.md',
+        path: '/docs/deployment-guide',
         icon: FileText,
       },
     ],
@@ -30,13 +31,13 @@ const docs = [
       {
         title: 'PostgreSQL 部署',
         description: 'PostgreSQL 数据库安装和配置',
-        path: '/docs/postgresql-setup.md',
+        path: '/docs/postgresql-setup',
         icon: Database,
       },
       {
         title: 'Docker PostgreSQL 部署',
         description: '使用 Docker 部署 PostgreSQL',
-        path: '/docs/docker-postgres-deployment.md',
+        path: '/docs/docker-postgres-deployment',
         icon: Database,
       },
     ],
@@ -47,19 +48,19 @@ const docs = [
       {
         title: '项目总结',
         description: 'CMAMSys 项目功能概述和技术架构',
-        path: '/docs/project-summary.md',
+        path: '/docs/project-summary',
         icon: Book,
       },
       {
         title: 'MathModelAgent 分析',
         description: '数学建模智能体架构分析',
-        path: '/docs/mathmodelagent-analysis.md',
+        path: '/docs/mathmodelagent-analysis',
         icon: FileText,
       },
       {
         title: '认证测试报告',
         description: 'JWT 认证系统测试报告',
-        path: '/docs/auth-test-report.md',
+        path: '/docs/auth-test-report',
         icon: Shield,
       },
     ],
@@ -70,8 +71,8 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container py-12">
-        <div className="mx-auto max-w-6xl">
+      <main className="container mx-auto py-12">
+        <div className="max-w-6xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="mb-4 text-4xl font-bold">文档中心</h1>
             <p className="text-xl text-muted-foreground">
@@ -103,9 +104,9 @@ export default function DocsPage() {
                         </CardHeader>
                         <CardContent>
                           <Button variant="outline" size="sm" asChild>
-                            <a href={doc.path} target="_blank" rel="noopener noreferrer">
+                            <Link href={doc.path}>
                               查看文档
-                            </a>
+                            </Link>
                           </Button>
                         </CardContent>
                       </Card>

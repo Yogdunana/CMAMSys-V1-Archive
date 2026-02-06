@@ -105,6 +105,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-muted/10">
       <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Settings</h1>
@@ -506,6 +507,7 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   );
