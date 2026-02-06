@@ -7,7 +7,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Locale } from '@/i18n/config';
-import { defaultLocale, localeNames, isValidLocale } from '@/i18n/config';
+import { defaultLocale, locales, localeNames, isValidLocale } from '@/i18n/config';
 
 interface LanguageContextType {
   locale: Locale;
