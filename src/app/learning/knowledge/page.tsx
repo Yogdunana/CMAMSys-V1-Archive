@@ -84,7 +84,7 @@ interface VideoKnowledge {
 }
 
 export default function KnowledgeBasePage() {
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<KnowledgeEntry[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -106,6 +106,14 @@ export default function KnowledgeBasePage() {
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'entries' | 'videos'>('entries');
   const { toast } = useToast();
+
+  // 获取 token
+  const getToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accessToken');
+    }
+    return null;
+  };
 
   const categories = [
     { value: 'all', label: '全部' },
@@ -129,7 +137,7 @@ export default function KnowledgeBasePage() {
     } else {
       fetchVideos();
     }
-  }, [viewMode, token]);
+  }, [viewMode, user]);
 
   useEffect(() => {
     let filtered = entries;
@@ -196,6 +204,7 @@ export default function KnowledgeBasePage() {
   const fetchVideos = async () => {
     setLoading(true);
     try {
+      const token = getToken();
       const response = await fetch('/api/learning/videos', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -236,6 +245,7 @@ export default function KnowledgeBasePage() {
 
   const handleViewVideoKnowledge = async (videoId: string) => {
     try {
+      const token = getToken();
       const response = await fetch(`/api/learning/videos/${videoId}/knowledge`, {
         headers: {
           'Authorization': `Bearer ${token}`,

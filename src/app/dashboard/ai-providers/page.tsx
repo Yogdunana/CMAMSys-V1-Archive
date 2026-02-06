@@ -179,7 +179,7 @@ const PROVIDER_TYPES: Record<string, { name: string; icon: any; color: string; m
 };
 
 export default function AIProvidersPage() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [providers, setProviders] = useState<AIProvider[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,6 +203,14 @@ export default function AIProvidersPage() {
     supportedModels: [] as string[],
   });
 
+  // 获取 token
+  const getToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accessToken');
+    }
+    return null;
+  };
+
   // 保存手动选择设置到 localStorage
   useEffect(() => {
     localStorage.setItem('aiProviderManualSelect', String(manualSelectEnabled));
@@ -211,6 +219,7 @@ export default function AIProvidersPage() {
   const fetchProviders = async () => {
     setLoading(true);
     try {
+      const token = getToken();
       const response = await fetch('/api/ai-providers', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -231,7 +240,7 @@ export default function AIProvidersPage() {
 
   useEffect(() => {
     fetchProviders();
-  }, [token]);
+  }, [user]);
 
   const handleTypeChange = (type: AIProvider['type']) => {
     const config = PROVIDER_TYPES[type];
@@ -246,6 +255,7 @@ export default function AIProvidersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const token = getToken();
       const url = editingProvider
         ? `/api/ai-providers/${editingProvider.id}`
         : '/api/ai-providers';
@@ -313,6 +323,7 @@ export default function AIProvidersPage() {
     if (!confirm('确定要删除此 AI Provider 吗？')) return;
 
     try {
+      const token = getToken();
       const response = await fetch(`/api/ai-providers/${id}`, {
         method: 'DELETE',
         headers: {
@@ -338,6 +349,7 @@ export default function AIProvidersPage() {
 
   const handleSetDefault = async (id: string) => {
     try {
+      const token = getToken();
       const response = await fetch(`/api/ai-providers/${id}`, {
         method: 'PUT',
         headers: {
