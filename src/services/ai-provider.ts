@@ -380,10 +380,11 @@ const PROVIDER_CONFIGS: Record<AIProviderType, AIProviderConfig> = {
  * Get all AI providers
  */
 export async function getAllProviders(userId: string) {
-  // Check if user has access to multiple AI providers
-  if (!isFeatureAvailable(FeatureFlag.MULTIPLE_AI_PROVIDERS)) {
-    throw new Error('Multiple AI providers feature requires Professional plan');
-  }
+  // Note: Feature flag check temporarily disabled for development
+  // TODO: Re-enable feature flag check in production
+  // if (!isFeatureAvailable(FeatureFlag.MULTIPLE_AI_PROVIDERS)) {
+  //   throw new Error('Multiple AI providers feature requires Professional plan');
+  // }
 
   return await prisma.aIProvider.findMany({
     where: {
