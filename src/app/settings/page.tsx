@@ -26,10 +26,12 @@ import {
   Lock,
   CheckCircle,
   Info,
+  Globe,
 } from 'lucide-react';
 import { getCurrentLicense, getPlanDisplayName, PlanType } from '@/lib/license';
 import { getDeploymentMode, DeploymentMode } from '@/lib/features';
 import { FeatureFlag, getFeatureDisplayName } from '@/lib/license';
+import { LanguageSelector } from '@/components/language-selector';
 
 interface SystemSetting {
   key: string;
@@ -180,6 +182,21 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <Label>Language</Label>
+                  </div>
+                  <LanguageSelector />
+                  <p className="text-xs text-muted-foreground">
+                    Select your preferred language for the interface
+                  </p>
+                </div>
+
+                <div className="border-t pt-4">
+                  <Label className="text-sm font-semibold">Advanced Settings</Label>
+                </div>
+
                 {settings.map((setting) => (
                   <div key={setting.key} className="space-y-2">
                     <Label htmlFor={setting.key}>{setting.key.replace(/_/g, ' ').toUpperCase()}</Label>
