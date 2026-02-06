@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Header } from '@/components/shared/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -150,15 +151,18 @@ export default function LearningSettingsPage() {
 
   if (loading || !config) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto py-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
         <h1 className="text-3xl font-bold">B 端视频学习配置</h1>
         <p className="text-muted-foreground mt-2">配置系统自动学习 B 端数学建模相关视频</p>
       </div>
@@ -490,6 +494,8 @@ export default function LearningSettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
+      </main>
     </div>
   );
 }

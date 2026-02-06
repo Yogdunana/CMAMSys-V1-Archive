@@ -141,8 +141,9 @@ export default function TeamsPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container py-8">
-        <div className="mb-8 flex items-center justify-between">
+      <main className="container mx-auto py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">团队管理</h1>
             <p className="text-muted-foreground mt-2">
@@ -324,6 +325,7 @@ export default function TeamsPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </main>
     </div>
   );
