@@ -99,6 +99,8 @@
 ### 5. AI Provider 管理系统
 
 - ✅ AI Provider 配置（DeepSeek/VolcEngine/Aliyun 等）
+- ✅ 阿里云百炼平台集成（qwen-turbo/qwen-plus/qwen-max）
+- ✅ 流式输出支持（SSE）
 - ✅ 智能模型选择（基于上下文）
 - ✅ API 密钥管理
 - ✅ 请求配额控制

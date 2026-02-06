@@ -35,6 +35,8 @@ CMAMSys is a full-stack enterprise platform designed for mathematical modeling c
 - **Automated Modeling Pipeline**: From data preprocessing to model training, evaluation, and report generation
 - **Multi-Algorithm Support**: Scikit-learn, XGBoost, LightGBM, PyTorch integration
 - **Competition-Specific Templates**: Pre-configured for different competition types
+- **AI Integration**: Multiple AI providers support (DeepSeek, VolcEngine, Aliyun Qwen, OpenAI, etc.)
+- **Streaming Output**: Real-time AI response streaming with SSE support
 - **Team Collaboration**: Multi-user support with role-based access control
 - **Daily Learning Module**: Automated learning from Bilibili and user-provided materials
 - **Beautiful Visualizations**: Competition-themed charts (MCM red, CUMCM blue) with UML and business flow diagrams
@@ -42,7 +44,6 @@ CMAMSys is a full-stack enterprise platform designed for mathematical modeling c
 - **API-First Design**: REST API for third-party integrations
 - **Docker Deployment**: One-click deployment to NAS/servers
 - **Bilibili Learning System**: Automated learning from Bilibili videos to build knowledge base
-- **Team Collaboration**: Multi-user teams with role-based access control
 
 ---
 
