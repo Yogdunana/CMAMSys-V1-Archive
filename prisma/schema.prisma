@@ -151,11 +151,82 @@ model Competition {
   deletedAt   DateTime?
   createdBy   User            @relation("UserCompetitions", fields: [createdById], references: [id], onDelete: Cascade)
   tasks       ModelingTask[]  @relation("CompetitionTasks")
+  problems    Problem[]
 
   @@index([createdById])
   @@index([type])
   @@index([year])
   @@map("competitions")
+}
+
+model Problem {
+  id                String   @id @default(cuid())
+  competitionId     String
+  problemNumber     String   // A, B, C, D 等
+  title             String   // 题目标题
+  originalContent   String?  @db.Text // 题目原文
+  translatedContent String?  @db.Text // 翻译内容
+  type              String?  // 题目类型
+  difficulty        String?  // 难度：简单/中等/困难
+  keywords          String[] // 关键词
+  originalFileUrl   String?  // 原文文件URL
+  translatedFileUrl String?  // 翻译文件URL
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+
+  competition       Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  solutions         Solution[]
+  aiContents        AIGeneratedContent[]
+
+  @@unique([competitionId, problemNumber])
+  @@index([competitionId])
+  @@map("problems")
+}
+
+model Solution {
+  id              String   @id @default(cuid())
+  problemId       String
+  type            SolutionType // system, award, ai
+  title           String
+  description     String?  @db.Text
+  content         String?  @db.Text
+  author          String?
+  awardLevel      String?  // 获奖等级：特等奖/一等奖/二等奖/三等奖
+  files           Json?    // 相关文件列表
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  problem         Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  aiContents      AIGeneratedContent[]
+
+  @@index([problemId])
+  @@index([type])
+  @@map("solutions")
+}
+
+model AIGeneratedContent {
+  id                String   @id @default(cuid())
+  problemId         String
+  solutionId        String?
+  type              AIGeneratedType // paper, data, chart
+  subProblemNumber  String?  // 子问题编号：1, 2, 3 等
+  content           String?  @db.Text
+  metadata          Json?    // 元数据：模型、参数、配置等
+  fileUrl           String?  // 文件URL
+  fileSize          Int?     // 文件大小
+  mimeType          String?  // MIME类型
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  problem           Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  solution          Solution? @relation(fields: [solutionId], references: [id])
+
+  @@index([problemId])
+  @@index([solutionId])
+  @@index([type])
+  @@map("ai_generated_contents")
 }
 
 model ModelingTask {
@@ -458,4 +529,16 @@ enum TeamRole {
   OWNER
   ADMIN
   MEMBER
+}
+
+enum SolutionType {
+  SYSTEM      // 建模系统解法
+  AWARD       // 获奖解法
+  AI          // AI 生成的解法
+}
+
+enum AIGeneratedType {
+  PAPER       // AI 论文
+  DATA        // AI 生成的数据
+  CHART       // AI 生成的图表
 }

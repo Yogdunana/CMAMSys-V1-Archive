@@ -51,6 +51,14 @@ interface Competition {
     progress: number;
     createdAt: string;
   }>;
+  problems: Array<{
+    id: string;
+    problemNumber: string;
+    title: string;
+    type?: string;
+    difficulty?: string;
+    keywords: string[];
+  }>;
 }
 
 export default function CompetitionDetailPage() {
@@ -68,6 +76,7 @@ export default function CompetitionDetailPage() {
 
   const loadCompetition = async (id: string) => {
     try {
+      // 加载竞赛详情
       const token = localStorage.getItem('accessToken');
       const response = await fetch(`/api/competitions/${id}`, {
         headers: {
@@ -77,7 +86,18 @@ export default function CompetitionDetailPage() {
 
       const data = await response.json();
       if (data.success) {
-        setCompetition(data.data);
+        // 加载题目列表
+        const problemsResponse = await fetch(`/api/problems?competitionId=${id}`, {
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+        const problemsData = await problemsResponse.json();
+
+        setCompetition({
+          ...data.data,
+          problems: problemsData.success ? problemsData.data : [],
+        });
       } else {
         // 如果 API 返回错误，返回 404
         router.push('/dashboard/competitions');
@@ -213,6 +233,7 @@ export default function CompetitionDetailPage() {
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">概览</TabsTrigger>
+              <TabsTrigger value="problems">题目 ({competition.problems?.length || 0})</TabsTrigger>
               <TabsTrigger value="tasks">任务</TabsTrigger>
               <TabsTrigger value="files">文件</TabsTrigger>
               <TabsTrigger value="settings">设置</TabsTrigger>
@@ -246,6 +267,55 @@ export default function CompetitionDetailPage() {
                     <p className="text-sm text-muted-foreground mb-2">描述</p>
                     <p className="text-sm">{competition.description || '暂无描述'}</p>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="problems" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>竞赛题目</CardTitle>
+                  <CardDescription>此竞赛的所有题目</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(!competition.problems || competition.problems.length === 0) ? (
+                    <div className="text-center py-12">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">暂无题目</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {competition.problems.map((problem) => (
+                        <div
+                          key={problem.id}
+                          className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                          onClick={() => router.push(`/dashboard/problems/${problem.id}`)}
+                        >
+                          <div className="flex items-start gap-4">
+                            <Badge variant="outline" className="text-lg px-4">
+                              题目 {problem.problemNumber}
+                            </Badge>
+                            <div className="flex-1">
+                              <p className="font-medium text-lg">{problem.title}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                {problem.difficulty && (
+                                  <Badge variant="secondary">{problem.difficulty}</Badge>
+                                )}
+                                {problem.keywords.slice(0, 3).map((keyword) => (
+                                  <Badge key={keyword} variant="outline" className="text-xs">
+                                    {keyword}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <Button variant="ghost">
+                            查看详情
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

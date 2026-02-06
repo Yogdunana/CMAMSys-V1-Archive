@@ -10,7 +10,8 @@ import { Activity, ArrowRight, Trophy, Users, Zap, Clock } from 'lucide-react';
 interface Competition {
   id: string;
   name: string;
-  problem: string;
+  problemNumber: string;
+  competitionName: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,16 +69,18 @@ export default function DashboardPage() {
       });
       setRecentActivities([
         {
-          id: '1',
-          name: '2026-MCM-A 问题 A',
-          problem: 'A',
+          id: 'prob-001',
+          name: '2025-MCM-A - 持续捕鱼',
+          problemNumber: 'A',
+          competitionName: '2025-MCM',
           createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
           updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: '2',
-          name: 'CUMCM-2025-B 问题 B',
-          problem: 'B',
+          id: 'prob-002',
+          name: '2024-MCM-B - 地球生态系统的碳汇',
+          problemNumber: 'B',
+          competitionName: '2024-MCM',
           createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
           updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         },
@@ -211,7 +214,7 @@ export default function DashboardPage() {
                     {recentActivities.map((activity) => (
                       <Link
                         key={activity.id}
-                        href={`/dashboard/competitions/${activity.id}`}
+                        href={`/dashboard/problems/${activity.id}`}
                         className="block hover:bg-accent/50 rounded-lg p-3 -mx-3 transition-colors"
                       >
                         <div className="flex items-center">
@@ -220,7 +223,7 @@ export default function DashboardPage() {
                               {activity.name}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              创建于 {formatTimeAgo(activity.createdAt)}
+                              {activity.competitionName} • {formatTimeAgo(activity.createdAt)}
                             </p>
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
