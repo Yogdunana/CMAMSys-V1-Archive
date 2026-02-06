@@ -38,6 +38,8 @@ model User {
   competitions      Competition[]     @relation("UserCompetitions")
   modelingTasks     ModelingTask[]    @relation("UserTasks")
   aiProviders       AIProvider[]
+  ownedTeams        Team[]            @relation("TeamOwner")
+  teamMemberships   TeamMember[]
 
   @@index([email])
   @@index([username])
@@ -57,6 +59,42 @@ model RefreshToken {
   @@index([token])
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+// ============================================
+// 团队管理
+// ============================================
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  ownerId     String
+  maxMembers  Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User     @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     TeamMember[]
+
+  @@index([ownerId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String        @id @default(cuid())
+  teamId    String
+  userId    String
+  role      TeamRole      @default(MEMBER)
+  joinedAt  DateTime      @default(now())
+
+  team      Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+  @@map("team_members")
 }
 
 // ============================================
@@ -538,4 +576,10 @@ enum AIModelType {
   EMBEDDING
   IMAGE
   CODE_GENERATION
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
 }

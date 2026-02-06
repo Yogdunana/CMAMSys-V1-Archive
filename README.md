@@ -41,6 +41,8 @@ CMAMSys is a full-stack enterprise platform designed for mathematical modeling c
 - **Enterprise Security**: JWT authentication, MFA, SSO, anti-attack measures
 - **API-First Design**: REST API for third-party integrations
 - **Docker Deployment**: One-click deployment to NAS/servers
+- **Bilibili Learning System**: Automated learning from Bilibili videos to build knowledge base
+- **Team Collaboration**: Multi-user teams with role-based access control
 
 ---
 
@@ -124,20 +126,28 @@ cmamsys/
 │   │   ├── api/               # API routes (microservices)
 │   │   │   ├── auth/          # Authentication service
 │   │   │   ├── modeling/      # Modeling pipeline service
-│   │   │   ├── learning/      # Daily learning module
+│   │   │   ├── learning/      # Bilibili learning system
 │   │   │   ├── competitions/  # Competition management
-│   │   │   └── users/         # User management
+│   │   │   ├── teams/         # Team management
+│   │   │   ├── ai-providers/  # AI provider management
+│   │   │   ├── settings/      # System settings
+│   │   │   └── init/          # App initialization
 │   │   ├── dashboard/         # Main dashboard
-│   │   ├── competitions/      # Competition interface
+│   │   │   ├── competitions/  # Competition page
+│   │   │   ├── teams/         # Team page
+│   │   │   └── ai-providers/  # AI providers page
+│   │   ├── learning/          # Learning module
+│   │   │   ├── knowledge/     # Knowledge base page
+│   │   │   └── settings/      # Learning settings page
+│   │   ├── settings/          # System settings
 │   │   ├── auth/              # Login/Registration
 │   │   └── layout.tsx         # Root layout
 │   ├── components/            # React components
 │   │   └── ui/                # shadcn/ui components
 │   ├── lib/                   # Utility libraries
 │   ├── services/              # Business logic
-│   │   ├── auth/              # Authentication service
-│   │   ├── modeling/          # Modeling pipeline
-│   │   └── learning/          # Learning module
+│   │   ├── bilibili-learning.ts # Bilibili learning service
+│   │   └── learning-cron.ts  # Scheduled learning tasks
 │   └── hooks/                 # Custom hooks
 ├── prisma/                    # Database schema
 │   └── schema.prisma

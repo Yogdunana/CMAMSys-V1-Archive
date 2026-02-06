@@ -113,14 +113,24 @@
 - ✅ 模型评估
 - ✅ 报告生成
 
-### 7. 许可证管理系统
+### 7. B 站视频学习系统
+
+- ✅ 自动搜索 B 站数学建模相关视频
+- ✅ 每日自动学习（定时任务）
+- ✅ 知识点提取（AI 驱动）
+- ✅ 知识库管理
+- ✅ 学习配置（关键词、时间、数量）
+- ✅ 视频管理（标记好视频/忽略）
+- ✅ 学习日志记录
+
+### 8. 许可证管理系统
 
 - ✅ License Key 验证
 - ✅ 版本功能控制（Community/Professional/Enterprise）
 - ✅ Feature Flags 管理
 - ✅ 离线模式支持
 
-### 8. 日志系统
+### 9. 日志系统
 
 - ✅ 全局日志记录（DEBUG/INFO/WARN/ERROR/FATAL）
 - ✅ 日志分级存储
@@ -128,7 +138,7 @@
 - ✅ 错误追踪
 - ✅ 审计日志（企业版）
 
-### 9. 系统设置
+### 10. 系统设置
 
 - ✅ 站点基本信息配置
 - ✅ 注册开关控制
@@ -136,7 +146,7 @@
 - ✅ 邮件配置
 - ✅ 备份配置
 
-### 10. UI/UX 功能
+### 11. UI/UX 功能
 
 - ✅ 响应式设计（桌面/平板/手机）
 - ✅ 夜间模式（深色主题）
@@ -175,6 +185,17 @@
 | `AIRequest` | AI 请求日志表 | id, provider, model, status |
 | `AIResponse` | AI 响应表 | id, requestId, content, tokens |
 
+#### 学习系统
+
+| 表名 | 说明 | 关键字段 |
+|------|------|----------|
+| `LearningConfig` | 学习配置表 | id, autoLearningEnabled, dailyVideoTarget |
+| `BilibiliVideo` | B 站视频表 | id, bvid, title, author, learningStatus |
+| `VideoLearningTask` | 视频学习任务表 | id, videoId, taskType, status |
+| `VideoKnowledge` | 视频知识点表 | id, videoId, title, content, category |
+| `KnowledgeBaseEntry` | 知识库条目表 | id, title, content, category, tags |
+| `LearningLog` | 学习日志表 | id, action, taskType, message |
+
 #### 系统管理
 
 | 表名 | 说明 | 关键字段 |
@@ -203,6 +224,15 @@ CREATE INDEX idx_project_status ON "Project"(status);
 -- AI 相关索引
 CREATE INDEX idx_ai_request_provider ON "AIRequest"(provider);
 CREATE INDEX idx_ai_request_created ON "AIRequest"(createdAt);
+
+-- 学习相关索引
+CREATE INDEX idx_bilibili_video_bvid ON "BilibiliVideo"(bvid);
+CREATE INDEX idx_bilibili_video_status ON "BilibiliVideo"(learningStatus);
+CREATE INDEX idx_video_learning_task_video ON "VideoLearningTask"(videoId);
+CREATE INDEX idx_video_learning_task_status ON "VideoLearningTask"(status);
+CREATE INDEX idx_knowledge_entry_category ON "KnowledgeBaseEntry"(category);
+CREATE INDEX idx_knowledge_entry_tags ON "KnowledgeBaseEntry"(tags);
+CREATE INDEX idx_learning_log_action ON "LearningLog"(action);
 
 -- 日志相关索引
 CREATE INDEX idx_log_level ON "SystemLog"(level);
