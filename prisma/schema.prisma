@@ -323,3 +323,163 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+// ============================================
+// AI Providers (Feature: Multiple AI Providers)
+// ============================================
+
+enum AIProviderType {
+  DEEPSEEK
+  VOLCENGINE
+  ALIYUN_QWEN
+  BAIDU_WENXIN
+  ZHIPU
+  OPENAI
+  ANTHROPIC
+  GOOGLE_GEMINI
+  AZURE_OPENAI
+  CUSTOM
+}
+
+enum AIModelType {
+  CHAT
+  COMPLETION
+  EMBEDDING
+  IMAGE_GENERATION
+  CODE_GENERATION
+}
+
+enum AIProviderStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  QUOTA_EXCEEDED
+}
+
+model AIProvider {
+  id          String              @id @default(uuid())
+  name        String              // Display name, e.g., "DeepSeek V3"
+  type        AIProviderType
+  apiKey      String              // Encrypted API key
+  endpoint    String?             // Custom API endpoint
+  region      String?             // Provider region
+  status      AIProviderStatus    @default(ACTIVE)
+  priority    Int                 @default(0) // Higher priority = preferred
+
+  // Rate limiting
+  rateLimitPerMinute   Int?      @default(60)
+  rateLimitPerHour     Int?      @default(1000)
+  dailyQuota           Int?
+  monthlyQuota         Int?
+
+  // Usage tracking
+  totalRequests        Int       @default(0)
+  totalTokensUsed      Int       @default(0)
+  lastUsedAt           DateTime?
+
+  // Configuration
+  config               Json?     // Provider-specific configuration
+  supportedModels      String[]  // List of supported model names
+  capabilities         String[]  // e.g., ["chat", "completion", "embedding"]
+
+  // Cost tracking
+  costPerToken         Float?
+  costPerRequest       Float?
+
+  // Metadata
+  isDefault            Boolean   @default(false)
+  description          String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relations
+  createdBy            User      @relation(fields: [createdById], references: [id])
+  createdById          String
+  aiRequests           AIRequest[]
+
+  @@index([type])
+  @@index([status])
+  @@index([priority])
+  @@index([isDefault])
+  @@map("ai_providers")
+}
+
+model AIRequest {
+  id          String          @id @default(uuid())
+  providerId  String
+  modelName   String          // e.g., "deepseek-chat", "qwen-turbo"
+  modelType   AIModelType
+  prompt      String          @db.Text
+  response    String?         @db.Text
+  tokensUsed  Int?
+  latencyMs   Int?            // Response latency in milliseconds
+
+  // Cost tracking
+  cost        Float?
+
+  // Metadata
+  status      String          // "success", "error"
+  errorMessage String?
+  metadata    Json?           // Additional request/response data
+
+  // Context
+  taskId      String?         // Related modeling task ID
+  context     String?         // Context: "modeling", "learning", "coding"
+
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  provider    AIProvider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("ai_requests")
+}
+
+// ============================================
+// System Settings & License
+// ============================================
+
+enum SettingCategory {
+  GENERAL
+  SECURITY
+  AI
+  NOTIFICATIONS
+  DEPLOYMENT
+  LICENSE
+}
+
+model SystemSetting {
+  id          String            @id @default(uuid())
+  key         String            @unique
+  value       String            @db.Text
+  category    SettingCategory
+  description String?
+  isPublic    Boolean           @default(false) // Can be exposed to frontend
+  updatedAt   DateTime          @default(now())
+  updatedBy   String?           // User ID
+
+  @@index([category])
+  @@index([key])
+  @@map("system_settings")
+}
+
+model LicenseInfo {
+  id          String    @id @default(uuid())
+  licenseKey  String    @unique
+  planType    String    // "community", "professional", "enterprise"
+  organization String?
+  validFrom   DateTime
+  validUntil  DateTime
+  features    String[]  // List of enabled features
+  maxUsers    Int?
+  restrictions Json?
+  isActive    Boolean   @default(true)
+  activatedAt DateTime  @default(now())
+  activatedBy String?   // User ID
+
+  @@index([isActive])
+  @@index([validUntil])
+  @@map("license_info")
+}
