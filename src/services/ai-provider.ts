@@ -6,6 +6,7 @@
 import prisma from '@/lib/prisma';
 import { createLogger } from '@/lib/logger';
 import { isFeatureAvailable, FeatureFlag } from '@/lib/features';
+import { encrypt, decrypt } from '@/lib/encryption';
 import {
   AIProviderType,
   AIProviderStatus,
@@ -433,11 +434,14 @@ export async function createProvider(
   const supportedModels = providerConfig?.models.map((m: AIModelConfig) => m.name) || [];
   const capabilities = providerConfig?.models.flatMap((m: AIModelConfig) => m.capabilities) || [];
 
+  // Encrypt API key before storing
+  const encryptedApiKey = encrypt(data.apiKey);
+
   return await prisma.aIProvider.create({
     data: {
       name: data.name,
       type: data.type,
-      apiKey: data.apiKey,
+      apiKey: encryptedApiKey,
       endpoint: data.endpoint || providerConfig?.endpoint,
       region: data.region,
       priority: data.priority || 0,
@@ -484,9 +488,15 @@ export async function updateProvider(
     });
   }
 
+  // Encrypt API key if provided
+  const updateData = { ...data };
+  if (updateData.apiKey) {
+    updateData.apiKey = encrypt(updateData.apiKey);
+  }
+
   return await prisma.aIProvider.update({
     where: { id: providerId },
-    data,
+    data: updateData,
   });
 }
 
@@ -690,11 +700,14 @@ async function makeProviderRequest(
 ): Promise<{ content: string; tokensUsed: number }> {
   const endpoint = provider.endpoint || PROVIDER_CONFIGS[provider.type as AIProviderType]?.endpoint;
 
+  // Decrypt API key
+  const decryptedApiKey = decrypt(provider.apiKey);
+
   // Use coze-coding-dev-sdk for Aliyun and VolcEngine providers
   if (provider.type === AIProviderType.ALIYUN || provider.type === AIProviderType.VOLCENGINE) {
     try {
       const config = new Config({
-        apiKey: provider.apiKey,
+        apiKey: decryptedApiKey,
         baseUrl: endpoint,
       });
 
@@ -733,7 +746,7 @@ async function makeProviderRequest(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${provider.apiKey}`,
+        Authorization: `Bearer ${decryptedApiKey}`,
       },
       body: JSON.stringify({
         model,
@@ -852,11 +865,14 @@ export async function callAIStream(
     throw new Error('Provider not found');
   }
 
+  // Decrypt API key
+  const decryptedApiKey = decrypt(provider.apiKey);
+
   // Use coze-coding-dev-sdk for streaming (optimized for Aliyun and VolcEngine)
   if (provider.type === AIProviderType.ALIYUN || provider.type === AIProviderType.VOLCENGINE) {
     try {
       const config = new Config({
-        apiKey: provider.apiKey,
+        apiKey: decryptedApiKey,
         baseUrl: provider.endpoint || undefined,
       });
 
