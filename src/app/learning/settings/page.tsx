@@ -75,6 +75,8 @@ export default function LearningSettingsPage() {
         title: '加载失败',
         description: '无法加载学习配置',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
