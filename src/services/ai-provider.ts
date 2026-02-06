@@ -1,60 +1,18 @@
 /**
  * AI Provider Service
  * Manages AI provider configurations, API calls, and intelligent model selection
- *
- * NOTE: This service is currently under development.
- * The AIProvider tables have been simplified for SQLite compatibility.
  */
 
 import prisma from '@/lib/prisma';
 import { createLogger } from '@/lib/logger';
 import { isFeatureAvailable, FeatureFlag } from '@/lib/features';
-
-// NOTE: The following types are temporarily commented out for SQLite compatibility
-// They will be re-enabled when the AIProvider tables are restored
-/*
 import {
   AIProviderType,
   AIProviderStatus,
   AIModelType,
-  AIRequest,
 } from '@prisma/client';
-*/
 
 const logger = createLogger({ category: 'AI_PROVIDER_SERVICE' });
-
-// Local type definitions (for SQLite compatibility)
-enum AIProviderType {
-  DEEPSEEK = 'DEEPSEEK',
-  VOLCENGINE = 'VOLCENGINE',
-  ALIYUN = 'ALIYUN',
-  OPENAI = 'OPENAI',
-  ANTHROPIC = 'ANTHROPIC',
-  ZHIPU = 'ZHIPU',
-  BAIDU = 'BAIDU',
-  TENCENT = 'TENCENT',
-  HUNGYUAN = 'HUNGYUAN',
-  MINIMAX = 'MINIMAX',
-  GOOGLE_GEMINI = 'GOOGLE_GEMINI',
-  AZURE_OPENAI = 'AZURE_OPENAI',
-  ALIYUN_QWEN = 'ALIYUN_QWEN',
-  BAIDU_WENXIN = 'BAIDU_WENXIN',
-  CUSTOM = 'CUSTOM',
-}
-
-enum AIProviderStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  ERROR = 'ERROR',
-}
-
-enum AIModelType {
-  CHAT = 'CHAT',
-  COMPLETION = 'COMPLETION',
-  EMBEDDING = 'EMBEDDING',
-  IMAGE = 'IMAGE',
-  CODE_GENERATION = 'CODE_GENERATION',
-}
 
 // AI Provider configurations
 export interface AIProviderConfig {
@@ -384,9 +342,6 @@ export async function getAllProviders(userId: string) {
     throw new Error('Multiple AI providers feature requires Professional plan');
   }
 
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   return await prisma.aIProvider.findMany({
     where: {
       createdById: userId,
@@ -396,23 +351,18 @@ export async function getAllProviders(userId: string) {
       { priority: 'desc' },
     ],
   });
-  */
 }
 
 /**
  * Get provider by ID
  */
 export async function getProviderById(providerId: string, userId: string) {
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   return await prisma.aIProvider.findFirst({
     where: {
       id: providerId,
       createdById: userId,
     },
   });
-  */
 }
 
 /**
@@ -434,9 +384,6 @@ export async function createProvider(
     throw new Error('Multiple AI providers feature requires Professional plan');
   }
 
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   // Get provider config
   const providerConfig = PROVIDER_CONFIGS[data.type as AIProviderType];
   const supportedModels = providerConfig?.models.map((m: AIModelConfig) => m.name) || [];
@@ -458,7 +405,6 @@ export async function createProvider(
       createdById: userId,
     },
   });
-  */
 }
 
 /**
@@ -477,9 +423,6 @@ export async function updateProvider(
     config: any;
   }>
 ) {
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   // Verify ownership
   const provider = await getProviderById(providerId, userId);
   if (!provider) {
@@ -501,16 +444,12 @@ export async function updateProvider(
     where: { id: providerId },
     data,
   });
-  */
 }
 
 /**
  * Delete AI provider
  */
 export async function deleteProvider(providerId: string, userId: string) {
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   const provider = await getProviderById(providerId, userId);
   if (!provider) {
     throw new Error('Provider not found');
@@ -519,7 +458,6 @@ export async function deleteProvider(providerId: string, userId: string) {
   return await prisma.aIProvider.delete({
     where: { id: providerId },
   });
-  */
 }
 
 /**
@@ -534,9 +472,6 @@ export async function selectBestProvider(
   },
   userId: string
 ) {
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   const providers = await getAllProviders(userId);
 
   if (providers.length === 0) {
@@ -544,7 +479,7 @@ export async function selectBestProvider(
   }
 
   // Filter by status
-  const activeProviders = providers.filter((p: any) => p.status === AIProviderStatus.ACTIVE);
+  const activeProviders = providers.filter((p) => p.status === AIProviderStatus.ACTIVE);
 
   if (activeProviders.length === 0) {
     throw new Error('No active AI providers available');
@@ -553,7 +488,7 @@ export async function selectBestProvider(
   // Filter by capabilities if specified
   let candidateProviders = activeProviders;
   if (context.capabilities && context.capabilities.length > 0) {
-    candidateProviders = activeProviders.filter((p: any) =>
+    candidateProviders = activeProviders.filter((p) =>
       context.capabilities!.some((cap) => p.capabilities.includes(cap))
     );
   }
@@ -564,11 +499,10 @@ export async function selectBestProvider(
   }
 
   // Sort by priority (highest first)
-  candidateProviders.sort((a: any, b: any) => b.priority - a.priority);
+  candidateProviders.sort((a, b) => b.priority - a.priority);
 
   // Return the best provider (highest priority)
   return candidateProviders[0];
-  */
 }
 
 /**
@@ -628,9 +562,6 @@ export async function callAI(
   },
   userId: string
 ): Promise<{ response: string; tokensUsed: number; latencyMs: number }> {
-  // NOTE: This function is currently disabled for SQLite compatibility
-  throw new Error('AI Providers feature is currently under development');
-  /*
   const provider = await getProviderById(providerId, userId);
   if (!provider) {
     throw new Error('Provider not found');
@@ -695,12 +626,13 @@ export async function callAI(
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         taskId: context.taskId,
         context: context.context,
+        latencyMs: Date.now() - startTime,
+        tokensUsed: 0,
       },
     });
 
     throw error;
   }
-  */
 }
 
 /**
