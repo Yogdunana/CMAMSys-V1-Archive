@@ -168,7 +168,101 @@ cmamsys/
 
 ---
 
-## 📊 Modeling Pipeline
+## 🐳 Docker Deployment
+
+CMAMSys supports two editions with Docker deployment:
+
+### Editions
+
+| Edition | Features | License | Deployment |
+|---------|----------|---------|------------|
+| **Community** | Basic modeling, team collaboration, report generation | MIT (Free) | Self-hosted |
+| **Enterprise** | All features + SSO + unlimited storage + priority support | Commercial | Self-hosted (paid) |
+
+### Quick Start with Docker
+
+```bash
+cd docker
+
+# Community Edition (Free)
+cp .env.community.example .env.community
+./deploy.sh community up
+
+# Enterprise Edition (Requires license)
+cp .env.enterprise.example .env.enterprise
+./deploy.sh enterprise up --with-redis --with-minio
+```
+
+Access the application at http://localhost:5000
+
+### Deployment Options
+
+**Community Edition:**
+```bash
+# Basic deployment (PostgreSQL + App)
+./deploy.sh community up
+
+# With Redis (caching)
+./deploy.sh community up --with-redis
+
+# View logs
+./deploy.sh community logs
+
+# Stop services
+./deploy.sh community down
+```
+
+**Enterprise Edition:**
+```bash
+# Full deployment (PostgreSQL + Redis + MinIO + App)
+./deploy.sh enterprise up --with-redis --with-minio
+
+# With Nginx (HTTPS + reverse proxy)
+./deploy.sh enterprise up --with-redis --with-minio --with-nginx
+
+# View logs
+./deploy.sh enterprise logs
+
+# Stop services
+./deploy.sh enterprise down
+```
+
+### Environment Configuration
+
+Copy the appropriate environment file and configure:
+
+```bash
+# Community Edition
+cp docker/.env.community.example docker/.env.community
+
+# Enterprise Edition
+cp docker/.env.enterprise.example docker/.env.enterprise
+```
+
+**Important**: Change the default passwords and JWT secrets in production!
+
+### Build Custom Images
+
+```bash
+cd docker
+
+# Build Community Edition
+./build.sh community v1.0.0
+
+# Build Enterprise Edition
+./build.sh enterprise v1.0.0
+
+# Build and push to registry
+REGISTRY=your-registry.com ./build.sh enterprise v1.0.0 --push
+```
+
+### Detailed Deployment Guide
+
+See [docs/deployment-guide.md](docs/deployment-guide.md) for detailed deployment instructions.
+
+---
+
+## 📋 Modeling Pipeline
 
 ### Data Preprocessing
 - Automatic data type detection
@@ -289,6 +383,7 @@ pnpm ts-check
 - [API Reference](docs/api-reference.md)
 - [Modeling Guide](docs/modeling-guide.md)
 - [Deployment Guide](docs/deployment-guide.md)
+- [Project Summary](docs/project-summary.md)
 - [Contributing](CONTRIBUTING.md)
 
 ---
@@ -301,7 +396,19 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- **Community Edition**: MIT License - Free for personal and commercial use
+- **Enterprise Edition**: Commercial License - Requires purchase for advanced features
+
+For licensing inquiries, please contact [license@cmamsys.com](mailto:license@cmamsys.com)
+
+---
+
+## 📞 Support
+
+- 📧 Email: [support@cmamsys.com](mailto:support@cmamsys.com)
+- 📚 Documentation: [docs.cmamsys.com](https://docs.cmamsys.com)
+- 💬 Community: [community.cmamsys.com](https://community.cmamsys.com)
+- 🐛 Issues: [GitHub Issues](https://github.com/your-org/cmamsys/issues)
 
 ---
 

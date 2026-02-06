@@ -112,14 +112,21 @@ docker/postgres_data/
 docker/redis_data/
 docker/app_data/
 docker/app_logs/
+docker/minio_data/
+docker/nginx_cache/
 
 # SSL certificates
 docker/ssl/
+*.pem
+*.crt
+*.key
 
 # Backup files
 *.backup
 *.bak
 /backups/
+/backups/*.sql
+/backups/*.tar.gz
 
 # Model files (optional - uncomment if you want to ignore large model files)
 # /app/models/*.pkl
