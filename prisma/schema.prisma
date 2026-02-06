@@ -1,0 +1,325 @@
+// CMAMSys Database Schema
+// Prisma Schema for PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User & Authentication
+// ============================================
+
+enum UserRole {
+  ADMIN
+  USER
+  TEAM_LEAD
+  TEAM_MEMBER
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  GITHUB
+  SSO
+}
+
+model User {
+  id                String       @id @default(uuid())
+  email             String       @unique
+  username          String       @unique
+  passwordHash      String?      // Nullable for OAuth users
+  role              UserRole     @default(USER)
+  authProvider      AuthProvider @default(LOCAL)
+  isVerified        Boolean      @default(false)
+  isMfaEnabled      Boolean      @default(false)
+  mfaSecret         String?
+  avatar            String?
+  bio               String?
+  organization      String?
+  failedLoginAttempts Int        @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  refreshTokens     RefreshToken[]
+  competitions      Competition[]
+  modelingTasks     ModelingTask[]
+  learningRecords   LearningRecord[]
+  notifications     Notification[]
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id           String   @id @default(uuid())
+  token        String   @unique
+  userId       String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  revokedAt    DateTime?
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// Competitions & Modeling
+// ============================================
+
+enum CompetitionType {
+  MCM
+  ICM
+  CUMCM
+  SHENZHEN_CUP
+  IMMC
+  MATHORCUP
+  EMMC
+  TEDDY_CUP
+  BLUE_BRIDGE_MATH
+  REGIONAL
+  OTHER
+}
+
+enum CompetitionStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  PENDING
+  PREPROCESSING
+  MODELING
+  EVALUATING
+  REPORTING
+  COMPLETED
+  FAILED
+}
+
+enum ProblemType {
+  EVALUATION
+  PREDICTION
+  OPTIMIZATION
+  CLASSIFICATION
+  REGRESSION
+  CLUSTERING
+}
+
+model Competition {
+  id              String            @id @default(uuid())
+  name            String
+  type            CompetitionType
+  year            Int
+  problemId       String            // e.g., "A", "B", "C"
+  folderPath      String            // e.g., "data/competitions/2026-MCM/A"
+  description     String?
+  status          CompetitionStatus @default(UPCOMING)
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  createdBy       User              @relation(fields: [createdById], references: [id])
+  createdById     String
+  tasks           ModelingTask[]
+
+  @@unique([year, type, problemId])
+  @@index([type])
+  @@index([year])
+  @@index([status])
+  @@map("competitions")
+}
+
+model ModelingTask {
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  competitionId   String?
+  problemType     ProblemType
+  status          TaskStatus @default(PENDING)
+  progress        Int        @default(0)  // 0-100
+
+  // Input data
+  dataFilePath    String?     // e.g., "data/competitions/2026-MCM/A-1/data.csv"
+  problemFilePath String?     // e.g., "data/competitions/2026-MCM/A-1/problem.pdf"
+
+  // Output data
+  modelFilePath   String?
+  reportFilePath  String?
+  visualizations  String[]    // Array of file paths
+  metrics         Json?       // JSON object with evaluation metrics
+
+  // Configuration
+  algorithm       String?     // e.g., "XGBoost", "RandomForest"
+  hyperparameters Json?       // JSON object with hyperparameters
+
+  // Metadata
+  approachNumber  Int?        // e.g., 1, 2 for multiple approaches
+  logs            String?     // Task execution logs
+  errorMessage    String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  competition     Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  createdBy       User         @relation(fields: [createdById], references: [id])
+  createdById     String
+
+  @@index([competitionId])
+  @@index([status])
+  @@index([problemType])
+  @@index([createdById])
+  @@map("modeling_tasks")
+}
+
+// ============================================
+// Learning Module
+// ============================================
+
+enum LearningSourceType {
+  BILIBILI
+  YOUTUBE
+  PDF
+  DOCUMENT
+  USER_UPLOAD
+  OTHER
+}
+
+model LearningRecord {
+  id              String            @id @default(uuid())
+  title           String
+  sourceType      LearningSourceType
+  sourceUrl       String?
+  filePath        String?
+  content         String?           // Extracted content
+  summary         String?           // AI-generated summary
+  topics          String[]          // Array of topic tags
+  competitionTags String[]          // Array of competition type tags
+  duration        Int?              // Duration in minutes
+  learnedAt       DateTime          @default(now())
+
+  // Relations
+  learner         User              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learnerId       String
+  knowledgeItems  KnowledgeBase[]
+
+  @@index([sourceType])
+  @@index([learnerId])
+  @@index([learnedAt])
+  @@map("learning_records")
+}
+
+model KnowledgeBase {
+  id              String          @id @default(uuid())
+  title           String
+  category        String          // e.g., "Algorithm", "Technique", "Case Study"
+  subcategory     String?
+  content         String          @db.Text
+  tags            String[]
+  competitionType CompetitionType?
+  difficulty      String?         // e.g., "Beginner", "Intermediate", "Advanced"
+  usageCount      Int             @default(0)
+  lastUsedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  sourceRecord    LearningRecord? @relation(fields: [sourceRecordId], references: [id], onDelete: SetNull)
+  sourceRecordId  String?         @unique
+
+  @@index([category])
+  @@index([competitionType])
+  @@index([tags])
+  @@map("knowledge_base")
+}
+
+// ============================================
+// Notifications
+// ============================================
+
+enum NotificationType {
+  TASK_STARTED
+  TASK_COMPLETED
+  TASK_FAILED
+  SYSTEM_UPDATE
+  LEARNING_UPDATE
+  SECURITY_ALERT
+  OTHER
+}
+
+model Notification {
+  id          String            @id @default(uuid())
+  type        NotificationType
+  title       String
+  message     String            @db.Text
+  isRead      Boolean           @default(false)
+  metadata    Json?             // Additional data
+  createdAt   DateTime          @default(now())
+  expiresAt   DateTime?
+
+  // Relations
+  recipient   User              @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+
+  @@index([recipientId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================
+// Audit Logs (Security)
+// ============================================
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  REGISTER
+  PASSWORD_CHANGE
+  MFA_ENABLED
+  MFA_DISABLED
+  TASK_CREATED
+  TASK_STARTED
+  TASK_COMPLETED
+  API_ACCESS
+  FILE_UPLOAD
+  FILE_DOWNLOAD
+  SETTINGS_CHANGE
+}
+
+model AuditLog {
+  id          String      @id @default(uuid())
+  userId      String?
+  action      AuditAction
+  resource    String?     // e.g., "task:123", "user:456"
+  ipAddress   String?
+  userAgent   String?
+  success     Boolean
+  errorMessage String?
+  metadata    Json?       // Additional context
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

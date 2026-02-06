@@ -1,0 +1,138 @@
+.next
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build
+dist/
+build/
+out/
+.next/
+.rsbuild/
+
+# Testing
+coverage/
+*.lcov
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Optional files
+*.tgz
+*.gz
+*.zip
+*.tar
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+.vercel
+.turbo
+
+.coze-logs
+
+# CMAMSys specific
+/data/competitions/
+/data/knowledge_base/
+/data/raw/
+/data/*.csv
+/data/*.xlsx
+/data/*.json
+!/data/knowledge_base/.gitkeep
+
+# Docker volumes
+docker/postgres_data/
+docker/redis_data/
+docker/app_data/
+docker/app_logs/
+
+# SSL certificates
+docker/ssl/
+
+# Backup files
+*.backup
+*.bak
+/backups/
+
+# Model files (optional - uncomment if you want to ignore large model files)
+# /app/models/*.pkl
+# /app/models/*.h5
+# /app/models/*.pt
+
+# Prisma
+prisma/migrations/
+!prisma/schema.prisma
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
