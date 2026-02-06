@@ -234,7 +234,7 @@ model AuditLog {
   details     Json?
   ipAddress   String?
   userAgent   String?
-  
+
   createdAt   DateTime @default(now())
 
   @@index([userId])
@@ -242,6 +242,219 @@ model AuditLog {
   @@index([resource])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============================================
+// B 端视频学习系统
+// ============================================
+
+// 学习配置
+model LearningConfig {
+  id                          String   @id @default(cuid())
+
+  // 自动学习设置
+  autoLearningEnabled         Boolean  @default(true)
+  dailyVideoTarget            Int      @default(3)  // 每天目标视频数
+
+  // 学习时间设置
+  learningStartTime           String   @default("00:00")  // HH:mm 格式
+  learningEndTime             String   @default("06:00")  // HH:mm 格式
+  allowedDaysOfWeek           String[]  // 0-6 (周日-周六)，在应用层默认为 ["0","1","2","3","4","5","6"]
+
+  // 服务器负载控制
+  maxConcurrentTasks          Int      @default(2)  // 最大并发任务数
+  pauseOnHighLoad             Boolean  @default(true)  // 高负载时暂停
+  cpuThreshold                Int      @default(80)  // CPU 使用率阈值
+  memoryThreshold             Int      @default(80)  // 内存使用率阈值
+
+  // B 站搜索设置
+  searchKeywords              String[]  @default(["数学建模", "matlab", "python", "机器学习", "数据分析", "优化算法"])
+  searchResultsLimit          Int      @default(10)  // 每个关键词搜索结果数
+  minVideoDuration            Int      @default(300)  // 最小视频时长（秒）
+  maxVideoDuration            Int      @default(3600)  // 最大视频时长（秒）
+  minViewCount                Int      @default(1000)  // 最小观看量
+
+  // 学习设置
+  learningMode                String   @default("auto")  // auto | manual
+  requiredTags                String[]  // 应用层默认为 ["数学建模", "算法", "编程"]
+
+  // 创建和更新时间
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@map("learning_config")
+}
+
+// B 站视频信息
+model BilibiliVideo {
+  id                  String   @id @default(cuid())
+  bvid                String   @unique  // B 站视频 ID
+  title               String
+  description         String?  @db.Text
+  author              String
+  authorMid           String?
+  duration            Int      // 秒
+  viewCount           Int      @default(0)
+  danmakuCount        Int      @default(0)
+  replyCount          Int      @default(0)
+  favoriteCount       Int      @default(0)
+  coinCount           Int      @default(0)
+  shareCount          Int      @default(0)
+  likeCount           Int      @default(0)
+  publishDate         DateTime?
+  thumbnail           String?
+  tags                String[]
+  category            String?
+
+  // 学习状态
+  learningStatus      String   @default("pending")  // pending | learning | completed | failed | skipped
+  isFavorite          Boolean  @default(false)  // 用户标记为好视频
+  isIgnored           Boolean  @default(false)  // 用户标记为忽略
+
+  // 学习结果
+  learningStartedAt   DateTime?
+  learningCompletedAt DateTime?
+  extractionResult    Json?  // 提取的知识点
+  error               String?  @db.Text
+
+  // 创建时间
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // 关联
+  learningTasks       VideoLearningTask[]
+  knowledgeEntries    VideoKnowledge[]
+
+  @@index([bvid])
+  @@index([learningStatus])
+  @@index([author])
+  @@index([publishDate])
+  @@map("bilibili_videos")
+}
+
+// 视频学习任务
+model VideoLearningTask {
+  id                  String   @id @default(cuid())
+  videoId             String
+  video               BilibiliVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  taskType            String   @default("auto")  // auto | manual | on_demand
+  taskSource          String?  // 来源：auto_search | manual_add | related_learning
+
+  // 任务状态
+  status              String   @default("pending")  // pending | running | completed | failed | cancelled
+  progress            Int      @default(0)  // 0-100
+  errorMessage        String?  @db.Text
+
+  // 任务详情
+  startedAt           DateTime?
+  completedAt         DateTime?
+  retryCount          Int      @default(0)
+  maxRetries          Int      @default(3)
+
+  // 创建时间
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([videoId])
+  @@index([status])
+  @@index([taskType])
+  @@map("video_learning_tasks")
+}
+
+// 视频知识条目
+model VideoKnowledge {
+  id                  String   @id @default(cuid())
+  videoId             String
+  video               BilibiliVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  // 知识内容
+  title               String
+  content             String   @db.Text
+  summary             String?  @db.Text
+  category            String?  // 算法、模型、代码、理论等
+  tags                String[]
+  importance          String   @default("medium")  // low | medium | high
+
+  // 时间戳
+  timestamp           String   @default("")  // 视频中的时间戳（秒）
+  relevanceScore      Float    @default(0)  // 相关性分数
+
+  // 创建时间
+  createdAt           DateTime @default(now())
+
+  // 关联
+  knowledgeBaseEntries KnowledgeBaseEntry[]
+
+  @@index([videoId])
+  @@index([category])
+  @@index([importance])
+  @@map("video_knowledge")
+}
+
+// 知识库条目
+model KnowledgeBaseEntry {
+  id                  String   @id @default(cuid())
+
+  // 知识内容
+  title               String
+  content             String   @db.Text
+  summary             String?  @db.Text
+  category            String
+  subcategory         String?
+  tags                String[]
+
+  // 来源
+  sourceType          String   @default("video")  // video | article | manual
+  sourceId            String?  // 来源 ID（视频 ID 等）
+  videoKnowledgeId    String?
+  videoKnowledge      VideoKnowledge? @relation(fields: [videoKnowledgeId], references: [id], onDelete: SetNull)
+
+  // 状态
+  status              String   @default("active")  // active | archived | deleted
+  isVerified          Boolean  @default(false)  // 是否经过验证
+  verificationNote    String?  @db.Text
+
+  // 使用统计
+  usageCount          Int      @default(0)
+  lastUsedAt          DateTime?
+
+  // 质量评分
+  qualityScore        Float    @default(0)  // 0-1
+  userRating          Float?   // 用户评分
+
+  // 创建时间
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([category])
+  @@index([sourceType])
+  @@index([status])
+  @@index([tags])
+  @@map("knowledge_base")
+}
+
+// 学习日志
+model LearningLog {
+  id                  String   @id @default(cuid())
+
+  // 日志内容
+  action              String   // started | completed | failed | skipped
+  taskType            String?  // auto | manual | on_demand
+  videoId             String?
+  videoTitle          String?
+  message             String   @db.Text
+
+  // 状态
+  status              String   @default("info")  // info | warning | error
+
+  // 创建时间
+  createdAt           DateTime @default(now())
+
+  @@index([action])
+  @@index([status])
+  @@index([createdAt])
+  @@map("learning_logs")
 }
 
 // ============================================
