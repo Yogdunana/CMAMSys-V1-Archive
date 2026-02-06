@@ -1,0 +1,81 @@
+version: '3.8'
+
+# Docker Compose configuration optimized for NAS (Synology, QNAP, etc.)
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: cmamsys-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-cmamsys}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /volume1/docker/cmamsys/postgres:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - cmamsys-network
+
+  # Redis (Optional - disable if not needed)
+  redis:
+    image: redis:7-alpine
+    container_name: cmamsys-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /volume1/docker/cmamsys/redis:/data
+    networks:
+      - cmamsys-network
+
+  # CMAMSys Application
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: cmamsys-app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-cmamsys}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      PORT: 5000
+      # Reduce memory usage for NAS
+      NODE_OPTIONS: --max-old-space-size=512
+    volumes:
+      - /volume1/docker/cmamsys/data:/app/data
+      - /volume1/docker/cmamsys/logs:/app/logs
+      - /volume1/docker/cmamsys/models:/app/models
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - cmamsys-network
+    # Resource limits for NAS
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_data:
+  app_logs:
+
+networks:
+  cmamsys-network:
+    driver: bridge
