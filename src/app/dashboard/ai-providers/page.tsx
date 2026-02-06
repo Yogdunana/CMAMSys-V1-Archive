@@ -5,6 +5,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+import { Header } from '@/components/shared/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -344,7 +346,8 @@ export default function AIProvidersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/10">
+    <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
