@@ -68,11 +68,11 @@ export function handleApiError(
     category: context,
     userId: request.headers.get('x-user-id') || undefined,
     requestId: request.headers.get('x-request-id') || undefined,
-    ip: request.headers.get('x-forwarded-for') || request.ip || 'unknown',
+    ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
   });
 
   // Log the error
-  logger.error(`API Error: ${request.method} ${request.pathname}`, error);
+  logger.error(`API Error: ${request.method} ${request.nextUrl.pathname}`, error);
 
   // Handle different error types
   if (error instanceof ApiError) {
@@ -97,7 +97,7 @@ export function handleApiError(
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid request data',
-          details: error.errors,
+          details: error.issues,
         },
         timestamp: new Date().toISOString(),
       },

@@ -3,7 +3,15 @@
  * Controls feature availability across different deployment modes
  */
 
-import { FeatureFlag, hasFeature, PlanType, getCurrentLicense } from './license';
+import {
+  FeatureFlag as LicenseFeatureFlag,
+  hasFeature,
+  PlanType,
+  getCurrentLicense,
+} from './license';
+
+// Re-export FeatureFlag for convenience
+export { LicenseFeatureFlag as FeatureFlag };
 
 export enum DeploymentMode {
   CLOUD = 'cloud', // Hosted on cloud (cmamsys.com)
@@ -12,7 +20,7 @@ export enum DeploymentMode {
 }
 
 export interface FeatureConfig {
-  flag: FeatureFlag;
+  flag: LicenseFeatureFlag;
   enabled: boolean;
   category: 'core' | 'ai' | 'collaboration' | 'advanced' | 'enterprise';
   requiresLicense: boolean;
@@ -25,49 +33,49 @@ export interface FeatureConfig {
 export const FEATURE_CATALOG: FeatureConfig[] = [
   // Core features (always available in community)
   {
-    flag: FeatureFlag.BASIC_AUTH,
+    flag: LicenseFeatureFlag.BASIC_AUTH,
     enabled: true,
     category: 'core',
     requiresLicense: false,
     description: 'Basic email/password authentication',
   },
   {
-    flag: FeatureFlag.DASHBOARD,
+    flag: LicenseFeatureFlag.DASHBOARD,
     enabled: true,
     category: 'core',
     requiresLicense: false,
     description: 'Main dashboard with task overview',
   },
   {
-    flag: FeatureFlag.SINGLE_USER,
+    flag: LicenseFeatureFlag.SINGLE_USER,
     enabled: true,
     category: 'core',
     requiresLicense: false,
     description: 'Single user account',
   },
   {
-    flag: FeatureFlag.BASIC_MODELING,
+    flag: LicenseFeatureFlag.BASIC_MODELING,
     enabled: true,
     category: 'core',
     requiresLicense: false,
     description: 'Basic mathematical modeling capabilities',
   },
   {
-    flag: FeatureFlag.UP_TO_3_COMPETITIONS,
+    flag: LicenseFeatureFlag.UP_TO_3_COMPETITIONS,
     enabled: true,
     category: 'core',
     requiresLicense: false,
     description: 'Up to 3 competitions',
   },
   {
-    flag: FeatureFlag.KNOWLEDGE_BASE,
+    flag: LicenseFeatureFlag.KNOWLEDGE_BASE,
     enabled: true,
     category: 'core',
     requiresLicense: false,
     description: 'Knowledge base for learning',
   },
   {
-    flag: FeatureFlag.COMMUNITY_SUPPORT,
+    flag: LicenseFeatureFlag.COMMUNITY_SUPPORT,
     enabled: true,
     category: 'core',
     requiresLicense: false,
@@ -76,7 +84,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
 
   // AI features
   {
-    flag: FeatureFlag.MULTIPLE_AI_PROVIDERS,
+    flag: LicenseFeatureFlag.MULTIPLE_AI_PROVIDERS,
     enabled: true,
     category: 'ai',
     requiresLicense: true,
@@ -86,7 +94,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
 
   // Collaboration features
   {
-    flag: FeatureFlag.TEAM_COLLABORATION,
+    flag: LicenseFeatureFlag.TEAM_COLLABORATION,
     enabled: true,
     category: 'collaboration',
     requiresLicense: true,
@@ -94,7 +102,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Team collaboration features',
   },
   {
-    flag: FeatureFlag.UNLIMITED_COMPETITIONS,
+    flag: LicenseFeatureFlag.UNLIMITED_COMPETITIONS,
     enabled: true,
     category: 'collaboration',
     requiresLicense: true,
@@ -102,7 +110,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Unlimited competition projects',
   },
   {
-    flag: FeatureFlag.EMAIL_NOTIFICATIONS,
+    flag: LicenseFeatureFlag.EMAIL_NOTIFICATIONS,
     enabled: true,
     category: 'collaboration',
     requiresLicense: true,
@@ -112,7 +120,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
 
   // Advanced features
   {
-    flag: FeatureFlag.ADVANCED_MODELING,
+    flag: LicenseFeatureFlag.ADVANCED_MODELING,
     enabled: true,
     category: 'advanced',
     requiresLicense: true,
@@ -120,7 +128,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Advanced modeling algorithms and techniques',
   },
   {
-    flag: FeatureFlag.PRIORITY_SUPPORT,
+    flag: LicenseFeatureFlag.PRIORITY_SUPPORT,
     enabled: true,
     category: 'advanced',
     requiresLicense: true,
@@ -130,7 +138,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
 
   // Enterprise features
   {
-    flag: FeatureFlag.WHITE_LABEL,
+    flag: LicenseFeatureFlag.WHITE_LABEL,
     enabled: true,
     category: 'enterprise',
     requiresLicense: true,
@@ -138,7 +146,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'White-label customization',
   },
   {
-    flag: FeatureFlag.SSO_INTEGRATION,
+    flag: LicenseFeatureFlag.SSO_INTEGRATION,
     enabled: true,
     category: 'enterprise',
     requiresLicense: true,
@@ -146,7 +154,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Single Sign-On (SSO) integration',
   },
   {
-    flag: FeatureFlag.API_ACCESS,
+    flag: LicenseFeatureFlag.API_ACCESS,
     enabled: true,
     category: 'enterprise',
     requiresLicense: true,
@@ -154,7 +162,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Full API access for third-party integrations',
   },
   {
-    flag: FeatureFlag.DEDICATED_SUPPORT,
+    flag: LicenseFeatureFlag.DEDICATED_SUPPORT,
     enabled: true,
     category: 'enterprise',
     requiresLicense: true,
@@ -162,7 +170,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Dedicated support team',
   },
   {
-    flag: FeatureFlag.CUSTOM_TRAINING,
+    flag: LicenseFeatureFlag.CUSTOM_TRAINING,
     enabled: true,
     category: 'enterprise',
     requiresLicense: true,
@@ -170,7 +178,7 @@ export const FEATURE_CATALOG: FeatureConfig[] = [
     description: 'Custom training and consulting',
   },
   {
-    flag: FeatureFlag.ON_PREMISE_DEPLOYMENT,
+    flag: LicenseFeatureFlag.ON_PREMISE_DEPLOYMENT,
     enabled: true,
     category: 'enterprise',
     requiresLicense: true,
@@ -199,7 +207,7 @@ export function getDeploymentMode(): DeploymentMode {
 /**
  * Check if feature is available based on current deployment mode and license
  */
-export function isFeatureAvailable(feature: FeatureFlag): boolean {
+export function isFeatureAvailable(feature: LicenseFeatureFlag): boolean {
   const catalogItem = FEATURE_CATALOG.find((f) => f.flag === feature);
 
   if (!catalogItem) {
@@ -251,7 +259,7 @@ export function getUpgradeRequiredFeatures(): FeatureConfig[] {
 /**
  * Get feature restrictions message
  */
-export function getFeatureRestrictionMessage(feature: FeatureFlag): string | null {
+export function getFeatureRestrictionMessage(feature: LicenseFeatureFlag): string | null {
   if (isFeatureAvailable(feature)) {
     return null;
   }
@@ -275,7 +283,7 @@ export function getFeatureRestrictionMessage(feature: FeatureFlag): string | nul
 /**
  * Feature gate decorator for API routes
  */
-export function withFeatureGate(feature: FeatureFlag, handler: Function) {
+export function withFeatureGate(feature: LicenseFeatureFlag, handler: Function) {
   return async (...args: any[]) => {
     if (!isFeatureAvailable(feature)) {
       const message = getFeatureRestrictionMessage(feature);
@@ -308,7 +316,9 @@ export function getPlanComparison(): {
     plan,
     features: FEATURE_CATALOG.map((catalogItem) => ({
       feature: catalogItem.flag,
-      available: !catalogItem.requiresLicense || (catalogItem.minPlan && plans.indexOf(plan) >= plans.indexOf(catalogItem.minPlan)),
+      available:
+        !catalogItem.requiresLicense ||
+        (catalogItem.minPlan ? plans.indexOf(plan) >= plans.indexOf(catalogItem.minPlan) : false),
     })),
   }));
 }

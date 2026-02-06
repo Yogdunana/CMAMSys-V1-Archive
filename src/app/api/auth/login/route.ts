@@ -7,8 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { verifyPassword } from '@/lib/password';
-import { generateToken } from '@/lib/crypto';
-import { generateAccessToken, generateRefreshToken, verifyTOTP } from '@/lib/jwt';
+import { generateToken, verifyTOTP } from '@/lib/crypto';
+import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { ApiResponse, LoginRequest, AuthResponse, UserDTO } from '@/lib/types';
 
 // Validation schema
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Invalid request data',
-            details: validationResult.error.errors,
+            details: validationResult.error.issues,
           },
           timestamp: new Date().toISOString(),
         },
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           action: 'LOGIN',
           success: false,
           errorMessage: 'User not found',
-          ipAddress: request.headers.get('x-forwarded-for') || request.ip || 'unknown',
+          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
           userAgent: request.headers.get('user-agent') || undefined,
         },
       });
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
           action: 'LOGIN',
           success: false,
           errorMessage: 'Invalid password',
-          ipAddress: request.headers.get('x-forwarded-for') || request.ip || 'unknown',
+          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
           userAgent: request.headers.get('user-agent') || undefined,
         },
       });
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         action: 'LOGIN',
         success: true,
-        ipAddress: request.headers.get('x-forwarded-for') || request.ip || 'unknown',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || undefined,
       },
     });

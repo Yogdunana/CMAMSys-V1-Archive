@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Invalid request data',
-            details: validationResult.error.errors,
+            details: validationResult.error.issues,
           },
           timestamp: new Date().toISOString(),
         },

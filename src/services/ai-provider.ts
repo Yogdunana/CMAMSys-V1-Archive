@@ -281,9 +281,9 @@ export async function createProvider(
   }
 
   // Get provider config
-  const providerConfig = PROVIDER_CONFIGS[data.type];
-  const supportedModels = providerConfig?.models.map((m) => m.name) || [];
-  const capabilities = providerConfig?.models.flatMap((m) => m.capabilities) || [];
+  const providerConfig = PROVIDER_CONFIGS[data.type as AIProviderType];
+  const supportedModels = providerConfig?.models.map((m: AIModelConfig) => m.name) || [];
+  const capabilities = providerConfig?.models.flatMap((m: AIModelConfig) => m.capabilities) || [];
 
   return await prisma.aIProvider.create({
     data: {
@@ -411,7 +411,7 @@ export function selectBestModel(
     maxTokens?: number;
   }
 ): string {
-  const providerConfig = PROVIDER_CONFIGS[provider.type];
+  const providerConfig = PROVIDER_CONFIGS[provider.type as AIProviderType];
   if (!providerConfig) {
     return provider.supportedModels[0];
   }
@@ -419,19 +419,19 @@ export function selectBestModel(
   // Filter by model type if specified
   let models = providerConfig.models;
   if (context.modelType) {
-    models = models.filter((m) => m.type === context.modelType);
+    models = models.filter((m: AIModelConfig) => m.type === context.modelType);
   }
 
   // Filter by capabilities if specified
   if (context.capabilities && context.capabilities.length > 0) {
-    models = models.filter((m) =>
+    models = models.filter((m: AIModelConfig) =>
       context.capabilities!.some((cap) => m.capabilities.includes(cap))
     );
   }
 
   // Filter by max tokens if specified
   if (context.maxTokens) {
-    models = models.filter((m) => m.maxTokens >= context.maxTokens!);
+    models = models.filter((m: AIModelConfig) => m.maxTokens >= context.maxTokens!);
   }
 
   // If no models match, return default model or first supported model
@@ -540,7 +540,7 @@ async function makeProviderRequest(
   // This is a simplified implementation
   // In production, this would use actual API calls to each provider
 
-  const endpoint = provider.endpoint || PROVIDER_CONFIGS[provider.type]?.endpoint;
+  const endpoint = provider.endpoint || PROVIDER_CONFIGS[provider.type as AIProviderType]?.endpoint;
 
   try {
     const response = await fetch(`${endpoint}/chat/completions`, {
