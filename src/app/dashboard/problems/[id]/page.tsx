@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SolutionDialog } from '@/components/solutions/solution-dialog';
 import {
   ArrowLeft,
   FileText,
@@ -28,6 +29,10 @@ import {
   Code,
   Image as ImageIcon,
   CheckCircle,
+  Plus,
+  Edit2,
+  Trash2,
+  MoreVertical,
 } from 'lucide-react';
 
 interface Problem {
@@ -73,6 +78,8 @@ export default function ProblemDetailPage() {
   const router = useRouter();
   const [problem, setProblem] = useState<Problem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [solutionDialogOpen, setSolutionDialogOpen] = useState(false);
+  const [editingSolution, setEditingSolution] = useState<any>(null);
   const problemId = params.id as string;
 
   useEffect(() => {
@@ -100,6 +107,43 @@ export default function ProblemDetailPage() {
       console.error('Failed to load problem:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAddSolution = () => {
+    setEditingSolution(null);
+    setSolutionDialogOpen(true);
+  };
+
+  const handleEditSolution = (solution: any) => {
+    setEditingSolution(solution);
+    setSolutionDialogOpen(true);
+  };
+
+  const handleDeleteSolution = async (solutionId: string) => {
+    if (!confirm('确定要删除这个解法吗？此操作不可恢复。')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/solutions/${solutionId}`, {
+        method: 'DELETE',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // 重新加载题目数据
+        loadProblem(problemId);
+      } else {
+        alert('删除失败：' + (data.error?.message || '未知错误'));
+      }
+    } catch (error) {
+      console.error('Failed to delete solution:', error);
+      alert('删除失败，请重试');
     }
   };
 
@@ -262,11 +306,28 @@ export default function ProblemDetailPage() {
 
             {/* Solutions */}
             <TabsContent value="solutions" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-semibold">解法列表</h3>
+                  <p className="text-sm text-muted-foreground">
+                    共 {problem.solutions.length} 个解法
+                  </p>
+                </div>
+                <Button onClick={handleAddSolution}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  添加解法
+                </Button>
+              </div>
+
               {problem.solutions.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center">
                     <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">暂无解法</p>
+                    <p className="text-muted-foreground mb-4">暂无解法</p>
+                    <Button onClick={handleAddSolution}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      添加第一个解法
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (
@@ -287,6 +348,22 @@ export default function ProblemDetailPage() {
                               </Badge>
                             )}
                           </CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditSolution(solution)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteSolution(solution.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
                       </div>
                     </CardHeader>
@@ -373,6 +450,14 @@ export default function ProblemDetailPage() {
           </Tabs>
         </div>
       </main>
+
+      <SolutionDialog
+        open={solutionDialogOpen}
+        onOpenChange={setSolutionDialogOpen}
+        problemId={problemId}
+        solution={editingSolution}
+        onSuccess={() => loadProblem(problemId)}
+      />
     </div>
   );
 }
