@@ -6,8 +6,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container py-8">
-        <div className="mx-auto max-w-6xl">
+      <main className="container mx-auto py-8">
+        <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight">仪表盘</h1>
             <p className="text-muted-foreground">
@@ -137,7 +137,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-        </div>
+      </div>
       </main>
     </div>
   );
