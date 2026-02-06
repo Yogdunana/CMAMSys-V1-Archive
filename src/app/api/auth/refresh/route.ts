@@ -6,7 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { verifyRefreshToken, generateAccessToken, generateRefreshToken, generateToken } from '@/lib/jwt';
+import { verifyRefreshToken, generateAccessToken, generateRefreshToken } from '@/lib/jwt';
+import { generateToken } from '@/lib/crypto';
 import { ApiResponse, RefreshTokenRequest, AuthResponse, UserDTO } from '@/lib/types';
 
 // Validation schema
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Invalid request data',
-            details: validationResult.error.errors,
+            details: validationResult.error.issues,
           },
           timestamp: new Date().toISOString(),
         },

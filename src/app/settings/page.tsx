@@ -27,7 +27,7 @@ import {
   CheckCircle,
   Info,
 } from 'lucide-react';
-import { getCurrentLicense, getPlanDisplayName } from '@/lib/license';
+import { getCurrentLicense, getPlanDisplayName, PlanType } from '@/lib/license';
 import { getDeploymentMode, DeploymentMode } from '@/lib/features';
 import { FeatureFlag, getFeatureDisplayName } from '@/lib/license';
 
@@ -39,7 +39,7 @@ interface SystemSetting {
 }
 
 export default function SettingsPage() {
-  const [deploymentMode, setDeploymentMode] = useState<DeploymentMode>('CLOUD');
+  const [deploymentMode, setDeploymentMode] = useState<DeploymentMode>(DeploymentMode.CLOUD);
   const [licenseInfo, setLicenseInfo] = useState(getCurrentLicense());
   const [settings, setSettings] = useState<SystemSetting[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,11 +69,11 @@ export default function SettingsPage() {
 
   const getDeploymentModeBadge = (mode: DeploymentMode) => {
     switch (mode) {
-      case 'CLOUD':
+      case DeploymentMode.CLOUD:
         return <Badge className="bg-blue-500"><Cloud className="w-3 h-3 mr-1" /> Cloud</Badge>;
-      case 'SELF_HOSTED':
+      case DeploymentMode.SELF_HOSTED:
         return <Badge className="bg-green-500"><Server className="w-3 h-3 mr-1" /> Self-Hosted</Badge>;
-      case 'SELF_HOSTED_PAID':
+      case DeploymentMode.SELF_HOSTED_PAID:
         return <Badge className="bg-purple-500"><Server className="w-3 h-3 mr-1" /> Self-Hosted (Paid)</Badge>;
     }
   };
@@ -136,9 +136,9 @@ export default function SettingsPage() {
                   <div>
                     <div className="font-medium">Deployment Mode</div>
                     <div className="text-sm text-muted-foreground">
-                      {deploymentMode === 'CLOUD' && 'Hosted on CMAMSys cloud infrastructure'}
-                      {deploymentMode === 'SELF_HOSTED' && 'Self-hosted with Community license'}
-                      {deploymentMode === 'SELF_HOSTED_PAID' && 'Self-hosted with paid license'}
+                      {deploymentMode === DeploymentMode.CLOUD && 'Hosted on CMAMSys cloud infrastructure'}
+                      {deploymentMode === DeploymentMode.SELF_HOSTED && 'Self-hosted with Community license'}
+                      {deploymentMode === DeploymentMode.SELF_HOSTED_PAID && 'Self-hosted with paid license'}
                     </div>
                   </div>
                   {getDeploymentModeBadge(deploymentMode)}
@@ -147,7 +147,7 @@ export default function SettingsPage() {
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    {deploymentMode === 'CLOUD'
+                    {deploymentMode === DeploymentMode.CLOUD
                       ? 'You are using the cloud-hosted version. All data is stored securely on CMAMSys servers.'
                       : 'You are using a self-hosted deployment. All data is stored on your own servers.'}
                   </AlertDescription>
@@ -156,7 +156,7 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <Label>Application URL</Label>
                   <Input
-                    value={deploymentMode === 'CLOUD' ? 'https://cmamsys.com' : window.location.origin}
+                    value={deploymentMode === DeploymentMode.CLOUD ? 'https://cmamsys.com' : window.location.origin}
                     disabled
                   />
                   <p className="text-xs text-muted-foreground">
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                 )}
 
                 <div className="flex gap-2">
-                  {licenseInfo.plan !== 'ENTERPRISE' && (
+                  {licenseInfo.plan !== PlanType.ENTERPRISE && (
                     <Button asChild>
                       <Link href="/settings/license/activate">Upgrade License</Link>
                     </Button>

@@ -17,6 +17,7 @@ export interface TokenPayload {
   userId: string;
   email: string;
   role: string;
+  [key: string]: any; // Index signature for compatibility with jose
 }
 
 export interface AccessTokenPayload extends TokenPayload {
@@ -67,7 +68,7 @@ export async function generateRefreshToken(
 export async function verifyAccessToken(token: string): Promise<AccessTokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as AccessTokenPayload;
+    return payload as unknown as AccessTokenPayload;
   } catch (error) {
     console.error('Invalid access token:', error);
     return null;
@@ -82,7 +83,7 @@ export async function verifyRefreshToken(
 ): Promise<RefreshTokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, REFRESH_TOKEN_SECRET);
-    return payload as RefreshTokenPayload;
+    return payload as unknown as RefreshTokenPayload;
   } catch (error) {
     console.error('Invalid refresh token:', error);
     return null;

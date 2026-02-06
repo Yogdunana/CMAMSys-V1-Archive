@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Invalid request data',
-            details: validationResult.error.errors,
+            details: validationResult.error.issues,
           },
           timestamp: new Date().toISOString(),
         },
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         action: 'REGISTER',
         success: true,
-        ipAddress: request.headers.get('x-forwarded-for') || request.ip || 'unknown',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || undefined,
       },
     });

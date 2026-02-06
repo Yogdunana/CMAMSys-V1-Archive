@@ -4,6 +4,7 @@
  */
 
 import crypto from 'crypto';
+import base32 from 'thirty-two';
 
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-32-character-encryption-key';
 const ENCRYPTION_IV_LENGTH = 16;
@@ -63,7 +64,7 @@ export function generateToken(length: number = 32): string {
  * Generate MFA secret key
  */
 export function generateMfaSecret(): string {
-  return crypto.randomBytes(20).toString('base32');
+  return base32.encode(crypto.randomBytes(20)).toString();
 }
 
 /**
@@ -71,7 +72,7 @@ export function generateMfaSecret(): string {
  * Compatible with Google Authenticator, Authy, etc.
  */
 export function generateTOTP(secret: string, timeStep: number = 30): string {
-  const key = Buffer.from(secret, 'base32');
+  const key = base32.decode(secret);
   const time = Math.floor(Date.now() / 1000 / timeStep);
   const timeBuffer = Buffer.alloc(8);
   timeBuffer.writeBigInt64BE(BigInt(time));
@@ -103,7 +104,7 @@ export function verifyTOTP(
     const timeStep = 30; // 30 seconds
     const time = Math.floor(Date.now() / 1000 / timeStep) + i;
 
-    const key = Buffer.from(secret, 'base32');
+    const key = base32.decode(secret);
     const timeBuffer = Buffer.alloc(8);
     timeBuffer.writeBigInt64BE(BigInt(time));
 
@@ -156,3 +157,4 @@ export function hashFile(filePath: string, algorithm: string = 'sha256'): Promis
     stream.on('error', reject);
   });
 }
+
