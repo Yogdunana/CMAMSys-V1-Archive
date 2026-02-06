@@ -450,10 +450,7 @@ export default function AIProvidersPage() {
                           key={pt.type}
                           value={pt.type}
                         >
-                          <span className="flex flex-col">
-                            <span className="font-medium">{pt.name}</span>
-                            <span className="text-xs text-muted-foreground">{pt.description}</span>
-                          </span>
+                          {pt.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
