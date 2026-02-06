@@ -1,14 +1,37 @@
-/**
- * AI Providers Management Page
- */
-
 'use client';
 
-import { useState, useEffect } from 'react';
-
-import { Header } from '@/components/shared/header';
+import React, { useState, useEffect } from 'react';
+import { ProtectedRoute } from '@/components/auth/protected-route';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -17,627 +40,489 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/auth-context';
 import {
   Plus,
+  RefreshCw,
+  Settings,
+  Zap,
+  Globe,
+  Shield,
   Trash2,
   Edit,
-  CheckCircle,
-  XCircle,
-  Zap,
-  Lock,
 } from 'lucide-react';
-import Link from 'next/link';
 
 interface AIProvider {
   id: string;
   name: string;
-  type: string;
-  status: string;
+  type: 'ALIYUN' | 'VOLCENGINE' | 'DEEPSEEK';
+  apiKey: string;
+  endpoint?: string;
+  status: 'ACTIVE' | 'INACTIVE';
   priority: number;
-  isDefault: boolean;
-  totalRequests: number;
-  totalTokensUsed: number;
-  lastUsedAt: string | null;
-  supportedModels: string[];
   capabilities: string[];
+  supportedModels: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-interface ProviderType {
-  value: string;
-  label: string;
-  description: string;
-  models?: string[];
-}
+const PROVIDER_TYPES = {
+  ALIYUN: {
+    name: '阿里云百炼',
+    icon: <Zap className="h-4 w-4" />,
+    color: 'bg-orange-500',
+    models: ['qwen-plus', 'qwen-max', 'qwen-turbo', 'qwen-long'],
+    capabilities: ['text-generation', 'code-generation', 'reasoning'],
+  },
+  VOLCENGINE: {
+    name: '火山引擎（豆包）',
+    icon: <Globe className="h-4 w-4" />,
+    color: 'bg-blue-500',
+    models: ['doubao-pro-256k', 'doubao-pro-32k', 'doubao-pro-4k', 'doubao-lite-32k'],
+    capabilities: ['text-generation', 'code-generation', 'reasoning', 'function-calling'],
+  },
+  DEEPSEEK: {
+    name: 'DeepSeek',
+    icon: <Shield className="h-4 w-4" />,
+    color: 'bg-purple-500',
+    models: ['deepseek-chat', 'deepseek-coder', 'deepseek-v3'],
+    capabilities: ['text-generation', 'code-generation', 'reasoning', 'math'],
+  },
+};
 
 export default function AIProvidersPage() {
+  const { user } = useAuth();
   const [providers, setProviders] = useState<AIProvider[]>([]);
-  const [providerTypes, setProviderTypes] = useState<ProviderType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<AIProvider | null>(null);
-  const [hasAccess, setHasAccess] = useState(true);
-  const [isTesting, setIsTesting] = useState(false);
-
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
-    type: '',
+    type: 'VOLCENGINE' as AIProvider['type'],
     apiKey: '',
     endpoint: '',
-    region: '',
-    priority: 0,
+    status: 'ACTIVE' as AIProvider['status'],
+    priority: 10,
+    capabilities: [] as string[],
+    supportedModels: [] as string[],
   });
 
-  // Load providers and types
+  const fetchProviders = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/ai-providers');
+      if (response.ok) {
+        const data = await response.json();
+        setProviders(data.providers || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch providers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadProviders();
-    loadProviderTypes();
+    fetchProviders();
   }, []);
 
-  const loadProviders = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/ai-providers', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.error?.code === 'FEATURE_NOT_AVAILABLE') {
-          setHasAccess(false);
-          return;
-        }
-        throw new Error(data.error?.message || 'Failed to load providers');
-      }
-
-      setProviders(data.data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load providers');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleTypeChange = (type: AIProvider['type']) => {
+    const config = PROVIDER_TYPES[type];
+    setFormData({
+      ...formData,
+      type,
+      capabilities: config.capabilities,
+      supportedModels: config.models,
+    });
   };
 
-  const loadProviderTypes = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await fetch('/api/ai-providers/types');
-      const data = await response.json();
-      setProviderTypes(data.data || []);
-    } catch (err) {
-      console.error('Failed to load provider types:', err);
-    }
-  };
+      const url = editingProvider
+        ? `/api/ai-providers/${editingProvider.id}`
+        : '/api/ai-providers';
+      const method = editingProvider ? 'PUT' : 'POST';
 
-  const handleCreateProvider = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/ai-providers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Failed to create provider');
+      if (response.ok) {
+        await fetchProviders();
+        setDialogOpen(false);
+        setEditingProvider(null);
+        setFormData({
+          name: '',
+          type: 'VOLCENGINE',
+          apiKey: '',
+          endpoint: '',
+          status: 'ACTIVE',
+          priority: 10,
+          capabilities: [],
+          supportedModels: [],
+        });
       }
-
-      await loadProviders();
-      setIsDialogOpen(false);
-      resetForm();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create provider');
+    } catch (error) {
+      console.error('Failed to save provider:', error);
     }
   };
 
-  const handleUpdateProvider = async () => {
-    if (!editingProvider) return;
-
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/ai-providers/${editingProvider.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Failed to update provider');
-      }
-
-      await loadProviders();
-      setIsDialogOpen(false);
-      setEditingProvider(null);
-      resetForm();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update provider');
-    }
-  };
-
-  const handleTestConnection = async () => {
-    if (!formData.apiKey || !formData.type) {
-      setError('Please enter API Key and select Provider Type first');
-      return;
-    }
-
-    setIsTesting(true);
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/ai-providers/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({
-          type: formData.type,
-          apiKey: formData.apiKey,
-          endpoint: formData.endpoint || undefined,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Failed to test connection');
-      }
-
-      if (data.success && data.data?.success) {
-        alert(
-          `✓ Connection successful!\nModel: ${data.data.model}\nLatency: ${data.data.latency}ms`
-        );
-      } else {
-        setError(data.data?.error || 'Connection test failed');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to test connection');
-    } finally {
-      setIsTesting(false);
-    }
-  };
-
-  const handleDeleteProvider = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this provider?')) return;
-
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/ai-providers/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error?.message || 'Failed to delete provider');
-      }
-
-      await loadProviders();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete provider');
-    }
-  };
-
-  const handleEditClick = (provider: AIProvider) => {
+  const handleEdit = (provider: AIProvider) => {
     setEditingProvider(provider);
     setFormData({
       name: provider.name,
       type: provider.type,
       apiKey: '',
-      endpoint: '',
-      region: '',
+      endpoint: provider.endpoint || '',
+      status: provider.status,
       priority: provider.priority,
+      capabilities: provider.capabilities,
+      supportedModels: provider.supportedModels,
     });
-    setIsDialogOpen(true);
+    setDialogOpen(true);
   };
 
-  const handleNewProvider = () => {
-    setEditingProvider(null);
-    resetForm();
-    setIsDialogOpen(true);
-  };
+  const handleDelete = async (id: string) => {
+    if (!confirm('确定要删除此 AI Provider 吗？')) return;
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      type: '',
-      apiKey: '',
-      endpoint: '',
-      region: '',
-      priority: 0,
-    });
-    setError('');
-  };
+    try {
+      const response = await fetch(`/api/ai-providers/${id}`, {
+        method: 'DELETE',
+      });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" /> Active</Badge>;
-      case 'INACTIVE':
-        return <Badge variant="secondary"><XCircle className="w-3 h-3 mr-1" /> Inactive</Badge>;
-      case 'ERROR':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Error</Badge>;
-      case 'QUOTA_EXCEEDED':
-        return <Badge className="bg-yellow-500"><Zap className="w-3 h-3 mr-1" /> Quota Exceeded</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+      if (response.ok) {
+        await fetchProviders();
+      }
+    } catch (error) {
+      console.error('Failed to delete provider:', error);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <p>Loading AI providers...</p>
-        </div>
-      </div>
-    );
-  }
+  const toggleCapability = (cap: string) => {
+    setFormData({
+      ...formData,
+      capabilities: formData.capabilities.includes(cap)
+        ? formData.capabilities.filter((c) => c !== cap)
+        : [...formData.capabilities, cap],
+    });
+  };
 
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-muted/10">
-        <div className="container mx-auto px-4 py-20">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="flex justify-center mb-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <Lock className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold mb-4">Upgrade Required</h1>
-            <p className="text-muted-foreground mb-8">
-              Multiple AI Providers feature is available in Professional and Enterprise plans.
-              This feature allows you to configure and use multiple AI providers for your modeling tasks.
-            </p>
-            <div className="grid gap-4 md:grid-cols-2 mb-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Professional</CardTitle>
-                  <CardDescription>Best for teams and small organizations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-left">
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Multiple AI Providers
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Team Collaboration
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Unlimited Competitions
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Email Notifications
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Enterprise</CardTitle>
-                  <CardDescription>For large organizations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-left">
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      All Professional Features
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      SSO Integration
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      API Access
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      On-Premise Deployment
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-            <Button size="lg" asChild>
-              <Link href="/settings/license">View Licensing Options</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const toggleModel = (model: string) => {
+    setFormData({
+      ...formData,
+      supportedModels: formData.supportedModels.includes(model)
+        ? formData.supportedModels.filter((m) => m !== model)
+        : [...formData.supportedModels, model],
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-        {/* Header */}
+    <ProtectedRoute>
+      <div className="container mx-auto py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">AI Providers</h1>
-            <p className="text-muted-foreground">
-              Manage AI service providers for modeling, learning, and coding tasks
+            <h1 className="text-3xl font-bold">AI Provider 管理</h1>
+            <p className="text-muted-foreground mt-2">
+              管理您的 AI 服务提供商，配置 API Key 和模型
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleNewProvider}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Provider
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingProvider ? 'Edit AI Provider' : 'Add AI Provider'}
-                </DialogTitle>
-                <DialogDescription>
-                  Configure an AI service provider for use in your modeling tasks
-                </DialogDescription>
-              </DialogHeader>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Provider Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="e.g., My DeepSeek Account"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="type">Provider Type</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => setFormData({ ...formData, type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select provider type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {providerTypes.map((pt) => (
-                        <SelectItem
-                          key={pt.value}
-                          value={pt.value}
-                        >
-                          {pt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">API Key</Label>
-                  <Input
-                    id="apiKey"
-                    type="password"
-                    placeholder="Enter your API key"
-                    value={formData.apiKey}
-                    onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="endpoint">Custom Endpoint (Optional)</Label>
-                  <Input
-                    id="endpoint"
-                    placeholder="https://api.example.com/v1"
-                    value={formData.endpoint}
-                    onChange={(e) => setFormData({ ...formData, endpoint: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="region">Region (Optional)</Label>
-                  <Input
-                    id="region"
-                    placeholder="e.g., us-east-1"
-                    value={formData.region}
-                    onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
-                  <Input
-                    id="priority"
-                    type="number"
-                    min="0"
-                    placeholder="0 (highest priority)"
-                    value={formData.priority}
-                    onChange={(e) =>
-                      setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Higher priority providers will be used first. 0 = highest.
-                  </p>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleTestConnection}
-                    disabled={isTesting || !formData.apiKey || !formData.type}
-                  >
-                    {isTesting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2" />
-                        Testing...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Test Connection
-                      </>
-                    )}
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={editingProvider ? handleUpdateProvider : handleCreateProvider}>
-                    {editingProvider ? 'Update Provider' : 'Create Provider'}
-                  </Button>
-                </div>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Providers List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your AI Providers</CardTitle>
-            <CardDescription>
-              Configure and manage your AI service providers. The system will automatically
-              select the best provider based on task requirements.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {providers.length === 0 ? (
-              <div className="text-center py-12">
-                <Zap className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No AI providers configured</h3>
-                <p className="text-muted-foreground mb-4">
-                  Add an AI provider to start using AI-powered features
-                </p>
-                <Button onClick={handleNewProvider}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Provider
+          <div className="flex gap-2">
+            <Button onClick={fetchProviders} variant="outline" size="icon">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => setEditingProvider(null)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  添加 Provider
                 </Button>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Models</TableHead>
-                    <TableHead>Usage</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {providers.map((provider) => (
-                    <TableRow key={provider.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {provider.name}
-                          {provider.isDefault && (
-                            <Badge variant="secondary" className="text-xs">Default</Badge>
-                          )}
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingProvider ? '编辑 Provider' : '添加 AI Provider'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    配置 AI 服务提供商的连接信息和能力
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">名称</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="例如：阿里云百炼主账号"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Provider 类型</Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={handleTypeChange}
+                    >
+                      <SelectTrigger id="type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(PROVIDER_TYPES).map(([key, config]) => (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center gap-2">
+                              {config.icon}
+                              {config.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="apiKey">API Key</Label>
+                    <Input
+                      id="apiKey"
+                      type="password"
+                      value={formData.apiKey}
+                      onChange={(e) =>
+                        setFormData({ ...formData, apiKey: e.target.value })
+                      }
+                      placeholder="输入 API Key"
+                      required={!editingProvider}
+                    />
+                    {editingProvider && (
+                      <p className="text-xs text-muted-foreground">
+                        留空则保持原 API Key 不变
+                      </p>
+                    )}
+                  </div>
+
+                  {formData.type === 'VOLCENGINE' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="endpoint">推理接入点（可选）</Label>
+                      <Input
+                        id="endpoint"
+                        value={formData.endpoint}
+                        onChange={(e) =>
+                          setFormData({ ...formData, endpoint: e.target.value })
+                        }
+                        placeholder="例如：ep-20250101000000-xxx"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        火山引擎专属，可用于将通用模型映射到特定的推理接入点
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="priority">优先级</Label>
+                      <Input
+                        id="priority"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.priority}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            priority: parseInt(e.target.value) || 0,
+                          })
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        数字越大优先级越高
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="status">状态</Label>
+                      <Select
+                        value={formData.status}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            status: value as AIProvider['status'],
+                          })
+                        }
+                      >
+                        <SelectTrigger id="status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ACTIVE">启用</SelectItem>
+                          <SelectItem value="INACTIVE">禁用</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {formData.type && PROVIDER_TYPES[formData.type] && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>能力</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {PROVIDER_TYPES[formData.type].capabilities.map((cap) => (
+                            <Badge
+                              key={cap}
+                              variant={
+                                formData.capabilities.includes(cap)
+                                  ? 'default'
+                                  : 'outline'
+                              }
+                              className="cursor-pointer"
+                              onClick={() => toggleCapability(cap)}
+                            >
+                              {cap}
+                            </Badge>
+                          ))}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{provider.type}</Badge>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(provider.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {provider.supportedModels.slice(0, 2).map((model) => (
-                            <Badge key={model} variant="secondary" className="text-xs">
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>支持的模型</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {PROVIDER_TYPES[formData.type].models.map((model) => (
+                            <Badge
+                              key={model}
+                              variant={
+                                formData.supportedModels.includes(model)
+                                  ? 'default'
+                                  : 'outline'
+                              }
+                              className="cursor-pointer"
+                              onClick={() => toggleModel(model)}
+                            >
                               {model}
                             </Badge>
                           ))}
-                          {provider.supportedModels.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{provider.supportedModels.length - 2}
-                            </Badge>
-                          )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{provider.totalRequests} requests</div>
-                          <div className="text-muted-foreground">
-                            {provider.totalTokensUsed.toLocaleString()} tokens
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{provider.priority}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditClick(provider)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteProvider(provider.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      </div>
+                    </>
+                  )}
+
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                      取消
+                    </Button>
+                    <Button type="submit">
+                      {editingProvider ? '保存修改' : '添加'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>已配置的 Providers</CardTitle>
+            <CardDescription>
+              系统会根据优先级自动选择最合适的 Provider
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            ) : providers.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">尚未配置 AI Provider</p>
+                <p className="text-sm mb-4">添加您的第一个 AI 服务提供商</p>
+                <Button onClick={() => setDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  添加 Provider
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>名称</TableHead>
+                      <TableHead>类型</TableHead>
+                      <TableHead>模型</TableHead>
+                      <TableHead>优先级</TableHead>
+                      <TableHead>状态</TableHead>
+                      <TableHead className="text-right">操作</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {providers.map((provider) => {
+                      const config = PROVIDER_TYPES[provider.type];
+                      return (
+                        <TableRow key={provider.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {config?.icon}
+                              {provider.name}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{config?.name || provider.type}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {provider.supportedModels.slice(0, 2).map((model) => (
+                                <Badge key={model} variant="outline" className="text-xs">
+                                  {model}
+                                </Badge>
+                              ))}
+                              {provider.supportedModels.length > 2 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{provider.supportedModels.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{provider.priority}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={provider.status === 'ACTIVE' ? 'default' : 'secondary'}
+                            >
+                              {provider.status === 'ACTIVE' ? '启用' : '禁用'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(provider)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(provider.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
-        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
