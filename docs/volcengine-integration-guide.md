@@ -21,6 +21,30 @@ CMAMSys 已成功集成火山引擎（豆包）大模型能力，支持以下模
 2. 开通火山引擎 Ark 服务：https://console.volcengine.com/ark
 3. 创建应用并获取 API Key
 
+## 重要：推理接入点配置
+
+火山引擎 API 调用需要使用**推理接入点（Endpoint）名称**，而不是通用的模型名称。
+
+### 接入点说明
+
+- **接入点名称格式**：`ep-xxxxxxxx`
+- **创建方式**：在火山引擎控制台为每个模型创建独立的推理接入点
+- **用途**：API 调用时作为 `model` 参数使用
+
+### 接入点示例
+
+```
+模型名称: doubao-pro-128k
+接入点名称: ep-20240911185450-f9vl2
+```
+
+调用时：
+```json
+{
+  "model": "ep-20240911185450-f9vl2"
+}
+```
+
 ## 配置步骤
 
 ### 1. 创建火山引擎应用
@@ -29,9 +53,27 @@ CMAMSys 已成功集成火山引擎（豆包）大模型能力，支持以下模
 2. 点击「创建应用」
 3. 填写应用信息（名称、描述等）
 4. 创建完成后，在应用详情中获取 **API Key**
-5. 记录 API Key，格式通常为：`ak-xxxxxx`
+5. 记录 API Key，格式通常为：`xxxx-xxxx-xxxx-xxxx`
 
-### 2. 设置环境变量
+### 2. 创建推理接入点
+
+1. 在火山引擎控制台，进入「模型推理」>「在线推理」
+2. 点击「创建推理接入点」
+3. 为每个需要使用的模型创建独立的接入点：
+   - 填写接入点名称
+   - 选择对应的模型（如：doubao-pro-128k）
+   - 点击「接入模型」
+4. 创建完成后，记录接入点名称（格式：`ep-xxxxxxxx`）
+
+**示例配置**：
+
+| 接入点名称 | 对应模型 | 用途 |
+|-----------|---------|------|
+| ep-20240911185450-f9vl2 | doubao-pro-128k | 主要推理任务 |
+| ep-20240911215626-tg985 | doubao-lite-128k | 快速响应任务 |
+| ep-20240911220000-ab12c | doubao-pro-256k | 复杂任务处理 |
+
+### 3. 设置环境变量
 
 在项目根目录的 `.env` 文件中添加火山引擎 API Key：
 
@@ -39,7 +81,7 @@ CMAMSys 已成功集成火山引擎（豆包）大模型能力，支持以下模
 VOLCENGINE_API_KEY="your-volcengine-api-key-here"
 ```
 
-### 3. 通过 UI 创建火山引擎 Provider
+### 4. 通过 UI 创建火山引擎 Provider
 
 1. 登录 CMAMSys
 2. 导航到 **设置** -> **AI Providers**
@@ -48,13 +90,25 @@ VOLCENGINE_API_KEY="your-volcengine-api-key-here"
 5. 填写配置信息：
    - **名称**: 例如 "火山引擎豆包"
    - **类型**: VolcEngine
-   - **API Key**: 输入您的火山引擎 API Key（格式：`ak-xxxxxx`）
+   - **API Key**: 输入您的火山引擎 API Key
    - **Endpoint**: 默认为 `https://ark.cn-beijing.volces.com/api/v3`
-   - **模型**: 选择默认模型（推荐：doubao-pro-128k）
-6. 点击 **测试连接** 验证配置
-7. 保存配置
+   - **接入点映射**: 配置模型名称到接入点名称的映射
 
-### 4. 通过 API 创建火山引擎 Provider
+6. 配置接入点映射（重要）：
+   ```json
+   {
+     "endpointMapping": {
+       "doubao-pro-128k": "ep-20240911185450-f9vl2",
+       "doubao-lite-128k": "ep-20240911215626-tg985",
+       "doubao-pro-256k": "ep-20240911220000-ab12c"
+     }
+   }
+   ```
+
+7. 点击 **测试连接** 验证配置
+8. 保存配置
+
+### 5. 通过 API 创建火山引擎 Provider
 
 使用以下 API 创建火山引擎 Provider：
 
@@ -65,8 +119,15 @@ curl -X POST http://localhost:5000/api/ai-providers \
   -d '{
     "name": "火山引擎豆包",
     "type": "VOLCENGINE",
-    "apiKey": "ak-xxxxxx",
+    "apiKey": "your-volcengine-api-key",
     "endpoint": "https://ark.cn-beijing.volces.com/api/v3",
+    "config": {
+      "endpointMapping": {
+        "doubao-pro-128k": "ep-20240911185450-f9vl2",
+        "doubao-lite-128k": "ep-20240911215626-tg985",
+        "doubao-pro-256k": "ep-20240911220000-ab12c"
+      }
+    },
     "priority": 10,
     "isDefault": true
   }'
@@ -83,7 +144,7 @@ import { callAIStream } from '@/services/ai-provider';
 
 const stream = await callAIStream(
   providerId,
-  'doubao-pro-128k',
+  'doubao-pro-128k', // 使用通用模型名称
   [
     { role: 'system', content: '你是一个数学建模专家' },
     { role: 'user', content: '请解释什么是线性规划' }
@@ -132,9 +193,14 @@ curl -X POST http://localhost:5000/api/ai-providers/test \
   -H "Content-Type: application/json" \
   -d '{
     "type": "VOLCENGINE",
-    "apiKey": "ak-xxxxxx",
+    "apiKey": "your-volcengine-api-key",
     "endpoint": "https://ark.cn-beijing.volces.com/api/v3",
-    "model": "doubao-pro-128k"
+    "model": "doubao-pro-128k",
+    "config": {
+      "endpointMapping": {
+        "doubao-pro-128k": "ep-20240911185450-f9vl2"
+      }
+    }
   }'
 ```
 
@@ -148,6 +214,7 @@ curl -N -X POST http://localhost:5000/api/ai-providers/chat-stream \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
     "providerId": "your-provider-id",
+    "model": "doubao-pro-128k",
     "messages": [
       { "role": "system", "content": "你是一个数学建模专家" },
       { "role": "user", "content": "请解释什么是线性规划" }

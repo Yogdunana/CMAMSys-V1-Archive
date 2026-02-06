@@ -109,7 +109,15 @@ export async function POST(request: NextRequest) {
       GOOGLE_GEMINI: 'gemini-1.5-flash',
     };
 
-    const testModel = model || defaultModels[type] || '';
+    let testModel = model || defaultModels[type] || '';
+
+    // For VolcEngine, use endpoint name if provided in config
+    if (type === 'VOLCENGINE' && body.config && body.config.endpointMapping) {
+      const endpointMapping = body.config.endpointMapping;
+      if (endpointMapping[testModel]) {
+        testModel = endpointMapping[testModel];
+      }
+    }
 
     // Test connection by making a simple API request
     const startTime = Date.now();

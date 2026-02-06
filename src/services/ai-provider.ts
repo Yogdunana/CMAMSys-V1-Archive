@@ -700,11 +700,21 @@ async function makeProviderRequest(
       const client = new LLMClient(config);
       const messages = [{ role: 'user' as const, content: prompt }];
 
+      // For VolcEngine, use endpoint name if available in config
+      let actualModel = model;
+      if (provider.type === AIProviderType.VOLCENGINE && provider.config) {
+        const endpointMapping = (provider.config as any).endpointMapping;
+        if (endpointMapping && endpointMapping[model]) {
+          actualModel = endpointMapping[model];
+          logger.info(`Using VolcEngine endpoint: ${model} -> ${actualModel}`);
+        }
+      }
+
       const forwardHeaders = requestHeaders
         ? HeaderUtils.extractForwardHeaders(requestHeaders)
         : undefined;
 
-      const response = await client.invoke(messages, { model }, undefined, forwardHeaders);
+      const response = await client.invoke(messages, { model: actualModel }, undefined, forwardHeaders);
 
       return {
         content: response.content,
@@ -854,7 +864,17 @@ export async function callAIStream(
         ? HeaderUtils.extractForwardHeaders(requestHeaders)
         : undefined;
 
-      const sdkStream = client.stream(messages, { model }, undefined, forwardHeaders);
+      // For VolcEngine, use endpoint name if available in config
+      let actualModel = model;
+      if (provider.type === AIProviderType.VOLCENGINE && provider.config) {
+        const endpointMapping = (provider.config as any).endpointMapping;
+        if (endpointMapping && endpointMapping[model]) {
+          actualModel = endpointMapping[model];
+          logger.info(`Using VolcEngine endpoint for streaming: ${model} -> ${actualModel}`);
+        }
+      }
+
+      const sdkStream = client.stream(messages, { model: actualModel }, undefined, forwardHeaders);
 
       // Wrap the stream to convert types
       async function* wrappedStream() {
