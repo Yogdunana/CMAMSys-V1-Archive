@@ -160,17 +160,6 @@ export async function POST(request: NextRequest) {
       expiresIn: 15 * 60, // 15 minutes in seconds
     };
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: 'REGISTER',
-        success: true,
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-        userAgent: request.headers.get('user-agent') || undefined,
-      },
-    });
-
     return NextResponse.json<ApiResponse<AuthResponse>>(
       {
         success: true,

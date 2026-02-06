@@ -1,486 +1,53 @@
-// CMAMSys Database Schema
-// Prisma Schema for PostgreSQL
+// CMAMSys 简化版 Schema (SQLite - 用于快速测试注册和登录功能)
+// 只包含用户认证相关的核心表
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// User & Authentication
-// ============================================
-
-enum UserRole {
-  ADMIN
-  USER
-  TEAM_LEAD
-  TEAM_MEMBER
-}
-
-enum AuthProvider {
-  LOCAL
-  GOOGLE
-  GITHUB
-  SSO
-}
-
 model User {
-  id                String       @id @default(uuid())
-  email             String       @unique
-  username          String       @unique
-  passwordHash      String?      // Nullable for OAuth users
-  role              UserRole     @default(USER)
-  authProvider      AuthProvider @default(LOCAL)
-  isVerified        Boolean      @default(false)
-  isMfaEnabled      Boolean      @default(false)
+  id                String   @id @default(cuid())
+  email             String   @unique
+  username          String   @unique
+  passwordHash      String?
+  role              String   @default("USER")
+  authProvider      String   @default("LOCAL")
+  isVerified        Boolean  @default(false)
+  isMfaEnabled      Boolean  @default(false)
   mfaSecret         String?
   avatar            String?
   bio               String?
   organization      String?
-  failedLoginAttempts Int        @default(0)
+  failedLoginAttempts Int    @default(0)
   lockedUntil       DateTime?
   lastLoginAt       DateTime?
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   deletedAt         DateTime?
 
-  // Relations
   refreshTokens     RefreshToken[]
-  competitions      Competition[]
-  modelingTasks     ModelingTask[]
-  learningRecords   LearningRecord[]
-  notifications     Notification[]
-  createdAIProviders AIProvider[]
 
   @@index([email])
   @@index([username])
-  @@index([role])
   @@map("users")
 }
 
 model RefreshToken {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   token        String   @unique
   userId       String
   expiresAt    DateTime
   createdAt    DateTime @default(now())
   revokedAt    DateTime?
 
-  // Relations
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([userId])
   @@map("refresh_tokens")
-}
-
-// ============================================
-// Competitions & Modeling
-// ============================================
-
-enum CompetitionType {
-  MCM
-  ICM
-  CUMCM
-  SHENZHEN_CUP
-  IMMC
-  MATHORCUP
-  EMMC
-  TEDDY_CUP
-  BLUE_BRIDGE_MATH
-  REGIONAL
-  OTHER
-}
-
-enum CompetitionStatus {
-  UPCOMING
-  ONGOING
-  COMPLETED
-  CANCELLED
-}
-
-enum TaskStatus {
-  PENDING
-  PREPROCESSING
-  MODELING
-  EVALUATING
-  REPORTING
-  COMPLETED
-  FAILED
-}
-
-enum ProblemType {
-  EVALUATION
-  PREDICTION
-  OPTIMIZATION
-  CLASSIFICATION
-  REGRESSION
-  CLUSTERING
-}
-
-model Competition {
-  id              String            @id @default(uuid())
-  name            String
-  type            CompetitionType
-  year            Int
-  problemId       String            // e.g., "A", "B", "C"
-  folderPath      String            // e.g., "data/competitions/2026-MCM/A"
-  description     String?
-  status          CompetitionStatus @default(UPCOMING)
-  startDate       DateTime?
-  endDate         DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  // Relations
-  createdBy       User              @relation(fields: [createdById], references: [id])
-  createdById     String
-  tasks           ModelingTask[]
-
-  @@unique([year, type, problemId])
-  @@index([type])
-  @@index([year])
-  @@index([status])
-  @@map("competitions")
-}
-
-model ModelingTask {
-  id              String      @id @default(uuid())
-  name            String
-  description     String?
-  competitionId   String?
-  problemType     ProblemType
-  status          TaskStatus @default(PENDING)
-  progress        Int        @default(0)  // 0-100
-
-  // Input data
-  dataFilePath    String?     // e.g., "data/competitions/2026-MCM/A-1/data.csv"
-  problemFilePath String?     // e.g., "data/competitions/2026-MCM/A-1/problem.pdf"
-
-  // Output data
-  modelFilePath   String?
-  reportFilePath  String?
-  visualizations  String[]    // Array of file paths
-  metrics         Json?       // JSON object with evaluation metrics
-
-  // Configuration
-  algorithm       String?     // e.g., "XGBoost", "RandomForest"
-  hyperparameters Json?       // JSON object with hyperparameters
-
-  // Metadata
-  approachNumber  Int?        // e.g., 1, 2 for multiple approaches
-  logs            String?     // Task execution logs
-  errorMessage    String?
-  startedAt       DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  // Relations
-  competition     Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
-  createdBy       User         @relation(fields: [createdById], references: [id])
-  createdById     String
-
-  @@index([competitionId])
-  @@index([status])
-  @@index([problemType])
-  @@index([createdById])
-  @@map("modeling_tasks")
-}
-
-// ============================================
-// Learning Module
-// ============================================
-
-enum LearningSourceType {
-  BILIBILI
-  YOUTUBE
-  PDF
-  DOCUMENT
-  USER_UPLOAD
-  OTHER
-}
-
-model LearningRecord {
-  id              String            @id @default(uuid())
-  title           String
-  sourceType      LearningSourceType
-  sourceUrl       String?
-  filePath        String?
-  content         String?           // Extracted content
-  summary         String?           // AI-generated summary
-  topics          String[]          // Array of topic tags
-  competitionTags String[]          // Array of competition type tags
-  duration        Int?              // Duration in minutes
-  learnedAt       DateTime          @default(now())
-
-  // Relations
-  learner         User              @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  learnerId       String
-  knowledgeItems  KnowledgeBase[]
-
-  @@index([sourceType])
-  @@index([learnerId])
-  @@index([learnedAt])
-  @@map("learning_records")
-}
-
-model KnowledgeBase {
-  id              String          @id @default(uuid())
-  title           String
-  category        String          // e.g., "Algorithm", "Technique", "Case Study"
-  subcategory     String?
-  content         String          @db.Text
-  tags            String[]
-  competitionType CompetitionType?
-  difficulty      String?         // e.g., "Beginner", "Intermediate", "Advanced"
-  usageCount      Int             @default(0)
-  lastUsedAt      DateTime?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  // Relations
-  sourceRecord    LearningRecord? @relation(fields: [sourceRecordId], references: [id], onDelete: SetNull)
-  sourceRecordId  String?         @unique
-
-  @@index([category])
-  @@index([competitionType])
-  @@index([tags])
-  @@map("knowledge_base")
-}
-
-// ============================================
-// Notifications
-// ============================================
-
-enum NotificationType {
-  TASK_STARTED
-  TASK_COMPLETED
-  TASK_FAILED
-  SYSTEM_UPDATE
-  LEARNING_UPDATE
-  SECURITY_ALERT
-  OTHER
-}
-
-model Notification {
-  id          String            @id @default(uuid())
-  type        NotificationType
-  title       String
-  message     String            @db.Text
-  isRead      Boolean           @default(false)
-  metadata    Json?             // Additional data
-  createdAt   DateTime          @default(now())
-  expiresAt   DateTime?
-
-  // Relations
-  recipient   User              @relation(fields: [recipientId], references: [id], onDelete: Cascade)
-  recipientId String
-
-  @@index([recipientId])
-  @@index([isRead])
-  @@index([createdAt])
-  @@map("notifications")
-}
-
-// ============================================
-// Audit Logs (Security)
-// ============================================
-
-enum AuditAction {
-  LOGIN
-  LOGOUT
-  REGISTER
-  PASSWORD_CHANGE
-  MFA_ENABLED
-  MFA_DISABLED
-  TASK_CREATED
-  TASK_STARTED
-  TASK_COMPLETED
-  API_ACCESS
-  FILE_UPLOAD
-  FILE_DOWNLOAD
-  SETTINGS_CHANGE
-}
-
-model AuditLog {
-  id          String      @id @default(uuid())
-  userId      String?
-  action      AuditAction
-  resource    String?     // e.g., "task:123", "user:456"
-  ipAddress   String?
-  userAgent   String?
-  success     Boolean
-  errorMessage String?
-  metadata    Json?       // Additional context
-  createdAt   DateTime    @default(now())
-
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-// ============================================
-// AI Providers (Feature: Multiple AI Providers)
-// ============================================
-
-enum AIProviderType {
-  DEEPSEEK
-  VOLCENGINE
-  ALIYUN_QWEN
-  BAIDU_WENXIN
-  ZHIPU
-  OPENAI
-  ANTHROPIC
-  GOOGLE_GEMINI
-  AZURE_OPENAI
-  CUSTOM
-}
-
-enum AIModelType {
-  CHAT
-  COMPLETION
-  EMBEDDING
-  IMAGE_GENERATION
-  CODE_GENERATION
-}
-
-enum AIProviderStatus {
-  ACTIVE
-  INACTIVE
-  ERROR
-  QUOTA_EXCEEDED
-}
-
-model AIProvider {
-  id          String              @id @default(uuid())
-  name        String              // Display name, e.g., "DeepSeek V3"
-  type        AIProviderType
-  apiKey      String              // Encrypted API key
-  endpoint    String?             // Custom API endpoint
-  region      String?             // Provider region
-  status      AIProviderStatus    @default(ACTIVE)
-  priority    Int                 @default(0) // Higher priority = preferred
-
-  // Rate limiting
-  rateLimitPerMinute   Int?      @default(60)
-  rateLimitPerHour     Int?      @default(1000)
-  dailyQuota           Int?
-  monthlyQuota         Int?
-
-  // Usage tracking
-  totalRequests        Int       @default(0)
-  totalTokensUsed      Int       @default(0)
-  lastUsedAt           DateTime?
-
-  // Configuration
-  config               Json?     // Provider-specific configuration
-  supportedModels      String[]  // List of supported model names
-  capabilities         String[]  // e.g., ["chat", "completion", "embedding"]
-
-  // Cost tracking
-  costPerToken         Float?
-  costPerRequest       Float?
-
-  // Metadata
-  isDefault            Boolean   @default(false)
-  description          String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-
-  // Relations
-  createdBy            User      @relation(fields: [createdById], references: [id])
-  createdById          String
-  aiRequests           AIRequest[]
-
-  @@index([type])
-  @@index([status])
-  @@index([priority])
-  @@index([isDefault])
-  @@map("ai_providers")
-}
-
-model AIRequest {
-  id          String          @id @default(uuid())
-  providerId  String
-  modelName   String          // e.g., "deepseek-chat", "qwen-turbo"
-  modelType   AIModelType
-  prompt      String          @db.Text
-  response    String?         @db.Text
-  tokensUsed  Int?
-  latencyMs   Int?            // Response latency in milliseconds
-
-  // Cost tracking
-  cost        Float?
-
-  // Metadata
-  status      String          // "success", "error"
-  errorMessage String?
-  metadata    Json?           // Additional request/response data
-
-  // Context
-  taskId      String?         // Related modeling task ID
-  context     String?         // Context: "modeling", "learning", "coding"
-
-  createdAt   DateTime        @default(now())
-
-  // Relations
-  provider    AIProvider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
-
-  @@index([providerId])
-  @@index([taskId])
-  @@index([createdAt])
-  @@map("ai_requests")
-}
-
-// ============================================
-// System Settings & License
-// ============================================
-
-enum SettingCategory {
-  GENERAL
-  SECURITY
-  AI
-  NOTIFICATIONS
-  DEPLOYMENT
-  LICENSE
-}
-
-model SystemSetting {
-  id          String            @id @default(uuid())
-  key         String            @unique
-  value       String            @db.Text
-  category    SettingCategory
-  description String?
-  isPublic    Boolean           @default(false) // Can be exposed to frontend
-  updatedAt   DateTime          @default(now())
-  updatedBy   String?           // User ID
-
-  @@index([category])
-  @@index([key])
-  @@map("system_settings")
-}
-
-model LicenseInfo {
-  id          String    @id @default(uuid())
-  licenseKey  String    @unique
-  planType    String    // "community", "professional", "enterprise"
-  organization String?
-  validFrom   DateTime
-  validUntil  DateTime
-  features    String[]  // List of enabled features
-  maxUsers    Int?
-  restrictions Json?
-  isActive    Boolean   @default(true)
-  activatedAt DateTime  @default(now())
-  activatedBy String?   // User ID
-
-  @@index([isActive])
-  @@index([validUntil])
-  @@map("license_info")
 }
