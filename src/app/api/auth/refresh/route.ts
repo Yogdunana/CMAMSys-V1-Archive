@@ -8,7 +8,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { verifyRefreshToken, generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { generateToken } from '@/lib/crypto';
-import { ApiResponse, RefreshTokenRequest, AuthResponse, UserDTO } from '@/lib/types';
+import { ApiResponse, RefreshTokenRequest, AuthResponse, UserDTO, UserRole } from '@/lib/types';
 
 // Validation schema
 const refreshSchema = z.object({
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     const accessToken = await generateAccessToken({
       userId: storedToken.user.id,
       email: storedToken.user.email,
-      role: storedToken.user.role,
+      role: storedToken.user.role as UserRole,
     });
 
     // Prepare user DTO
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       id: storedToken.user.id,
       email: storedToken.user.email,
       username: storedToken.user.username,
-      role: storedToken.user.role,
+      role: storedToken.user.role as UserRole,
       isVerified: storedToken.user.isVerified,
       isMfaEnabled: storedToken.user.isMfaEnabled,
       avatar: storedToken.user.avatar || undefined,

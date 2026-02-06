@@ -9,7 +9,7 @@ import prisma from '@/lib/prisma';
 import { hashPassword, validatePasswordStrength } from '@/lib/password';
 import { generateToken } from '@/lib/crypto';
 import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
-import { ApiResponse, RegisterRequest, AuthResponse, UserDTO } from '@/lib/types';
+import { ApiResponse, RegisterRequest, AuthResponse, UserDTO, UserRole } from '@/lib/types';
 
 // Validation schema
 const registerSchema = z.object({
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     const accessToken = await generateAccessToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as UserRole,
     });
 
     // Prepare user DTO
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       id: user.id,
       email: user.email,
       username: user.username,
-      role: user.role,
+      role: user.role as UserRole,
       isVerified: user.isVerified,
       isMfaEnabled: user.isMfaEnabled,
       avatar: user.avatar || undefined,

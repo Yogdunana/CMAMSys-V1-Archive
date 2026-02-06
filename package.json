@@ -16,7 +16,10 @@
     "docker:prod": "docker compose -f docker/docker-compose.enterprise.yml --env-file docker/.env.enterprise up",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:reset": "prisma migrate reset",
+    "install:system": "bash ./scripts/install.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
@@ -99,6 +102,9 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "pnpm": ">=9.0.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "pnpm": {
     "overrides": {
