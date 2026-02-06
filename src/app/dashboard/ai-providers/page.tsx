@@ -357,7 +357,6 @@ export default function AIProvidersPage() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...formData,
           isDefault: true,
         }),
       });
@@ -368,6 +367,9 @@ export default function AIProvidersPage() {
           title: '设置成功',
           description: '已设为首选 Provider',
         });
+      } else {
+        const data = await response.json();
+        throw new Error(data.error?.message || '设置失败');
       }
     } catch (error) {
       toast({
