@@ -54,6 +54,7 @@ model User {
   modelingTasks     ModelingTask[]
   learningRecords   LearningRecord[]
   notifications     Notification[]
+  createdAIProviders AIProvider[]
 
   @@index([email])
   @@index([username])

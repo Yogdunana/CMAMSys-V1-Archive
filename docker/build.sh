@@ -53,7 +53,18 @@ print_usage() {
 # Parse arguments
 PUSH=false
 NO_CACHE=""
-shift 2
+
+# Check for help flag first
+for arg in "$@"; do
+  if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+    print_usage
+    exit 0
+  fi
+done
+
+# Shift the first two positional arguments (edition and tag)
+shift 2 || true
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --push)
@@ -63,10 +74,6 @@ while [[ $# -gt 0 ]]; do
     --no-cache)
       NO_CACHE="--no-cache"
       shift
-      ;;
-    -h|--help)
-      print_usage
-      exit 0
       ;;
     *)
       echo -e "${RED}Unknown option: $1${NC}"

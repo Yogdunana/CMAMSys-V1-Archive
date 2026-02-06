@@ -62,7 +62,18 @@ print_usage() {
 ACTION="${2:-up}"
 DAEMON=true
 PROFILES=""
-shift 2
+
+# Check for help flag first
+for arg in "$@"; do
+  if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+    print_usage
+    exit 0
+  fi
+done
+
+# Shift the first two positional arguments (edition and action)
+shift 2 || true
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --daemon)
@@ -92,10 +103,6 @@ while [[ $# -gt 0 ]]; do
         PROFILES="$PROFILES --profile with-nginx"
       fi
       shift
-      ;;
-    -h|--help)
-      print_usage
-      exit 0
       ;;
     *)
       echo -e "${RED}Unknown option: $1${NC}"
