@@ -2,6 +2,15 @@
 
 ## 🚀 快速安装
 
+### 前置条件
+
+在安装 CMAMSys 之前，请确保：
+
+1. 已安装 Node.js 18+
+2. 已安装 pnpm 包管理器
+3. 已安装 PostgreSQL 14+ 数据库
+4. 已创建 PostgreSQL 数据库和用户
+
 ### 一键安装脚本
 
 ```bash
@@ -13,7 +22,7 @@ chmod +x scripts/install.sh
 1. 检查环境（Node.js, pnpm）
 2. 安装项目依赖
 3. 配置环境变量（生成随机密钥）
-4. 初始化数据库
+4. 初始化 PostgreSQL 数据库
 5. 设置管理员账户
 6. 构建项目
 7. 显示访问信息
@@ -28,7 +37,24 @@ chmod +x scripts/install.sh
 pnpm install
 ```
 
-#### 2. 配置环境变量
+#### 2. 配置 PostgreSQL 数据库
+
+首先，确保已经安装并配置了 PostgreSQL。详细的 PostgreSQL 安装指南请参考 [PostgreSQL 部署指南](./postgresql-setup.md)。
+
+创建数据库和用户：
+
+```bash
+# 切换到 postgres 用户
+sudo -u postgres psql
+
+# 在 PostgreSQL 命令行中执行：
+CREATE USER cmamsys WITH PASSWORD 'your_secure_password';
+CREATE DATABASE cmamsys OWNER cmamsys;
+GRANT ALL PRIVILEGES ON DATABASE cmamsys TO cmamsys;
+\q
+```
+
+#### 3. 配置环境变量
 
 ```bash
 cp .env.example .env
@@ -38,7 +64,7 @@ cp .env.example .env
 
 ```env
 # Database
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://cmamsys:your_secure_password@localhost:5432/cmamsys?schema=public"
 
 # JWT Secrets (生成随机密钥)
 JWT_SECRET="your-random-secret-here"

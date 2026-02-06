@@ -1,27 +1,31 @@
-// CMAMSys 简化版 Schema (SQLite - 用于快速测试注册和登录功能)
-// 只包含用户认证相关的核心表
+// CMAMSys 完整 Schema (PostgreSQL)
+// 支持完整的数学建模竞赛系统功能
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ============================================
+// 用户认证与权限
+// ============================================
 
 model User {
   id                String   @id @default(cuid())
   email             String   @unique
   username          String   @unique
   passwordHash      String?
-  role              String   @default("USER")
-  authProvider      String   @default("LOCAL")
+  role              UserRole @default(USER)
+  authProvider      AuthProvider @default(LOCAL)
   isVerified        Boolean  @default(false)
   isMfaEnabled      Boolean  @default(false)
   mfaSecret         String?
   avatar            String?
-  bio               String?
+  bio               String?  @db.Text
   organization      String?
   failedLoginAttempts Int    @default(0)
   lockedUntil       DateTime?
@@ -31,6 +35,9 @@ model User {
   deletedAt         DateTime?
 
   refreshTokens     RefreshToken[]
+  competitions      Competition[]     @relation("UserCompetitions")
+  modelingTasks     ModelingTask[]    @relation("UserTasks")
+  aiProviders       AIProvider[]
 
   @@index([email])
   @@index([username])
@@ -50,4 +57,272 @@ model RefreshToken {
   @@index([token])
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+// ============================================
+// AI Provider 配置
+// ============================================
+
+model AIProvider {
+  id              String           @id @default(cuid())
+  name            String
+  type            AIProviderType
+  apiKey          String
+  endpoint        String?
+  region          String?
+  priority        Int              @default(0)
+  isDefault       Boolean          @default(false)
+  status          AIProviderStatus @default(ACTIVE)
+  supportedModels String[]
+  capabilities    String[]
+  config          Json?
+  
+  // 使用统计
+  totalRequests   Int              @default(0)
+  totalTokensUsed Int              @default(0)
+  lastUsedAt      DateTime?
+
+  // 审计字段
+  createdById     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+
+  createdBy       User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  requests        AIRequest[]
+
+  @@index([createdById])
+  @@index([type])
+  @@index([status])
+  @@index([isDefault])
+  @@map("ai_providers")
+}
+
+model AIRequest {
+  id              String       @id @default(cuid())
+  providerId      String
+  modelName       String
+  modelType       AIModelType
+  prompt          String       @db.Text
+  response        String?      @db.Text
+  tokensUsed      Int          @default(0)
+  latencyMs       Int
+  status          String       @default("success")
+  errorMessage    String?      @db.Text
+  taskId          String?
+  context         String?      // 'modeling' | 'learning' | 'coding'
+  
+  createdAt       DateTime     @default(now())
+
+  provider        AIProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("ai_requests")
+}
+
+// ============================================
+// 竞赛管理
+// ============================================
+
+model Competition {
+  id            String          @id @default(cuid())
+  name          String
+  type          CompetitionType
+  year          Int
+  problemId     String
+  folderPath    String
+  description   String?         @db.Text
+  status        String          @default("active")
+  startDate     DateTime?
+  endDate       DateTime?
+  
+  // 审计字段
+  createdById   String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+
+  createdBy     User            @relation("UserCompetitions", fields: [createdById], references: [id], onDelete: Cascade)
+  tasks         ModelingTask[]  @relation("CompetitionTasks")
+
+  @@index([createdById])
+  @@index([type])
+  @@index([year])
+  @@map("competitions")
+}
+
+// ============================================
+// 建模任务
+// ============================================
+
+model ModelingTask {
+  id                String          @id @default(cuid())
+  name              String
+  description       String?         @db.Text
+  competitionId     String?
+  problemType       ProblemType
+  status            TaskStatus      @default(PENDING)
+  progress          Int             @default(0)
+
+  // 文件路径
+  dataFilePath      String?
+  problemFilePath   String?
+  modelFilePath     String?
+  reportFilePath    String?
+  visualizations    String[]
+
+  // 模型配置
+  algorithm         String?
+  hyperparameters   Json?
+  approachNumber    Int?
+
+  // 结果
+  metrics           Json?
+  logs              String?         @db.Text
+  errorMessage      String?         @db.Text
+
+  // 时间戳
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
+
+  // 关联
+  competition       Competition?    @relation("CompetitionTasks", fields: [competitionId], references: [id], onDelete: SetNull)
+  createdById       String
+  createdBy         User            @relation("UserTasks", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@index([competitionId])
+  @@index([status])
+  @@index([problemType])
+  @@map("modeling_tasks")
+}
+
+// ============================================
+// 系统配置
+// ============================================
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?  @db.Text
+  category    String?  // 'general', 'security', 'database', 'ai', etc.
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+  @@map("system_settings")
+}
+
+// ============================================
+// 审计日志
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  resource    String
+  resourceId  String?
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// Enum Definitions
+// ============================================
+
+enum UserRole {
+  ADMIN
+  USER
+  TEAM_LEAD
+  TEAM_MEMBER
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  GITHUB
+  SSO
+}
+
+enum CompetitionType {
+  MCM
+  ICM
+  CUMCM
+  SHENZHEN_CUP
+  IMMC
+  MATHORCUP
+  EMMC
+  TEDDY_CUP
+  BLUE_BRIDGE_MATH
+  REGIONAL
+  OTHER
+}
+
+enum ProblemType {
+  EVALUATION
+  PREDICTION
+  OPTIMIZATION
+  CLASSIFICATION
+  REGRESSION
+  CLUSTERING
+}
+
+enum TaskStatus {
+  PENDING
+  PREPROCESSING
+  MODELING
+  EVALUATING
+  REPORTING
+  COMPLETED
+  FAILED
+}
+
+enum AIProviderType {
+  DEEPSEEK
+  VOLCENGINE
+  ALIYUN
+  OPENAI
+  ANTHROPIC
+  ZHIPU
+  BAIDU
+  TENCENT
+  HUNGYUAN
+  MINIMAX
+  GOOGLE_GEMINI
+  AZURE_OPENAI
+  ALIYUN_QWEN
+  BAIDU_WENXIN
+  CUSTOM
+}
+
+enum AIProviderStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+}
+
+enum AIModelType {
+  CHAT
+  COMPLETION
+  EMBEDDING
+  IMAGE
+  CODE_GENERATION
 }
