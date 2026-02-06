@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/shared/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ interface Competition {
 
 export default function CompetitionsPage() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -40,6 +41,31 @@ export default function CompetitionsPage() {
     description: '',
   });
   const { toast } = useToast();
+
+  // 加载竞赛列表
+  useEffect(() => {
+    loadCompetitions();
+  }, []);
+
+  const loadCompetitions = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/competitions', {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCompetitions(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load competitions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const competitionTypes = [
     { value: 'all', label: '全部类型' },
@@ -102,7 +128,7 @@ export default function CompetitionsPage() {
           problemId: '',
           description: '',
         });
-        // TODO: 重新加载竞赛列表
+        await loadCompetitions();
       } else {
         throw new Error(data.error?.message);
       }
@@ -114,6 +140,20 @@ export default function CompetitionsPage() {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+            <p>加载竞赛...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
