@@ -11,6 +11,7 @@ import {
   AIProviderStatus,
   AIModelType,
 } from '@prisma/client';
+import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
 const logger = createLogger({ category: 'AI_PROVIDER_SERVICE' });
 
@@ -209,6 +210,13 @@ const PROVIDER_CONFIGS: Record<AIProviderType, AIProviderConfig> = {
         type: AIModelType.CHAT,
         capabilities: ['chat', 'completion', 'reasoning'],
         costPerToken: 0.0000008,
+        maxTokens: 32768,
+      },
+      {
+        name: 'qwen-max',
+        type: AIModelType.CHAT,
+        capabilities: ['chat', 'completion', 'reasoning'],
+        costPerToken: 0.000002,
         maxTokens: 32768,
       },
     ],
@@ -644,18 +652,43 @@ export async function callAI(
 
 /**
  * Make provider-specific API request
- * (This is a placeholder - actual implementation would be provider-specific)
  */
 async function makeProviderRequest(
   provider: any,
   model: string,
-  prompt: string
+  prompt: string,
+  requestHeaders?: Record<string, string>
 ): Promise<{ content: string; tokensUsed: number }> {
-  // This is a simplified implementation
-  // In production, this would use actual API calls to each provider
-
   const endpoint = provider.endpoint || PROVIDER_CONFIGS[provider.type as AIProviderType]?.endpoint;
 
+  // Use coze-coding-dev-sdk for Aliyun provider
+  if (provider.type === AIProviderType.ALIYUN) {
+    try {
+      const config = new Config({
+        apiKey: provider.apiKey,
+        baseUrl: endpoint,
+      });
+
+      const client = new LLMClient(config);
+      const messages = [{ role: 'user' as const, content: prompt }];
+
+      const forwardHeaders = requestHeaders
+        ? HeaderUtils.extractForwardHeaders(requestHeaders)
+        : undefined;
+
+      const response = await client.invoke(messages, { model }, undefined, forwardHeaders);
+
+      return {
+        content: response.content,
+        tokensUsed: 0, // Token count is not available in the current SDK response
+      };
+    } catch (error) {
+      logger.error('Aliyun API request failed', error);
+      throw error;
+    }
+  }
+
+  // Generic API call for other providers
   try {
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: 'POST',
@@ -757,4 +790,97 @@ export function getAvailableProviderTypes(): {
       requiresKey: true,
     },
   ];
+}
+
+/**
+ * Call AI API with streaming support
+ * This function supports streaming output for Aliyun provider using coze-coding-dev-sdk
+ */
+export async function callAIStream(
+  providerId: string,
+  model: string,
+  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+  context: {
+    modelType: AIModelType;
+    taskId?: string;
+    context?: 'modeling' | 'learning' | 'coding';
+  },
+  userId: string,
+  requestHeaders?: Record<string, string>
+): Promise<AsyncGenerator<{ content: string }>> {
+  const provider = await getProviderById(providerId, userId);
+  if (!provider) {
+    throw new Error('Provider not found');
+  }
+
+  // Use coze-coding-dev-sdk for streaming (optimized for Aliyun)
+  if (provider.type === AIProviderType.ALIYUN) {
+    try {
+      const config = new Config({
+        apiKey: provider.apiKey,
+        baseUrl: provider.endpoint || undefined,
+      });
+
+      const client = new LLMClient(config);
+      const forwardHeaders = requestHeaders
+        ? HeaderUtils.extractForwardHeaders(requestHeaders)
+        : undefined;
+
+      const sdkStream = client.stream(messages, { model }, undefined, forwardHeaders);
+
+      // Wrap the stream to convert types
+      async function* wrappedStream() {
+        for await (const chunk of sdkStream) {
+          if (chunk.content) {
+            const contentStr = typeof chunk.content === 'string'
+              ? chunk.content
+              : String(chunk.content);
+            yield { content: contentStr };
+          }
+        }
+      }
+
+      return wrappedStream();
+    } catch (error) {
+      logger.error('Aliyun streaming API request failed', error);
+      throw error;
+    }
+  }
+
+  // Fallback to non-streaming for other providers
+  const startTime = Date.now();
+  const result = await makeProviderRequest(provider, model, messages[messages.length - 1].content, requestHeaders);
+
+  // Update provider usage stats
+  await prisma.aIProvider.update({
+    where: { id: providerId },
+    data: {
+      totalRequests: { increment: 1 },
+      totalTokensUsed: { increment: result.tokensUsed },
+      lastUsedAt: new Date(),
+    },
+  });
+
+  // Log the request
+  await prisma.aIRequest.create({
+    data: {
+      providerId,
+      modelName: model,
+      modelType: context.modelType,
+      prompt: messages.map(m => m.content).join('\n'),
+      response: result.content,
+      tokensUsed: result.tokensUsed,
+      latencyMs: Date.now() - startTime,
+      status: 'success',
+      taskId: context.taskId,
+      context: context.context,
+    },
+  });
+
+  // Create a generator for non-streaming response
+  async function* streamResponse() {
+    yield { content: result.content };
+  }
+
+  return streamResponse();
 }
