@@ -178,20 +178,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    if (!payload) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Invalid or expired token',
-          },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
-
     // 获取学习配置
     const config = await prisma.learningConfig.findFirst();
 
