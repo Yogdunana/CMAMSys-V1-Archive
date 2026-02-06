@@ -78,6 +78,7 @@ export default function AIProvidersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<AIProvider | null>(null);
   const [hasAccess, setHasAccess] = useState(true);
+  const [isTesting, setIsTesting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -184,6 +185,48 @@ export default function AIProvidersPage() {
       resetForm();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update provider');
+    }
+  };
+
+  const handleTestConnection = async () => {
+    if (!formData.apiKey || !formData.type) {
+      setError('Please enter API Key and select Provider Type first');
+      return;
+    }
+
+    setIsTesting(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/ai-providers/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          type: formData.type,
+          apiKey: formData.apiKey,
+          endpoint: formData.endpoint || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Failed to test connection');
+      }
+
+      if (data.success && data.data?.success) {
+        alert(
+          `✓ Connection successful!\nModel: ${data.data.model}\nLatency: ${data.data.latency}ms`
+        );
+      } else {
+        setError(data.data?.error || 'Connection test failed');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to test connection');
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -464,12 +507,32 @@ export default function AIProvidersPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={editingProvider ? handleUpdateProvider : handleCreateProvider}>
-                  {editingProvider ? 'Update Provider' : 'Create Provider'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleTestConnection}
+                    disabled={isTesting || !formData.apiKey || !formData.type}
+                  >
+                    {isTesting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2" />
+                        Testing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Test Connection
+                      </>
+                    )}
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={editingProvider ? handleUpdateProvider : handleCreateProvider}>
+                    {editingProvider ? 'Update Provider' : 'Create Provider'}
+                  </Button>
+                </div>
               </DialogFooter>
             </DialogContent>
           </Dialog>
