@@ -53,6 +53,9 @@ import {
   Edit,
   Star,
   StarOff,
+  TrendingUp,
+  Activity,
+  Clock,
 } from 'lucide-react';
 
 interface AIProvider {
@@ -66,8 +69,20 @@ interface AIProvider {
   isDefault: boolean;
   capabilities: string[];
   supportedModels: string[];
+  totalRequests: number;
+  totalTokensUsed: number;
+  lastUsedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  // Usage statistics
+  usage?: {
+    totalRequests: number;
+    totalTokens: number;
+    successRate: number;
+    avgLatency: number;
+    requestsLast7Days: number;
+    requestsLast30Days: number;
+  };
 }
 
 const PROVIDER_TYPES: Record<string, { name: string; icon: any; color: string; models: string[]; capabilities: string[] }> = {
@@ -229,12 +244,35 @@ export default function AIProvidersPage() {
         const data = await response.json();
         if (data.success) {
           setProviders(data.data || []);
+          // Fetch usage for each provider
+          for (const provider of data.data || []) {
+            fetchProviderUsage(provider.id);
+          }
         }
       }
     } catch (error) {
       console.error('Failed to fetch providers:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProviderUsage = async (providerId: string) => {
+    try {
+      const token = getToken();
+      const response = await fetch(`/api/ai-providers/${providerId}/usage`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setProviders(prev =>
+          prev.map(p => p.id === providerId ? { ...p, usage: data } : p)
+        );
+      }
+    } catch (error) {
+      console.error('Failed to fetch provider usage:', error);
     }
   };
 
@@ -657,6 +695,7 @@ export default function AIProvidersPage() {
                           <TableHead>优先级</TableHead>
                           <TableHead>状态</TableHead>
                           <TableHead>首选</TableHead>
+                          <TableHead>使用情况</TableHead>
                           <TableHead className="text-right">操作</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -717,6 +756,28 @@ export default function AIProvidersPage() {
                                     <StarOff className="h-4 w-4" />
                                   )}
                                 </Button>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm space-y-1">
+                                  {provider.usage ? (
+                                    <>
+                                      <div className="flex items-center gap-1 text-xs">
+                                        <Activity className="h-3 w-3" />
+                                        <span>{provider.usage.totalRequests} 次请求</span>
+                                      </div>
+                                      <div className="flex items-center gap-1 text-xs">
+                                        <TrendingUp className="h-3 w-3" />
+                                        <span>{provider.usage.totalTokens.toLocaleString()} tokens</span>
+                                      </div>
+                                      <div className="flex items-center gap-1 text-xs">
+                                        <Clock className="h-3 w-3" />
+                                        <span>{provider.usage.successRate}% 成功率</span>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">无数据</span>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
