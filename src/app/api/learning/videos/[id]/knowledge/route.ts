@@ -13,9 +13,12 @@ import { ApiResponse } from '@/lib/types';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 等待 params 解析
+    const { id } = await params;
+
     // 验证认证
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -51,7 +54,7 @@ export async function GET(
 
     // 获取视频的学习总结
     const knowledge = await prisma.videoKnowledge.findFirst({
-      where: { videoId: params.id },
+      where: { videoId: id },
       include: {
         video: true,
       },
