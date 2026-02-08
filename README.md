@@ -414,20 +414,144 @@ For licensing inquiries, please contact [license@cmamsys.com](mailto:license@cma
 
 ---
 
-## 📞 Support
+## ❓ FAQ
 
-- 📧 Email: [support@cmamsys.com](mailto:support@cmamsys.com)
-- 📚 Documentation: [docs.cmamsys.com](https://docs.cmamsys.com)
-- 💬 Community: [community.cmamsys.com](https://community.cmamsys.com)
-- 🐛 Issues: [GitHub Issues](https://github.com/your-org/cmamsys/issues)
+### General Questions
+
+**Q: What are the system requirements for CMAMSys?**
+A:
+- Minimum: 2 CPU cores, 4GB RAM, 10GB disk space
+- Recommended: 4 CPU cores, 8GB RAM, 20GB disk space
+- Database: PostgreSQL 14+
+- Runtime: Node.js 24+
+
+**Q: Can I use CMAMSys for non-mathematical modeling competitions?**
+A: Yes! CMAMSys is designed for general data modeling tasks and can be used for:
+- Data analysis competitions
+- Machine learning competitions
+- Research projects
+- Data science education
+
+**Q: Is my data secure?**
+A: Yes. All data is stored in your own PostgreSQL database. API keys are encrypted using AES-256-GCM. We don't have access to your data.
+
+### Installation & Deployment
+
+**Q: How do I change the default administrator password?**
+A:
+1. Login with the default admin account
+2. Go to Settings > Profile
+3. Click "Change Password"
+4. Enter your new password
+
+**Q: Docker deployment failed with "connection refused" error.**
+A:
+1. Check if PostgreSQL container is running: `docker ps | grep cmamsys-postgres`
+2. Check logs: `docker logs cmamsys-postgres`
+3. Verify DATABASE_URL in `.env` file
+4. Ensure ports are not already in use
+
+**Q: How do I upgrade to a new version?**
+A:
+```bash
+# Stop services
+docker-compose down
+
+# Pull latest changes
+git pull origin main
+
+# Rebuild and restart
+docker-compose up -d --build
+
+# Run database migrations
+docker-compose exec app pnpm prisma migrate deploy
+```
+
+### AI Providers
+
+**Q: How do I configure multiple AI providers?**
+A:
+1. Go to Settings > AI Providers
+2. Click "Add Provider"
+3. Select provider type (Aliyun, VolcEngine, DeepSeek, etc.)
+4. Enter API Key and configuration
+5. Set priority order (lower number = higher priority)
+
+**Q: What's the difference between Community and Enterprise editions?**
+A: See the table in the Docker Deployment section. Key differences:
+- Enterprise includes SSO, unlimited storage, and priority support
+- Enterprise requires a commercial license
+- Community is free and open source (MIT)
+
+### Troubleshooting
+
+**Q: Application won't start after installation.**
+A:
+1. Check environment variables in `.env` file
+2. Ensure PostgreSQL is running and accessible
+3. Check logs: `docker-compose logs -f`
+4. Verify Node.js version is 24+
+
+**Q: Database migration failed.**
+A:
+```bash
+# Reset database (WARNING: This will delete all data)
+pnpm prisma migrate reset
+
+# Or create a new migration
+pnpm prisma migrate dev --name fix
+```
+
+**Q: AI provider tests failing.**
+A:
+1. Verify API key is correct and has no extra spaces
+2. Check if API key has sufficient permissions
+3. Verify network connectivity to provider endpoint
+4. Check provider console for rate limits or quotas
+
+### Learning Module
+
+**Q: How does the Bilibili learning module work?**
+A:
+1. Go to Settings > Learning
+2. Configure Bilibili API credentials
+3. Add video URLs to your learning queue
+4. System automatically extracts knowledge points
+5. Knowledge is stored in the knowledge base for AI to use
+
+**Q: Can I add my own learning materials?**
+A: Yes! You can upload:
+- PDF documents
+- Video files
+- Text documents
+- Structured data files (CSV, JSON, Excel)
+
+**Q: How often does the learning module run?**
+A: By default, it runs once daily. You can configure the schedule in Settings > Learning > Scheduler.
+
+---
+
+## 🔗 Links
+
+- **Website**: [https://cmamsys.com](https://cmamsys.com)
+- **Documentation**: [https://docs.cmamsys.com](https://docs.cmamsys.com)
+- **API Reference**: [https://api.cmamsys.com](https://api.cmamsys.com)
+- **Community**: [https://community.cmamsys.com](https://community.cmamsys.com)
+- **GitHub**: [https://github.com/your-org/cmamsys](https://github.com/your-org/cmamsys)
 
 ---
 
 ## 📞 Support
 
-- Email: support@cmamsys.com
-- Website: https://cmamsys.com
-- Documentation: https://docs.cmamsys.com
+Need help? Here's how to get in touch:
+
+- 📧 **Email**: [support@cmamsys.com](mailto:support@cmamsys.com)
+- 💬 **Discord**: Join our community server
+- 📚 **Documentation**: [docs.cmamsys.com](https://docs.cmamsys.com)
+- 🐛 **Report Issues**: [GitHub Issues](https://github.com/your-org/cmamsys/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/your-org/cmamsys/discussions)
+
+**Enterprise Support**: If you're using the Enterprise edition, you have access to priority support. Contact us at [enterprise@cmamsys.com](mailto:enterprise@cmamsys.com).
 
 ---
 
