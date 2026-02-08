@@ -23,7 +23,7 @@ export async function streamAIResponse(
     // 根据 Provider 类型调用不同的 AI 服务
     if (provider.type === 'VOLCENGINE' || provider.type === 'DEEPSEEK' || provider.type === 'ALIYUN') {
       // 使用 coze-coding-dev-sdk 实现
-      await streamWithSDK(provider, prompt, onChunk, (chunk, tokens) => {
+      await streamWithSDK(provider, prompt, onChunk, (tokens) => {
         tokenCount = tokens;
       });
     } else {

@@ -11,6 +11,13 @@ import { searchBilibiliVideosWithBrowser } from './bilibili-browser-search';
 
 const logger = createLogger({ category: 'BILIBILI_LEARNING' });
 
+// Bilibili API 配置
+const BILIBILI_API = {
+  VIDEO_INFO: 'https://api.bilibili.com/x/web-interface/view',
+  VIDEO_DANMAKU: 'https://api.bilibili.com/x/v1/dm/list.so',
+  SEARCH: 'https://api.bilibili.com/x/web-interface/search/type',
+};
+
 /**
  * 搜索 B 站视频（使用 API 方式）
  */

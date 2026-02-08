@@ -28,6 +28,9 @@ import {
   Brain,
   Zap,
   Activity,
+  Database,
+  File,
+  Image,
 } from 'lucide-react';
 
 interface ModelingTask {
