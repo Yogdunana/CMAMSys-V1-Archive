@@ -50,7 +50,7 @@ export default function RootLayout({
 
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>
             {isDev && <Inspector />}
