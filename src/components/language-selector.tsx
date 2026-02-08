@@ -5,7 +5,8 @@
 
 'use client';
 
-import { useLanguage, type Locale } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import type { Locale } from '@/i18n/config';
 import {
   Select,
   SelectContent,

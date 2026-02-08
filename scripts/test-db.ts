@@ -11,7 +11,7 @@ async function testConnection() {
     console.log('✅ 数据库连接成功！');
 
     // 统计表数量
-    const tableCount = await prisma.$queryRaw`
+    const tableCount = await prisma.$queryRaw<Array<{ count: bigint }>>`
       SELECT COUNT(*) as count
       FROM information_schema.tables
       WHERE table_schema = 'public'

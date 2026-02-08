@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       email: tokenRecord.user.email,
       username: tokenRecord.user.username,
       role: tokenRecord.user.role,
-    }, tokenRecord.tokenId);
+    }, tokenRecord.id);
 
     // Update refresh token in database
     await prisma.refreshToken.update({

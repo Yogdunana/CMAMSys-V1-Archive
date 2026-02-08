@@ -115,7 +115,7 @@ export function useSSEStream(url: string, enabled: boolean = true) {
 export function useTypewriter(text: string, speed: number = 30) {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     setDisplayedText('');

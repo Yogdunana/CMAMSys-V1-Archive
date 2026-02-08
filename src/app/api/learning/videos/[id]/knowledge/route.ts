@@ -50,7 +50,7 @@ export async function GET(
     }
 
     // 获取视频的学习总结
-    const knowledge = await prisma.videoKnowledge.findUnique({
+    const knowledge = await prisma.videoKnowledge.findFirst({
       where: { videoId: params.id },
       include: {
         video: true,
