@@ -513,19 +513,355 @@ docker exec -it cmamsys-community-postgres \
 
 ---
 
-## 技术支持
+## 常见问题
 
-- 📧 邮件：support@cmamsys.com
-- 📚 文档：https://docs.cmamsys.com
-- 💬 社区：https://community.cmamsys.com
+### 1. 服务启动失败
+
+**问题**：Docker 容器无法启动
+
+**解决方案**：
+
+```bash
+# 查看容器日志
+docker logs cmamsys-community-app
+
+# 检查端口占用
+netstat -tuln | grep 5000
+
+# 检查磁盘空间
+df -h
+
+# 重启服务
+./deploy.sh community restart
+```
+
+### 2. 数据库连接失败
+
+**问题**：应用无法连接到数据库
+
+**解决方案**：
+
+```bash
+# 检查 PostgreSQL 容器状态
+docker ps | grep postgres
+
+# 测试数据库连接
+docker exec -it cmamsys-community-postgres \
+  psql -U postgres -d cmamsys -c "SELECT NOW();"
+
+# 检查环境变量配置
+docker exec cmamsys-community-app env | grep DATABASE_URL
+
+# 重启数据库容器
+docker restart cmamsys-community-postgres
+```
+
+### 3. 性能问题
+
+**问题**：应用响应缓慢
+
+**解决方案**：
+
+```bash
+# 启用 Redis 缓存
+./deploy.sh community up --with-redis
+
+# 增加资源限制
+# 编辑 docker-compose.yml，添加：
+# deploy:
+#   resources:
+#     limits:
+#       cpus: '2'
+#       memory: 4G
+
+# 优化数据库
+docker exec -it cmamsys-community-postgres \
+  psql -U postgres -d cmamsys -c "VACUUM ANALYZE;"
+```
+
+### 4. 内存不足
+
+**问题**：容器因内存不足被杀死
+
+**解决方案**：
+
+```bash
+# 查看 Docker 资源使用
+docker stats
+
+# 增加 Swap 空间
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# 限制容器内存
+# 编辑 docker-compose.yml，添加内存限制
+```
+
+### 5. SSL 证书问题
+
+**问题**：HTTPS 无法访问
+
+**解决方案**：
+
+```bash
+# 检查证书文件
+ls -la docker/ssl/
+
+# 验证证书有效期
+openssl x509 -in docker/ssl/fullchain.pem -noout -dates
+
+# 重新获取证书
+sudo certbot renew
+sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem docker/ssl/
+sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem docker/ssl/
+```
+
+### 6. 升级到新版本
+
+**问题**：如何升级 CMAMSys
+
+**解决方案**：
+
+```bash
+# 1. 备份数据
+./deploy.sh community backup
+
+# 2. 拉取最新代码
+git pull origin main
+
+# 3. 重新构建镜像
+docker compose -f docker-compose.community.yml build
+
+# 4. 重启服务
+./deploy.sh community restart
+
+# 5. 运行数据库迁移（如果有）
+docker exec -it cmamsys-community-postgres \
+  psql -U postgres -d cmamsys -f /docker-entrypoint-initdb.d/migrate.sql
+```
+
+### 7. 备份失败
+
+**问题**：自动备份无法执行
+
+**解决方案**：
+
+```bash
+# 检查备份目录权限
+ls -la backups/
+
+# 检查磁盘空间
+df -h
+
+# 手动测试备份
+docker exec cmamsys-community-postgres \
+  pg_dump -U postgres cmamsys > test-backup.sql
+
+# 检查 cron 任务（如果使用系统 cron）
+crontab -l
+```
+
+### 8. MinIO 连接失败
+
+**问题**：企业版无法连接到 MinIO
+
+**解决方案**：
+
+```bash
+# 检查 MinIO 容器状态
+docker ps | grep minio
+
+# 测试 MinIO 连接
+curl -I http://localhost:9000
+
+# 检查 MinIO 配置
+docker exec cmamsys-enterprise-minio env | grep S3
+
+# 查看 MinIO 日志
+docker logs cmamsys-enterprise-minio
+```
+
+### 9. 邮件发送失败
+
+**问题**：通知邮件无法发送
+
+**解决方案**：
+
+```bash
+# 检查 SMTP 配置
+docker exec cmamsys-community-app env | grep SMTP
+
+# 测试 SMTP 连接
+telnet smtp.gmail.com 587
+
+# 检查邮箱密码（如果是 Gmail，需要使用应用专用密码）
+# 访问：https://myaccount.google.com/apppasswords
+
+# 查看邮件日志
+docker logs cmamsys-community-app | grep -i mail
+```
+
+### 10. 许可证验证失败
+
+**问题**：企业版许可证验证失败
+
+**解决方案**：
+
+```bash
+# 检查许可证配置
+docker exec cmamsys-community-app env | grep LICENSE
+
+# 验证许可证密钥
+curl -X POST https://license.cmamsys.com/validate \
+  -H "Content-Type: application/json" \
+  -d '{"licenseKey":"your-license-key"}'
+
+# 如果是离线模式，确保已配置离线验证
+# .env.enterprise
+LICENSE_OFFLINE_MODE=true
+```
+
+### 11. AI Provider 调用失败
+
+**问题**：AI 功能无法使用
+
+**解决方案**：
+
+```bash
+# 检查网络连接
+curl -I https://api.openai.com
+
+# 验证 API Key 配置
+# 在系统设置中查看 AI Providers 配置
+
+# 查看详细日志
+docker logs cmamsys-community-app | grep -i "ai\|llm"
+
+# 测试 API 连接
+# 使用系统设置中的测试功能
+```
+
+### 12. 数据迁移问题
+
+**问题**：从旧版本迁移数据失败
+
+**解决方案**：
+
+```bash
+# 1. 备份旧数据
+docker exec cmamsys-community-postgres \
+  pg_dump -U postgres cmamsys > old-backup.sql
+
+# 2. 检查迁移文件
+ls -la prisma/migrations/
+
+# 3. 手动运行迁移
+docker exec -it cmamsys-community-postgres \
+  psql -U postgres -d cmamsys -f /path/to/migration.sql
+
+# 4. 验证数据完整性
+docker exec -it cmamsys-community-postgres \
+  psql -U postgres -d cmamsys -c "SELECT COUNT(*) FROM User;"
+```
+
+### 13. 端口冲突
+
+**问题**：5000 端口已被占用
+
+**解决方案**：
+
+```bash
+# 查找占用端口的进程
+lsof -i:5000
+
+# 或使用 ss 命令
+ss -tuln | grep 5000
+
+# 终止进程
+kill -9 <PID>
+
+# 或修改端口配置
+# 在 docker-compose.yml 中：
+# ports:
+#   - "3000:5000"  # 映射到宿主机的 3000 端口
+```
+
+### 14. Docker 镜像拉取失败
+
+**问题**：无法拉取 Docker 镜像
+
+**解决方案**：
+
+```bash
+# 检查 Docker 镜像源
+docker info | grep Registry
+
+# 配置国内镜像源（如果在中国）
+# 编辑 /etc/docker/daemon.json
+{
+  "registry-mirrors": [
+    "https://mirror.ccs.tencentyun.com",
+    "https://registry.docker-cn.com"
+  ]
+}
+
+# 重启 Docker
+sudo systemctl restart docker
+
+# 重试拉取
+docker pull postgres:14
+```
+
+### 15. 文件上传失败
+
+**问题**：用户无法上传文件
+
+**解决方案**：
+
+```bash
+# 检查上传目录权限
+ls -la data/uploads/
+
+# 修改权限
+chmod 755 data/uploads/
+chown -R $(whoami):$(whoami) data/uploads/
+
+# 检查磁盘空间
+df -h
+
+# 查看上传日志
+docker logs cmamsys-community-app | grep -i upload
+```
+
+---
+
+## 📞 技术支持
+
+如果以上方法都无法解决你的问题，请尝试：
+
+- 📧 **邮件**：support@cmamsys.com
+- 📚 **文档**：https://docs.cmamsys.com
+- 💬 **社区**：https://community.cmamsys.com
+- 🐛 **提交 Issue**：[GitHub Issues](https://github.com/your-org/cmamsys/issues)
+
+### 提交问题时，请提供：
+
+1. 系统环境信息
+2. 完整的错误日志
+3. 复现步骤
+4. 配置文件（隐藏敏感信息）
 
 ---
 
 ## 许可证
 
-- 社区版：MIT License
-- 企业版：商业许可证，需购买授权
+- **社区版**：MIT License - 免费用于个人和商业用途
+- **企业版**：商业许可证 - 需要购买授权以使用高级功能
+
+**许可证咨询**：license@cmamsys.com
 
 ---
 
-*最后更新：2025-01-15*
+*最后更新：2026-02-08*
