@@ -19,6 +19,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DiscussionViewer } from '@/components/discussion/DiscussionViewer';
+import { CodeResultViewer } from '@/components/code/CodeResultViewer';
+import { PaperViewer } from '@/components/paper/PaperViewer';
+import { CostMonitor } from '@/components/cost/CostMonitor';
+import { CostAlertManager } from '@/components/cost/CostAlertManager';
+import { Toaster } from '@/components/ui/toaster';
 import {
   Loader2,
   Rocket,
@@ -29,6 +36,10 @@ import {
   MessageSquare,
   Code,
   AlertTriangle,
+  BarChart3,
+  DollarSign,
+  Shield,
+  Bell,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -325,21 +336,211 @@ export default function AutoModelingPage() {
             </TabsContent>
 
             <TabsContent value="task-status" className="mt-6">
-              <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                  <CardTitle>任务状态</CardTitle>
-                  <CardDescription>
-                    查看自动化任务的执行进度和结果
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12 text-slate-500">
-                    <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>暂无运行中的任务</p>
-                    <p className="text-sm mt-2">在"新建任务"标签页创建任务后，此处将显示执行状态</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="max-w-7xl mx-auto space-y-6">
+                {/* 成本监控面板 */}
+                <Tabs defaultValue="monitor">
+                  <TabsList>
+                    <TabsTrigger value="monitor" className="gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      成本监控
+                    </TabsTrigger>
+                    <TabsTrigger value="alerts" className="gap-2">
+                      <Bell className="w-4 h-4" />
+                      成本预警
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="monitor" className="mt-4">
+                    <CostMonitor taskId={currentTaskId || undefined} />
+                  </TabsContent>
+
+                  <TabsContent value="alerts" className="mt-4">
+                    <CostAlertManager taskId={currentTaskId || undefined} />
+                  </TabsContent>
+                </Tabs>
+
+                {/* 任务流程状态 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Rocket className="w-5 h-5 text-primary" />
+                      自动化任务执行状态
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="max-h-[200px]">
+                      <div className="space-y-4">
+                        {currentTaskId ? (
+                          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                            <div className="flex items-center gap-3">
+                              {taskStatus ? getOverallStatusIcon(taskStatus.overallStatus) : <Clock className="w-5 h-5 text-yellow-500" />}
+                              <div>
+                                <p className="font-medium">
+                                  {taskStatus ? getOverallStatusText(taskStatus.overallStatus) : '执行中...'}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  任务 ID: {currentTaskId}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Progress value={taskStatus?.progress || 0} className="w-32" />
+                              <span className="text-sm font-medium">{taskStatus?.progress || 0}%</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 text-slate-500">
+                            <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>暂无运行中的任务</p>
+                            <p className="text-sm mt-2">在"新建任务"标签页创建任务后，此处将显示执行状态</p>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+
+                {/* 群聊讨论可视化 */}
+                {currentTaskId && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5 text-blue-500" />
+                        群聊讨论实时展示
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <DiscussionViewer
+                        discussionId={currentTaskId}
+                        providers={[
+                          { id: 'provider1', name: 'DeepSeek', type: 'Reasoning' },
+                          { id: 'provider2', name: '豆包', type: 'General' },
+                          { id: 'provider3', name: '阿里百炼', type: 'General' },
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* 代码执行结果 */}
+                {currentTaskId && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Code className="w-5 h-5 text-purple-500" />
+                        代码执行结果
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CodeResultViewer
+                        code={`import numpy as np
+import matplotlib.pyplot as plt
+
+# 示例代码：数据可视化
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y, label='sin(x)', linewidth=2)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Sinusoidal Function')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+print(f"Generated {len(x)} data points")
+print(f"Max value: {y.max():.4f}")
+print(f"Min value: {y.min():.4f}")`}
+                        language="python"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* 论文预览和编辑 */}
+                {currentTaskId && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-cyan-500" />
+                        论文预览与编辑
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <PaperViewer
+                        paperId={currentTaskId}
+                        initialContent={`# Mathematical Modeling Competition Paper
+
+## Abstract
+
+This paper presents a comprehensive mathematical model to address the given problem. Through rigorous analysis and innovative approaches, we develop a solution that...
+
+## 1. Introduction
+
+### 1.1 Problem Background
+
+The problem we are addressing involves...
+
+### 1.2 Problem Statement
+
+Our objective is to...
+
+## 2. Model Development
+
+### 2.1 Assumptions
+
+To simplify the problem, we make the following assumptions:
+
+1. ...
+2. ...
+3. ...
+
+### 2.2 Notation
+
+We define the following notation:
+
+- $x$: ...
+- $y$: ...
+
+### 2.3 Mathematical Model
+
+The core of our model is based on...
+
+## 3. Solution Methodology
+
+### 3.1 Algorithm Design
+
+We propose the following algorithm...
+
+### 3.2 Implementation
+
+Our implementation uses...
+
+## 4. Results and Analysis
+
+### 4.1 Numerical Results
+
+The results show that...
+
+### 4.2 Sensitivity Analysis
+
+We performed sensitivity analysis to...
+
+## 5. Conclusion
+
+In this paper, we...
+
+## References
+
+1. ...
+2. ...`}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+              <Toaster />
             </TabsContent>
           </Tabs>
         </div>
