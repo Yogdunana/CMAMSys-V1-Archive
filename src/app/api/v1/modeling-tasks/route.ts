@@ -136,14 +136,8 @@ export async function GET(request: NextRequest) {
         success: true,
         data: tasks.map((task) => ({
           ...task,
-          competitionName: task.competition?.name,
+          competitionName: (task as any).competition?.name,
         })),
-        meta: {
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
-        },
         timestamp: new Date().toISOString(),
       },
       {
@@ -208,19 +202,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证 CSRF Token
-    const csrfResult = await validateCSRFToken({
-      request,
-      strict: true,
-    });
+    const csrfValid = await validateCSRFToken(request);
 
-    if (!csrfResult.valid) {
+    if (!csrfValid) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
           error: {
             code: 'CSRF_TOKEN_INVALID',
             message: 'Invalid CSRF token',
-            details: csrfResult,
           },
           timestamp: new Date().toISOString(),
         },
@@ -295,11 +285,9 @@ export async function POST(request: NextRequest) {
         algorithm,
         approachNumber,
         competitionId,
-        priority: priority || 'NORMAL',
         dataFilePath: `/data/${name.toLowerCase().replace(/\s+/g, '_')}/data.csv`,
         problemFilePath: `/data/${name.toLowerCase().replace(/\s+/g, '_')}/problem.pdf`,
         createdById: userId,
-        updatedById: userId,
       },
     });
 

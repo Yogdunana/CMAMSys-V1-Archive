@@ -190,19 +190,15 @@ export async function PUT(request: NextRequest) {
     }
 
     // 验证 CSRF Token
-    const csrfResult = await validateCSRFToken({
-      request,
-      strict: true,
-    });
+    const csrfValid = await validateCSRFToken(request);
 
-    if (!csrfResult.valid) {
+    if (!csrfValid) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
           error: {
             code: 'CSRF_TOKEN_INVALID',
             message: 'Invalid CSRF token',
-            details: csrfResult,
           },
           timestamp: new Date().toISOString(),
         },

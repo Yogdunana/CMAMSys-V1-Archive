@@ -131,7 +131,8 @@ export async function GET(request: NextRequest) {
         // 激活的 AI Provider
         prisma.aIProvider.count({
           where: {
-            isActive: true,
+            status: 'ACTIVE',
+            deletedAt: null,
           },
         }),
         // 总任务数
