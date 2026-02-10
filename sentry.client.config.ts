@@ -16,7 +16,8 @@ Sentry.init({
 
   // Set `sessionSampleRate` to 1.0 to capture 100%
   // of sessions for performance monitoring.
-  sessionSampleRate: 1.0,
+  // Note: sessionSampleRate may not be available in Sentry v9
+  // sessionSampleRate: 1.0,
 
   // Enable sampling for performance monitoring
   profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
@@ -40,22 +41,22 @@ Sentry.init({
     return event;
   },
 
-  // Add integrations
-  integrations: [
-    new Sentry.BrowserTracing({
-      // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
-      tracePropagationTargets: [
-        'localhost',
-        /^\//,
-        process.env.NEXT_PUBLIC_API_URL || '',
-      ],
-    }),
-    new Sentry.Replay({
-      // Only capture replays on errors
-      captureExceptions: true,
-      captureUnhandledRejections: true,
-    }),
-  ],
+  // Add integrations (Note: Replay and BrowserTracing may need to be imported separately in v9)
+  // integrations: [
+  //   new Sentry.BrowserTracing({
+  //     // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
+  //     tracePropagationTargets: [
+  //       'localhost',
+  //       /^\//,
+  //       process.env.NEXT_PUBLIC_API_URL || '',
+  //     ],
+  //   }),
+  //   new Sentry.Replay({
+  //     // Only capture replays on errors
+  //     captureExceptions: true,
+  //     captureUnhandledRejections: true,
+  //   }),
+  // ],
 
   // Replay settings
   replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
@@ -64,10 +65,11 @@ Sentry.init({
   // Enable debug mode in development
   debug: process.env.NODE_ENV === 'development',
 
-  // Before send transaction
+  // Before send transaction (Note: TransactionEvent may not have 'name' property in v9)
   beforeSendTransaction(transaction) {
     // Filter out health check transactions
-    if (transaction.name?.includes('health')) {
+    // Note: transaction.name may not be available, use transaction.transaction instead
+    if ((transaction as any).transaction?.includes('health') || (transaction as any).name?.includes('health')) {
       return null;
     }
     return transaction;

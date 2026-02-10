@@ -137,13 +137,13 @@ export function redirectToDefaultVersion(
  * API 版本中间件
  */
 export function withApiVersionControl<T extends NextRequest>(
-  handler: (request: T, version: ApiVersion, ...args: any[]) => Promise<NextResponse>,
+  handler: (request: T, context?: { params?: Promise<any> }) => Promise<NextResponse>,
   options?: {
     requireVersion?: boolean;
     redirectUnsupported?: boolean;
   }
 ) {
-  return async (request: T, ...args: any[]): Promise<NextResponse> => {
+  return async (request: T, context?: { params?: Promise<any> }): Promise<NextResponse> => {
     const opts = {
       requireVersion: true,
       redirectUnsupported: false,
@@ -182,7 +182,7 @@ export function withApiVersionControl<T extends NextRequest>(
         );
       }
       // Use default version
-      return handler(request, getDefaultApiVersion(), ...args);
+      return handler(request, context);
     }
 
     // Handle unsupported version
@@ -190,8 +190,8 @@ export function withApiVersionControl<T extends NextRequest>(
       return handleUnsupportedVersion(request, version);
     }
 
-    // Call handler with version
-    const response = await handler(request, version, ...args);
+    // Call handler with context
+    const response = await handler(request, context);
 
     // Add API version headers
     return addApiVersionHeaders(response, version);
