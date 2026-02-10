@@ -1,333 +1,263 @@
 /**
- * Global Logger System
- * Centralized logging with file storage, error tracking, and rotation
+ * Logger Configuration using Pino
+ * 使用 Pino 的日志配置
  */
 
+import pino from 'pino';
 import fs from 'fs';
 import path from 'path';
 
-// Log levels
-export enum LogLevel {
-  DEBUG = 'DEBUG',
-  INFO = 'INFO',
-  WARN = 'WARN',
-  ERROR = 'ERROR',
-  FATAL = 'FATAL',
+const logLevel = process.env.LOG_LEVEL || 'info';
+const logFilePath = process.env.LOG_FILE_PATH || '/app/work/logs/bypass/app.log';
+
+// Ensure log directory exists
+const logDir = path.dirname(logFilePath);
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
 }
 
-// Log file paths (as per specification)
-const LOG_DIR = '/app/work/logs/bypass';
-const LOG_FILES = {
-  APP: path.join(LOG_DIR, 'app.log'),
-  DEV: path.join(LOG_DIR, 'dev.log'),
-  CONSOLE: path.join(LOG_DIR, 'console.log'),
-};
-
-// Log entry structure
-export interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  category: string;
-  message: string;
-  data?: any;
-  stackTrace?: string;
-  userId?: string;
-  requestId?: string;
-  ip?: string;
-}
-
-// Logger options
-interface LoggerOptions {
-  category: string;
-  userId?: string;
-  requestId?: string;
-  ip?: string;
-  enableConsole?: boolean;
-}
-
-/**
- * Logger class
- */
-class Logger {
-  private category: string;
-  private userId?: string;
-  private requestId?: string;
-  private ip?: string;
-  private enableConsole: boolean;
-
-  constructor(options: LoggerOptions) {
-    this.category = options.category;
-    this.userId = options.userId;
-    this.requestId = options.requestId;
-    this.ip = options.ip;
-    this.enableConsole = options.enableConsole ?? true;
-  }
-
-  /**
-   * Write log entry to file
-   */
-  private writeLog(entry: LogEntry, logFile: string): void {
-    try {
-      // Ensure log directory exists
-      if (!fs.existsSync(LOG_DIR)) {
-        fs.mkdirSync(LOG_DIR, { recursive: true });
-      }
-
-      // Format log entry
-      const logLine = this.formatLogEntry(entry);
-
-      // Append to log file
-      fs.appendFileSync(logFile, logLine + '\n', 'utf-8');
-    } catch (error) {
-      // If file writing fails, output to console as fallback
-      console.error('Failed to write log:', error);
-      console.log(logFile, entry);
-    }
-  }
-
-  /**
-   * Format log entry as JSON string
-   */
-  private formatLogEntry(entry: LogEntry): string {
-    return JSON.stringify(entry);
-  }
-
-  /**
-   * Create log entry
-   */
-  private createLogEntry(level: LogLevel, message: string, data?: any): LogEntry {
-    return {
-      timestamp: new Date().toISOString(),
-      level,
-      category: this.category,
-      message,
-      data,
-      userId: this.userId,
-      requestId: this.requestId,
-      ip: this.ip,
-    };
-  }
-
-  /**
-   * Log with error stack trace
-   */
-  private logWithStackTrace(level: LogLevel, message: string, error?: any, data?: any): void {
-    const entry = this.createLogEntry(level, message, data);
-
-    if (error) {
-      if (error instanceof Error) {
-        entry.stackTrace = error.stack;
-      } else if (typeof error === 'string') {
-        entry.stackTrace = error;
-      } else {
-        entry.stackTrace = JSON.stringify(error);
-      }
-    }
-
-    // Write to appropriate log file based on level
-    const logFile = level === LogLevel.ERROR || level === LogLevel.FATAL ? LOG_FILES.APP : LOG_FILES.DEV;
-
-    this.writeLog(entry, logFile);
-
-    // Also write to console log
-    this.writeLog(entry, LOG_FILES.CONSOLE);
-
-    // Output to console if enabled
-    if (this.enableConsole) {
-      this.outputToConsole(entry);
-    }
-  }
-
-  /**
-   * Output log to console
-   */
-  private outputToConsole(entry: LogEntry): void {
-    const colors = {
-      [LogLevel.DEBUG]: '\x1b[36m', // Cyan
-      [LogLevel.INFO]: '\x1b[32m', // Green
-      [LogLevel.WARN]: '\x1b[33m', // Yellow
-      [LogLevel.ERROR]: '\x1b[31m', // Red
-      [LogLevel.FATAL]: '\x1b[35m', // Magenta
-    };
-    const reset = '\x1b[0m';
-
-    const color = colors[entry.level];
-    const prefix = `${color}[${entry.level}]${reset} [${entry.timestamp}] [${entry.category}]`;
-
-    console.log(`${prefix} ${entry.message}`);
-
-    if (entry.data) {
-      console.log('Data:', entry.data);
-    }
-
-    if (entry.stackTrace) {
-      console.log('Stack:', entry.stackTrace);
-    }
-  }
-
-  debug(message: string, data?: any): void {
-    const entry = this.createLogEntry(LogLevel.DEBUG, message, data);
-    this.writeLog(entry, LOG_FILES.DEV);
-    this.writeLog(entry, LOG_FILES.CONSOLE);
-    if (this.enableConsole) this.outputToConsole(entry);
-  }
-
-  info(message: string, data?: any): void {
-    const entry = this.createLogEntry(LogLevel.INFO, message, data);
-    this.writeLog(entry, LOG_FILES.APP);
-    this.writeLog(entry, LOG_FILES.CONSOLE);
-    if (this.enableConsole) this.outputToConsole(entry);
-  }
-
-  warn(message: string, data?: any): void {
-    const entry = this.createLogEntry(LogLevel.WARN, message, data);
-    this.writeLog(entry, LOG_FILES.APP);
-    this.writeLog(entry, LOG_FILES.CONSOLE);
-    if (this.enableConsole) this.outputToConsole(entry);
-  }
-
-  error(message: string, error?: any, data?: any): void {
-    this.logWithStackTrace(LogLevel.ERROR, message, error, data);
-  }
-
-  fatal(message: string, error?: any, data?: any): void {
-    this.logWithStackTrace(LogLevel.FATAL, message, error, data);
-  }
-}
-
-/**
- * Create a logger instance
- */
-export function createLogger(options: LoggerOptions): Logger {
-  return new Logger(options);
-}
-
-/**
- * Default logger
- */
-export const defaultLogger = createLogger({
-  category: 'DEFAULT',
+// Create logger instance
+export const logger = pino({
+  level: logLevel,
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+            ignore: 'pid,hostname',
+            singleLine: false,
+          },
+        }
+      : undefined,
+  serializers: {
+    req: pino.stdSerializers.req,
+    res: pino.stdSerializers.res,
+    err: pino.stdSerializers.err,
+  },
+  timestamp: pino.stdTimeFunctions.isoTime,
+  formatters: {
+    level: (label) => {
+      return { level: label };
+    },
+  },
+  // Write to file in production
+  ...(process.env.NODE_ENV === 'production' && {
+    file: logFilePath,
+  }),
 });
 
-/**
- * Global error handler
- */
-export function setupGlobalErrorHandler(): void {
-  process.on('uncaughtException', (error: Error) => {
-    const logger = createLogger({ category: 'GLOBAL_ERROR_HANDLER' });
-    logger.fatal('Uncaught Exception', error);
-  });
-
-  process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-    const logger = createLogger({ category: 'GLOBAL_ERROR_HANDLER' });
-    logger.error('Unhandled Rejection', reason, { promise });
-  });
-
-  defaultLogger.info('Global error handler initialized');
-}
+// Create separate loggers for different contexts
+export const authLogger = logger.child({ context: 'auth' });
+export const apiLogger = logger.child({ context: 'api' });
+export const dbLogger = logger.child({ context: 'database' });
+export const aiLogger = logger.child({ context: 'ai' });
+export const errorLogger = logger.child({ context: 'error' });
+export const securityLogger = logger.child({ context: 'security' });
 
 /**
- * Log rotation utility
+ * Log API request
  */
-export function rotateLogs(maxFileSizeMB: number = 100, maxBackupCount: number = 5): void {
-  Object.values(LOG_FILES).forEach((logFile) => {
-    try {
-      if (!fs.existsSync(logFile)) return;
-
-      const stats = fs.statSync(logFile);
-      const fileSizeMB = stats.size / (1024 * 1024);
-
-      if (fileSizeMB > maxFileSizeMB) {
-        // Rotate logs
-        for (let i = maxBackupCount; i >= 1; i--) {
-          const backupFile = `${logFile}.${i}`;
-          const prevBackupFile = i === 1 ? logFile : `${logFile}.${i - 1}`;
-
-          if (fs.existsSync(prevBackupFile)) {
-            fs.renameSync(prevBackupFile, backupFile);
-          }
-        }
-
-        // Create new log file
-        fs.writeFileSync(logFile, '', 'utf-8');
-
-        const logger = createLogger({ category: 'LOG_ROTATION' });
-        logger.info(`Log rotated: ${logFile}`);
-      }
-    } catch (error) {
-      console.error('Failed to rotate logs:', error);
-    }
+export function logAPIRequest(
+  method: string,
+  url: string,
+  statusCode: number,
+  duration: number,
+  userId?: string
+) {
+  apiLogger.info({
+    event: 'api_request',
+    method,
+    url,
+    statusCode,
+    duration,
+    userId,
+    timestamp: new Date().toISOString(),
   });
 }
 
 /**
- * Clean old log files
+ * Log API error
  */
-export function cleanOldLogs(daysToKeep: number = 30): void {
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-
-  fs.readdirSync(LOG_DIR).forEach((file) => {
-    try {
-      const filePath = path.join(LOG_DIR, file);
-      const stats = fs.statSync(filePath);
-
-      if (stats.mtime < cutoffDate) {
-        fs.unlinkSync(filePath);
-
-        const logger = createLogger({ category: 'LOG_CLEANUP' });
-        logger.info(`Deleted old log file: ${file}`);
-      }
-    } catch (error) {
-      console.error('Failed to clean log file:', error);
-    }
+export function logAPIError(
+  method: string,
+  url: string,
+  error: Error,
+  statusCode: number,
+  userId?: string
+) {
+  errorLogger.error({
+    event: 'api_error',
+    method,
+    url,
+    error: {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    },
+    statusCode,
+    userId,
+    timestamp: new Date().toISOString(),
   });
 }
 
 /**
- * Read recent log entries
+ * Log authentication event
  */
-export function readRecentLogs(logFile: string, lines: number = 20): string[] {
-  try {
-    if (!fs.existsSync(logFile)) return [];
+export function logAuthEvent(
+  event: 'login' | 'logout' | 'register' | 'refresh' | 'verify',
+  userId: string,
+  email?: string,
+  metadata?: Record<string, any>
+) {
+  authLogger.info({
+    event,
+    userId,
+    email,
+    metadata,
+    timestamp: new Date().toISOString(),
+  });
+}
 
-    const content = fs.readFileSync(logFile, 'utf-8');
-    const logLines = content.trim().split('\n');
+/**
+ * Log security event
+ */
+export function logSecurityEvent(
+  event: 'rate_limit_exceeded' | 'csrf_failed' | 'invalid_token' | 'suspicious_activity',
+  details: Record<string, any>
+) {
+  securityLogger.warn({
+    event,
+    details,
+    timestamp: new Date().toISOString(),
+  });
+}
 
-    return logLines.slice(-lines);
-  } catch (error) {
-    console.error('Failed to read logs:', error);
-    return [];
+/**
+ * Log database query
+ */
+export function logDBQuery(
+  operation: string,
+  table: string,
+  duration: number,
+  rowCount?: number
+) {
+  dbLogger.debug({
+    event: 'db_query',
+    operation,
+    table,
+    duration,
+    rowCount,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+/**
+ * Log database error
+ */
+export function logDBError(
+  operation: string,
+  table: string,
+  error: Error
+) {
+  errorLogger.error({
+    event: 'db_error',
+    operation,
+    table,
+    error: {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    },
+    timestamp: new Date().toISOString(),
+  });
+}
+
+/**
+ * Log AI request
+ */
+export function logAIRequest(
+  provider: string,
+  model: string,
+  prompt: string,
+  response?: string,
+  duration?: number,
+  error?: Error
+) {
+  if (error) {
+    aiLogger.error({
+      event: 'ai_request_failed',
+      provider,
+      model,
+      error: {
+        message: error.message,
+        stack: error.stack,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } else {
+    aiLogger.info({
+      event: 'ai_request_success',
+      provider,
+      model,
+      promptLength: prompt.length,
+      responseLength: response?.length,
+      duration,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 
 /**
- * Search logs for patterns
+ * Performance Logger
  */
-export function searchLogs(
-  logFile: string,
-  pattern: string | RegExp,
-  maxResults: number = 100
-): string[] {
-  try {
-    if (!fs.existsSync(logFile)) return [];
+export class PerformanceLogger {
+  private startTime: number;
+  private operation: string;
+  private metadata: Record<string, any>;
 
-    const content = fs.readFileSync(logFile, 'utf-8');
-    const logLines = content.trim().split('\n');
-
-    const regex = typeof pattern === 'string' ? new RegExp(pattern, 'gi') : pattern;
-    const results: string[] = [];
-
-    for (const line of logLines) {
-      if (regex.test(line)) {
-        results.push(line);
-        if (results.length >= maxResults) break;
-      }
-    }
-
-    return results;
-  } catch (error) {
-    console.error('Failed to search logs:', error);
-    return [];
+  constructor(operation: string, metadata: Record<string, any> = {}) {
+    this.startTime = performance.now();
+    this.operation = operation;
+    this.metadata = metadata;
   }
+
+  /**
+   * End performance measurement
+   */
+  end() {
+    const duration = performance.now() - this.startTime;
+    logger.info({
+      event: 'performance',
+      operation: this.operation,
+      duration,
+      metadata: this.metadata,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Log intermediate step
+   */
+  step(stepName: string) {
+    const duration = performance.now() - this.startTime;
+    logger.debug({
+      event: 'performance_step',
+      operation: this.operation,
+      step: stepName,
+      duration,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+/**
+ * Create a performance logger
+ */
+export function createPerformanceLogger(
+  operation: string,
+  metadata?: Record<string, any>
+) {
+  return new PerformanceLogger(operation, metadata);
 }
