@@ -7,6 +7,8 @@ import pino from 'pino';
 import fs from 'fs';
 import path from 'path';
 
+export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+
 const logLevel = process.env.LOG_LEVEL || 'info';
 const logFilePath = process.env.LOG_FILE_PATH || '/app/work/logs/bypass/app.log';
 
@@ -260,4 +262,19 @@ export function createPerformanceLogger(
   metadata?: Record<string, any>
 ) {
   return new PerformanceLogger(operation, metadata);
+}
+
+/**
+ * Create a custom logger instance
+ */
+export function createLogger(
+  name: string,
+  level?: LogLevel,
+  metadata?: Record<string, any>
+) {
+  return logger.child({
+    context: name,
+    level: level || logLevel,
+    ...metadata,
+  });
 }

@@ -14,6 +14,7 @@ const CSRF_TOKEN_EXPIRY = '1h'; // 1 hour
 export interface CSRFPayload {
   sessionId: string;
   timestamp: number;
+  [key: string]: any; // 索引签名，符合 JWTPayload 要求
 }
 
 /**

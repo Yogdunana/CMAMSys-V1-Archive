@@ -13,7 +13,7 @@ interface User {
   avatar?: string;
   bio?: string;
   organization?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {

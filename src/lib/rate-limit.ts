@@ -58,7 +58,13 @@ function getRequestIdentifier(request: NextRequest, userId?: string): string {
   // 从请求头获取真实 IP
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
-  const ip = forwarded?.split(',')[0] || realIp || request.ip || 'unknown';
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  
+  // 尝试多个来源获取 IP
+  const ip = cfConnectingIp || 
+             forwarded?.split(',')[0]?.trim() || 
+             realIp || 
+             'unknown';
   
   return `ip:${ip}`;
 }
@@ -198,6 +204,85 @@ export const RateLimitPresets: Record<string, RateLimitConfig> = {
 export function getRateLimiter(preset: keyof typeof RateLimitPresets) {
   return createRateLimiter(RateLimitPresets[preset]);
 }
+
+/**
+ * 应用速率限制（向后兼容版本）
+ * 支持两种调用方式：
+ * 1. applyRateLimit(config, userId?) -> 返回一个函数，需要传入 request
+ * 2. applyRateLimit({ request, preset }, userId?) -> 直接调用并返回结果
+ */
+export async function applyRateLimit(
+  configOrOptions: RateLimitConfig | { request: NextRequest; preset: string },
+  userId?: string
+): Promise<{
+  blocked: boolean;
+  limit: number;
+  remaining: number;
+  resetAt: Date;
+  response?: NextResponse;
+}> {
+  // 检查是否是选项对象（向后兼容）
+  if (typeof configOrOptions === 'object' && 'request' in configOrOptions && 'preset' in configOrOptions) {
+    const { request, preset } = configOrOptions;
+    const config = RateLimitPresets[preset] || RateLimitPresets.general;
+    const identifier = getRequestIdentifier(request, userId);
+    const result = checkRateLimit(identifier, config);
+    
+    if (!result.success) {
+      return {
+        blocked: true,
+        limit: result.limit,
+        remaining: result.remaining,
+        resetAt: new Date(result.reset),
+        response: NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'TOO_MANY_REQUESTS',
+              message: 'Rate limit exceeded. Please try again later.',
+              retryAfter: Math.ceil((result.reset - Date.now()) / 1000),
+            },
+          },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': result.limit.toString(),
+              'X-RateLimit-Remaining': result.remaining.toString(),
+              'X-RateLimit-Reset': new Date(result.reset).toISOString(),
+              'Retry-After': Math.ceil((result.reset - Date.now()) / 1000).toString(),
+            },
+          }
+        ),
+      };
+    }
+    
+    return {
+      blocked: false,
+      limit: result.limit,
+      remaining: result.remaining,
+      resetAt: new Date(result.reset),
+    };
+  }
+  
+  // 原始方式：返回一个函数
+  throw new Error('applyRateLimit called with wrong arguments. Use { request, preset } format.');
+}
+
+/**
+ * 获取速率限制器（通用版本）
+ */
+export function getRateLimiterAny(preset: string) {
+  const config = RateLimitPresets[preset];
+  if (!config) {
+    throw new Error(`Unknown rate limit preset: ${preset}`);
+  }
+  return createRateLimiter(config);
+}
+
+/**
+ * Export MiddlewarePresets for compatibility
+ */
+export { RateLimitPresets as MiddlewarePresets };
 
 /**
  * 手动重置速率限制（管理员功能）

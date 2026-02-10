@@ -121,7 +121,16 @@ function observeCustomMetrics() {
     const response = await originalFetch.apply(this, args);
     const end = performance.now();
 
-    const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+    let url: string;
+    if (typeof args[0] === 'string') {
+      url = args[0];
+    } else if (args[0] instanceof URL) {
+      url = args[0].href;
+    } else if (args[0] instanceof Request) {
+      url = args[0].url;
+    } else {
+      url = String(args[0]);
+    }
 
     if (url.startsWith('/api/')) {
       const duration = end - start;

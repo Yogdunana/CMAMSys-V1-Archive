@@ -15,26 +15,37 @@ export function withSentryTracking<T extends any[]>(
   routeName: string
 ) {
   return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
-    // Start a transaction for performance monitoring
-    const transaction = Sentry.startTransaction({
-      op: 'api',
-      name: routeName,
+    const startTime = Date.now();
+
+    // Add request data to scope
+    Sentry.getCurrentScope().setContext('api', {
+      route: routeName,
+      method: request.method,
+      url: request.url,
+      userAgent: request.headers.get('user-agent'),
     });
 
-    // Add request data to transaction
-    transaction.setData('method', request.method);
-    transaction.setData('url', request.url);
-    transaction.setData('userAgent', request.headers.get('user-agent'));
-
-    // Set transaction on scope
-    Sentry.getCurrentScope().setSpan(transaction);
+    Sentry.getCurrentScope().setTag('route', routeName);
+    Sentry.getCurrentScope().setTag('method', request.method);
 
     try {
       // Call the handler
       const response = await handler(request, ...args);
 
-      // Set status code on transaction
-      transaction.setStatus('ok');
+      const duration = Date.now() - startTime;
+
+      // Add performance breadcrumb
+      Sentry.addBreadcrumb({
+        category: 'api',
+        message: `${request.method} ${routeName}`,
+        level: response.status >= 500 ? 'error' : response.status >= 400 ? 'warning' : 'info',
+        data: {
+          route: routeName,
+          method: request.method,
+          duration,
+          statusCode: response.status,
+        },
+      });
 
       return response;
     } catch (error) {
@@ -53,9 +64,6 @@ export function withSentryTracking<T extends any[]>(
           method: request.method,
         },
       });
-
-      // Set status code on transaction
-      transaction.setStatus('internal_error');
 
       // Return error response
       return NextResponse.json(
@@ -77,9 +85,6 @@ export function withSentryTracking<T extends any[]>(
           },
         }
       );
-    } finally {
-      // Finish transaction
-      transaction.finish();
     }
   };
 }
@@ -163,12 +168,5 @@ export function trackAPIPerformance(
       duration,
       statusCode,
     },
-  });
-
-  // Send custom metric
-  Sentry.metrics.timing('api.request.duration', duration, {
-    route: routeName,
-    method,
-    status_code: statusCode.toString(),
   });
 }
