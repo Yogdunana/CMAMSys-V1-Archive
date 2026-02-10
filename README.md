@@ -1,564 +1,336 @@
-# CMAMSys - CompetiMath AutoModel System
+# CMAMSys - 竞赛数学自动化建模系统
 
 <div align="center">
 
 **CompetiMath AutoModel System**
 
-An enterprise-grade automated mathematical modeling competition platform for teams and individuals.
+企业级数学建模竞赛自动化平台，为团队和个人提供一站式解决方案。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.3-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg)](https://www.typescriptlang.org/)
 
-[Website](https://cmamsys.com) | [Documentation](#) | [Demo](#)
+[网站](https://cmamsys.com) | [文档](#) | [演示](#)
 
 </div>
 
 ---
 
-## 📋 Overview
+## 📋 项目简介
 
-CMAMSys is a full-stack enterprise platform designed for mathematical modeling competitions, including:
-- MCM/ICM (Mathematical Contest in Modeling)
-- CUMCM (China Undergraduate Mathematical Contest in Modeling)
-- Shenzhen Cup
-- IMMC (International Mathematical Modeling Challenge)
-- MathorCup
-- EMMC (Electric Mathematical Modeling Competition)
-- TeddyCup
-- BlueBridge Math
-- And other regional competitions
+CMAMSys 是一个全栈企业级平台，专为数学建模竞赛设计，支持包括：
+- MCM/ICM（美国大学生数学建模竞赛）
+- CUMCM（全国大学生数学建模竞赛）
+- 深圳杯
+- IMMC（国际数学建模挑战赛）
+- MathorCup（ MathorCup 高校数学建模挑战赛）
+- EMMC（电工杯）
+- 泰迪杯
+- 蓝桥杯
+- 以及其他各类区域性竞赛
 
-### 🎯 Key Features
+### 🎯 核心特性
 
-- **Automated Modeling Pipeline**: From data preprocessing to model training, evaluation, and report generation
-- **Multi-Algorithm Support**: Scikit-learn, XGBoost, LightGBM, PyTorch integration
-- **Competition-Specific Templates**: Pre-configured for different competition types
-- **AI Integration**: Multiple AI providers support (DeepSeek, VolcEngine Doubao, Aliyun Qwen, OpenAI, etc.)
-- **Streaming Output**: Real-time AI response streaming with SSE support
-- **Team Collaboration**: Multi-user support with role-based access control
-- **Daily Learning Module**: Automated learning from Bilibili and user-provided materials
-- **Beautiful Visualizations**: Competition-themed charts (MCM red, CUMCM blue) with UML and business flow diagrams
-- **Enterprise Security**: JWT authentication, MFA, SSO, anti-attack measures
-- **API-First Design**: REST API for third-party integrations
-- **Docker Deployment**: One-click deployment to NAS/servers
-- **Bilibili Learning System**: Automated learning from Bilibili videos to build knowledge base
+- **自动化建模流程**：从数据预处理、模型训练、评估到报告生成，全流程自动化
+- **多算法支持**：集成 Scikit-learn、XGBoost、LightGBM、PyTorch 等主流算法库
+- **竞赛专用模板**：针对不同竞赛类型预配置模板
+- **AI 集成**：支持多个 AI 提供商（DeepSeek、火山引擎豆包、阿里云通义千问、OpenAI 等）
+- **流式输出**：支持 SSE 实时 AI 响应流式输出
+- **团队协作**：多用户支持，基于角色的访问控制（RBAC）
+- **每日学习模块**：自动从 Bilibili 和用户提供的资料中学习，构建知识库
+- **精美可视化**：竞赛主题图表（MCM 红色、CUMCM 蓝色），支持 UML 和业务流程图
+- **企业级安全**：JWT 认证、MFA 多因素认证、SSO 单点登录、防攻击措施
+- **API 优先设计**：提供 REST API 支持第三方集成
+- **Docker 一键部署**：支持快速部署到 NAS/服务器
+- **Bilibili 学习系统**：自动从 Bilibili 视频中学习，构建专业知识库
 
 ---
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Prerequisites
+### 环境要求
 
 - Node.js 24+
 - pnpm 9.0.0+
 - PostgreSQL 14+
 
-### Installation
+### 安装步骤
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/your-org/cmamsys.git
 cd cmamsys
 
-# Install dependencies
+# 安装依赖
 pnpm install
 
-# Set up environment variables
+# 配置环境变量
 cp .env.example .env
-# Edit .env with your configuration
+# 编辑 .env 文件，填入你的配置
 
-# Initialize database
+# 初始化数据库
 pnpm prisma migrate dev
 
-# Start development server
+# 启动开发服务器
 coze dev
 ```
 
-Open [http://localhost:5000](http://localhost:5000) in your browser.
+在浏览器中打开 [http://localhost:5000](http://localhost:5000)
 
-### Production Build
+### 生产构建
 
 ```bash
-# Build for production
+# 构建生产版本
 coze build
 
-# Start production server
+# 启动生产服务器
 coze start
 ```
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ 技术架构
 
-### Tech Stack
+### 技术栈
 
-**Frontend**
-- Framework: Next.js 16 (App Router)
-- UI Library: React 19 + shadcn/ui
-- Styling: Tailwind CSS 4
-- State Management: React Hooks + Context API
-- Dark Mode: next-themes
+**前端**
+- 框架：Next.js 16 (App Router)
+- UI 库：React 19 + shadcn/ui
+- 样式：Tailwind CSS 4
+- 状态管理：React Hooks + Context API
+- 深色模式：next-themes
 
-**Backend**
-- Runtime: Next.js API Routes
-- Authentication: JWT + BCrypt + MFA
-- Rate Limiting: Token bucket algorithm
-- Validation: Zod
+**后端**
+- 运行时：Next.js API Routes
+- 认证：JWT + BCrypt + MFA
+- 速率限制：令牌桶算法
+- 数据验证：Zod
 
-**Database**
-- ORM: Prisma
-- Database: PostgreSQL
-- Caching: Redis (optional)
+**数据库**
+- ORM：Prisma
+- 数据库：PostgreSQL
+- 缓存：Redis（可选）
 
-**Deployment**
-- Containerization: Docker + Docker Compose
-- Platform: Linux (NAS/Server compatible)
+**部署**
+- 容器化：Docker + Docker Compose
+- 平台：Linux（兼容 NAS/服务器）
 
 ---
 
-## 📁 Project Structure
+## 📁 项目结构
 
 ```
 cmamsys/
 ├── src/
 │   ├── app/                    # Next.js App Router
-│   │   ├── api/               # API routes (microservices)
-│   │   │   ├── auth/          # Authentication service
-│   │   │   ├── modeling/      # Modeling pipeline service
-│   │   │   ├── learning/      # Bilibili learning system
-│   │   │   ├── competitions/  # Competition management
-│   │   │   ├── teams/         # Team management
-│   │   │   ├── ai-providers/  # AI provider management
-│   │   │   ├── settings/      # System settings
-│   │   │   └── init/          # App initialization
-│   │   ├── dashboard/         # Main dashboard
-│   │   │   ├── competitions/  # Competition page
-│   │   │   ├── teams/         # Team page
-│   │   │   └── ai-providers/  # AI providers page
-│   │   ├── learning/          # Learning module
-│   │   │   ├── knowledge/     # Knowledge base page
-│   │   │   └── settings/      # Learning settings page
-│   │   ├── settings/          # System settings
-│   │   ├── auth/              # Login/Registration
-│   │   └── layout.tsx         # Root layout
-│   ├── components/            # React components
-│   │   └── ui/                # shadcn/ui components
-│   ├── lib/                   # Utility libraries
-│   ├── services/              # Business logic
-│   │   ├── bilibili-learning.ts # Bilibili learning service
-│   │   └── learning-cron.ts  # Scheduled learning tasks
-│   └── hooks/                 # Custom hooks
-├── prisma/                    # Database schema
+│   │   ├── api/               # API 路由（微服务）
+│   │   │   ├── auth/          # 认证服务
+│   │   │   ├── modeling/      # 建模流程服务
+│   │   │   ├── learning/      # Bilibili 学习系统
+│   │   │   ├── competitions/  # 竞赛管理
+│   │   │   ├── teams/         # 团队管理
+│   │   │   ├── ai-providers/  # AI 提供商管理
+│   │   │   ├── settings/      # 系统设置
+│   │   │   └── init/          # 应用初始化
+│   │   ├── dashboard/         # 主仪表盘
+│   │   │   ├── competitions/  # 竞赛页面
+│   │   │   ├── teams/         # 团队页面
+│   │   │   └── ai-providers/  # AI 提供商页面
+│   │   ├── learning/          # 学习模块
+│   │   │   ├── knowledge/     # 知识库页面
+│   │   │   └── settings/      # 学习设置页面
+│   │   ├── settings/          # 系统设置
+│   │   ├── auth/              # 登录/注册
+│   │   └── layout.tsx         # 根布局
+│   ├── components/            # React 组件
+│   │   └── ui/                # shadcn/ui 组件
+│   ├── lib/                   # 工具库
+│   ├── services/              # 业务逻辑
+│   │   ├── bilibili-learning.ts # Bilibili 学习服务
+│   │   └── learning-cron.ts  # 定时学习任务
+│   └── hooks/                 # 自定义 Hooks
+├── prisma/                    # 数据库模式
 │   └── schema.prisma
-├── docker/                    # Docker configuration
+├── docker/                    # Docker 配置
 │   ├── Dockerfile
 │   └── docker-compose.yml
-└── docs/                      # Documentation
+└── docs/                      # 文档
 ```
 
 ---
 
-## 🔐 Security Features
+## 🔐 安全特性
 
-### Authentication & Authorization
-- **Password Hashing**: BCrypt/Argon2 with salt
-- **Token Management**: JWT (Access Token + Refresh Token)
-- **Multi-Factor Authentication**: SMS/Email verification codes
-- **Single Sign-On (SSO)**: Unified authentication center
-- **Session Management**: Redis cluster support
-- **Account Lockout**: Failed attempt limits
+### 认证与授权
+- **密码加密**：BCrypt/Argon2 带盐哈希
+- **令牌管理**：JWT（访问令牌 + 刷新令牌）
+- **多因素认证**：短信/邮箱验证码
+- **单点登录（SSO）**：统一认证中心
+- **会话管理**：支持 Redis 集群
+- **账户锁定**：失败尝试次数限制
 
-### Anti-Attack Measures
-- **SQL Injection**: Parameterized queries
-- **XSS Protection**: Input sanitization + CSP
-- **CSRF Protection**: CSRF Token + SameSite Cookie
-- **Rate Limiting**: Token bucket (≤10 requests/minute per IP)
-- **Input Validation**: Zod schema validation
+### 防攻击措施
+- **SQL 注入防护**：参数化查询
+- **XSS 防护**：输入清理 + CSP（内容安全策略）
+- **CSRF 防护**：CSRF Token + SameSite Cookie
+- **速率限制**：令牌桶（每个 IP ≤ 10 请求/分钟）
+- **输入验证**：Zod Schema 验证
 
 ---
 
-## 🐳 Docker Deployment
+## 🐳 Docker 部署
 
-CMAMSys supports two editions with Docker deployment:
+CMAMSys 支持两个版本的 Docker 部署：
 
-### Editions
+### 版本对比
 
-| Edition | Features | License | Deployment |
-|---------|----------|---------|------------|
-| **Community** | Basic modeling, team collaboration, report generation | MIT (Free) | Self-hosted |
-| **Enterprise** | All features + SSO + unlimited storage + priority support | Commercial | Self-hosted (paid) |
+| 版本 | 功能 | 许可证 | 部署方式 |
+|------|------|--------|----------|
+| **社区版** | 基础建模、团队协作、报告生成 | MIT（免费） | 自托管 |
+| **企业版** | 全功能 + SSO + 无限存储 + 优先支持 | 商业版 | 自托管（付费） |
 
-### Quick Start with Docker
+### Docker 快速开始
 
 ```bash
 cd docker
 
-# Community Edition (Free)
+# 社区版（免费）
 cp .env.community.example .env.community
 ./deploy.sh community up
 
-# Enterprise Edition (Requires license)
+# 企业版（付费）
 cp .env.enterprise.example .env.enterprise
 ./deploy.sh enterprise up --with-redis --with-minio
 ```
 
-Access the application at http://localhost:5000
+### 详细部署文档
 
-### Deployment Options
-
-**Community Edition:**
-```bash
-# Basic deployment (PostgreSQL + App)
-./deploy.sh community up
-
-# With Redis (caching)
-./deploy.sh community up --with-redis
-
-# View logs
-./deploy.sh community logs
-
-# Stop services
-./deploy.sh community down
-```
-
-**Enterprise Edition:**
-```bash
-# Full deployment (PostgreSQL + Redis + MinIO + App)
-./deploy.sh enterprise up --with-redis --with-minio
-
-# With Nginx (HTTPS + reverse proxy)
-./deploy.sh enterprise up --with-redis --with-minio --with-nginx
-
-# View logs
-./deploy.sh enterprise logs
-
-# Stop services
-./deploy.sh enterprise down
-```
-
-### Environment Configuration
-
-Copy the appropriate environment file and configure:
-
-```bash
-# Community Edition
-cp docker/.env.community.example docker/.env.community
-
-# Enterprise Edition
-cp docker/.env.enterprise.example docker/.env.enterprise
-```
-
-**Important**: Change the default passwords and JWT secrets in production!
-
-### Build Custom Images
-
-```bash
-cd docker
-
-# Build Community Edition
-./build.sh community v1.0.0
-
-# Build Enterprise Edition
-./build.sh enterprise v1.0.0
-
-# Build and push to registry
-REGISTRY=your-registry.com ./build.sh enterprise v1.0.0 --push
-```
-
-### Detailed Deployment Guide
-
-See [docs/deployment-guide.md](docs/deployment-guide.md) for detailed deployment instructions.
+请参阅 [部署指南](docs/deployment-guide.md) 获取详细的部署说明，包括：
+- 环境变量配置
+- 数据库设置
+- Redis 配置
+- 对象存储配置（MinIO/S3）
+- 反向代理配置（Nginx）
+- SSL/HTTPS 配置
+- 性能优化建议
+- 故障排查指南
 
 ---
 
-## 📋 Modeling Pipeline
+## 🌐 国际化支持
 
-### Data Preprocessing
-- Automatic data type detection
-- Missing value handling
-- Outlier detection and treatment
-- Feature engineering templates
-- Exploratory data analysis
+CMAMSys 支持多语言，当前支持：
 
-### Model Factory
-- Classification models: Random Forest, XGBoost, LightGBM, Neural Networks
-- Regression models: Linear Regression, SVR, Gradient Boosting
-- Optimization models: Linear Programming, Integer Programming
-- Evaluation-specific models: Bayesian models, Shapley values, Z-test
-- Competition-specific: Grey prediction, Operations research optimization
+- 🇨🇳 简体中文（默认）
+- 🇺🇸 English
 
-### Evaluation & Visualization
-- Multiple metrics: Accuracy, RMSE, F1-score, etc.
-- Competition-themed charts: MCM red, CUMCM blue
-- Interactive visualizations: Matplotlib + Seaborn + Plotly
-- Model interpretation: SHAP values
-- Flow diagrams: UML + Business flow
-
-### Report Generation
-- Markdown templates: English (MCM/ICM), Chinese (CUMCM)
-- Mathematical justification for each decision
-- Competition-specific adaptation reasons
-- Version control support
+语言切换在用户设置中配置，系统会自动保存语言偏好。
 
 ---
 
-## 🎓 Daily Learning Module
+## 📚 文档
 
-- **Automated Learning**: Daily Bilibili content extraction
-- **User Materials**: Process uploaded PDFs, videos, documents
-- **Knowledge Base**: Structured storage in `data/knowledge_base.json`
-- **Categorized Storage**: Organized by topic and competition type
-- **Learning Reports**: Daily summaries and insights
-
----
-
-## 🏆 Competition Support
-
-Supported competitions with standardized naming:
-
-| Competition | Folder Format | Example |
-|-------------|---------------|---------|
-| MCM | `{year}-MCM/{problem-id}` | `data/competitions/2026-MCM/A/` |
-| ICM | `{year}-ICM/{problem-id}` | `data/competitions/2026-ICM/D/` |
-| CUMCM | `{year}-CUMCM/{problem-id}` | `data/competitions/2026-CUMCM/A/` |
-| Shenzhen Cup | `{year}-ShenzhenCup/{problem-id}` | `data/competitions/2026-ShenzhenCup/A/` |
-| IMMC | `{year}-IMMC/{problem-id}` | `data/competitions/2026-IMMC/A/` |
-| MathorCup | `{year}-MathorCup/{problem-id}` | `data/competitions/2026-MathorCup/A/` |
-| EMMC | `{year}-EMMC/{problem-id}` | `data/competitions/2026-EMMC/A/` |
-| TeddyCup | `{year}-TeddyCup/{problem-id}` | `data/competitions/2026-TeddyCup/A/` |
-| BlueBridge Math | `{year}-BlueBridgeMath/{problem-id}` | `data/competitions/2026-BlueBridgeMath/A/` |
-
-Multiple approaches supported: `2026-MCM/A-1/`, `2026-MCM/A-2/`
+- [安装指南](docs/installation-guide.md) - 详细的安装步骤
+- [部署指南](docs/deployment-guide.md) - Docker 部署详细说明
+- [开发指南](docs/development-guide.md) - 开发环境配置和代码规范
+- [贡献指南](CONTRIBUTING.md) - 如何贡献代码
+- [架构图](docs/architecture-diagrams.md) - 系统架构图
+- [测试指南](docs/testing-guide.md) - 测试框架和规范
 
 ---
 
-## 📦 Deployment
+## 🤝 贡献
 
-### Docker Deployment
+我们欢迎各种形式的贡献！请查看我们的[贡献指南](CONTRIBUTING.md)。
 
-```bash
-# Build and start with Docker Compose
-cd docker
-docker-compose up -d
+### 贡献方式
 
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-### NAS Deployment (Synology)
-
-```bash
-# Install Docker and Docker Compose on Synology
-# Copy project files to NAS
-# Run:
-docker-compose -f docker/docker-compose.nas.yml up -d
-```
-
-### Server Deployment (Linux)
-
-```bash
-# Copy project files to server
-# Set environment variables
-# Run deployment script:
-bash docker/deploy.sh
-```
+- 报告 Bug
+- 提出新功能建议
+- 提交代码改进
+- 改进文档
+- 分享使用经验
 
 ---
 
-## 🧪 Testing
+## 📄 许可证
 
-```bash
-# Run unit tests
-pnpm test
+- **社区版**：MIT License - 免费使用、修改和分发
+- **企业版**：商业 License - 需要商业授权
 
-# Run integration tests
-pnpm test:integration
+许可证详情请查看 [LICENSE](LICENSE) 文件。
 
-# Run E2E tests
-pnpm test:e2e
-
-# Type checking
-pnpm ts-check
-```
+商业授权咨询：[license@cmamsys.com](mailto:license@cmamsys.com)
 
 ---
 
-## 📚 Documentation
+## 📞 技术支持
 
-- [Getting Started](docs/getting-started.md)
-- [API Reference](docs/api-reference.md)
-- [Modeling Guide](docs/modeling-guide.md)
-- [Deployment Guide](docs/deployment-guide.md)
-- [Project Summary](docs/project-summary.md)
-- [Contributing](CONTRIBUTING.md)
+- 📧 邮箱：[support@cmamsys.com](mailto:support@cmamsys.com)
+- 📚 文档：[docs.cmamsys.com](https://docs.cmamsys.com)
+- 🐛 问题反馈：[GitHub Issues](https://github.com/your-org/cmamsys/issues)
+- 💬 社区讨论：[GitHub Discussions](https://github.com/your-org/cmamsys/discussions)
 
 ---
 
-## 🤝 Contributing
+## 🌟 项目亮点
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+### 竞赛支持
 
----
+系统针对以下竞赛进行了特别优化：
 
-## 📄 License
+| 竞赛名称 | 英文缩写 | 主题色 | 模板支持 |
+|---------|---------|--------|---------|
+| 美国大学生数学建模竞赛 | MCM/ICM | 红色 | ✅ |
+| 全国大学生数学建模竞赛 | CUMCM | 蓝色 | ✅ |
+| 深圳杯数学建模挑战赛 | 深圳杯 | 紫色 | ✅ |
+| 国际数学建模挑战赛 | IMMC | 绿色 | ✅ |
+| MathorCup 数学建模挑战赛 | MathorCup | 橙色 | ✅ |
+| 电工杯数学建模竞赛 | EMMC | 青色 | ✅ |
+| 泰迪杯数据挖掘挑战赛 | 泰迪杯 | 黄色 | ✅ |
 
-- **Community Edition**: MIT License - Free for personal and commercial use
-- **Enterprise Edition**: Commercial License - Requires purchase for advanced features
+### AI 能力
 
-For licensing inquiries, please contact [license@cmamsys.com](mailto:license@cmamsys.com)
+- **多模型支持**：DeepSeek、豆包、通义千问、OpenAI GPT
+- **流式响应**：SSE 实时输出，提升用户体验
+- **成本控制**：智能 Token 计费和预算控制
+- **提供商切换**：灵活切换不同的 AI 提供商
 
----
+### 学习系统
 
-## ❓ FAQ
-
-### General Questions
-
-**Q: What are the system requirements for CMAMSys?**
-A:
-- Minimum: 2 CPU cores, 4GB RAM, 10GB disk space
-- Recommended: 4 CPU cores, 8GB RAM, 20GB disk space
-- Database: PostgreSQL 14+
-- Runtime: Node.js 24+
-
-**Q: Can I use CMAMSys for non-mathematical modeling competitions?**
-A: Yes! CMAMSys is designed for general data modeling tasks and can be used for:
-- Data analysis competitions
-- Machine learning competitions
-- Research projects
-- Data science education
-
-**Q: Is my data secure?**
-A: Yes. All data is stored in your own PostgreSQL database. API keys are encrypted using AES-256-GCM. We don't have access to your data.
-
-### Installation & Deployment
-
-**Q: How do I change the default administrator password?**
-A:
-1. Login with the default admin account
-2. Go to Settings > Profile
-3. Click "Change Password"
-4. Enter your new password
-
-**Q: Docker deployment failed with "connection refused" error.**
-A:
-1. Check if PostgreSQL container is running: `docker ps | grep cmamsys-postgres`
-2. Check logs: `docker logs cmamsys-postgres`
-3. Verify DATABASE_URL in `.env` file
-4. Ensure ports are not already in use
-
-**Q: How do I upgrade to a new version?**
-A:
-```bash
-# Stop services
-docker-compose down
-
-# Pull latest changes
-git pull origin main
-
-# Rebuild and restart
-docker-compose up -d --build
-
-# Run database migrations
-docker-compose exec app pnpm prisma migrate deploy
-```
-
-### AI Providers
-
-**Q: How do I configure multiple AI providers?**
-A:
-1. Go to Settings > AI Providers
-2. Click "Add Provider"
-3. Select provider type (Aliyun, VolcEngine, DeepSeek, etc.)
-4. Enter API Key and configuration
-5. Set priority order (lower number = higher priority)
-
-**Q: What's the difference between Community and Enterprise editions?**
-A: See the table in the Docker Deployment section. Key differences:
-- Enterprise includes SSO, unlimited storage, and priority support
-- Enterprise requires a commercial license
-- Community is free and open source (MIT)
-
-### Troubleshooting
-
-**Q: Application won't start after installation.**
-A:
-1. Check environment variables in `.env` file
-2. Ensure PostgreSQL is running and accessible
-3. Check logs: `docker-compose logs -f`
-4. Verify Node.js version is 24+
-
-**Q: Database migration failed.**
-A:
-```bash
-# Reset database (WARNING: This will delete all data)
-pnpm prisma migrate reset
-
-# Or create a new migration
-pnpm prisma migrate dev --name fix
-```
-
-**Q: AI provider tests failing.**
-A:
-1. Verify API key is correct and has no extra spaces
-2. Check if API key has sufficient permissions
-3. Verify network connectivity to provider endpoint
-4. Check provider console for rate limits or quotas
-
-### Learning Module
-
-**Q: How does the Bilibili learning module work?**
-A:
-1. Go to Settings > Learning
-2. Configure Bilibili API credentials
-3. Add video URLs to your learning queue
-4. System automatically extracts knowledge points
-5. Knowledge is stored in the knowledge base for AI to use
-
-**Q: Can I add my own learning materials?**
-A: Yes! You can upload:
-- PDF documents
-- Video files
-- Text documents
-- Structured data files (CSV, JSON, Excel)
-
-**Q: How often does the learning module run?**
-A: By default, it runs once daily. You can configure the schedule in Settings > Learning > Scheduler.
+- **Bilibili 集成**：自动爬取和分析 Bilibili 学习视频
+- **知识库构建**：基于视频内容自动生成知识点
+- **学习进度跟踪**：可视化学习进度和成果
+- **个性化推荐**：基于学习历史推荐相关内容
 
 ---
 
-## 🔗 Links
+## 🔗 相关链接
 
-- **Website**: [https://cmamsys.com](https://cmamsys.com)
-- **Documentation**: [https://docs.cmamsys.com](https://docs.cmamsys.com)
-- **API Reference**: [https://api.cmamsys.com](https://api.cmamsys.com)
-- **Community**: [https://community.cmamsys.com](https://community.cmamsys.com)
-- **GitHub**: [https://github.com/your-org/cmamsys](https://github.com/your-org/cmamsys)
+- [官方网站](https://cmamsys.com)
+- [在线文档](https://docs.cmamsys.com)
+- [GitHub 仓库](https://github.com/your-org/cmamsys)
+- [更新日志](CHANGELOG.md)
 
 ---
 
-## 📞 Support
+## 🙏 致谢
 
-Need help? Here's how to get in touch:
+感谢所有为这个项目做出贡献的开发者和用户！
 
-- 📧 **Email**: [support@cmamsys.com](mailto:support@cmamsys.com)
-- 💬 **Discord**: Join our community server
-- 📚 **Documentation**: [docs.cmamsys.com](https://docs.cmamsys.com)
-- 🐛 **Report Issues**: [GitHub Issues](https://github.com/your-org/cmamsys/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/your-org/cmamsys/discussions)
-
-**Enterprise Support**: If you're using the Enterprise edition, you have access to priority support. Contact us at [enterprise@cmamsys.com](mailto:enterprise@cmamsys.com).
+特别感谢：
+- Next.js 团队提供的优秀框架
+- shadcn/ui 提供的精美组件库
+- Prisma 团队提供的优秀 ORM
+- 所有开源社区的贡献者
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for the mathematical modeling community**
+**用 ❤️ 为数学建模社区构建**
 
-[⬆ Back to Top](#cmamsys---competimath-automodel-system)
+[⬆ 回到顶部](#cmamsys---竞赛数学自动化建模系统)
 
 </div>
