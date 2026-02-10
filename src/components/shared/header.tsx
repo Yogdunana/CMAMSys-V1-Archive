@@ -7,23 +7,37 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { UserMenu } from '@/components/auth/user-menu';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders, LogIn } from 'lucide-react';
+import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders, LogIn, Bot, FolderTree, Database, Shield, FileText, BarChart3, Settings2 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 
-const navItems = [
+// 公共导航项（所有用户可见）
+const publicNavItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
   { href: '/dashboard/competitions', label: '竞赛', icon: Trophy },
+  { href: '/dashboard/modeling-tasks', label: '建模任务', icon: FolderTree },
+  { href: '/dashboard/auto-modeling', label: '自动化建模', icon: Bot },
   { href: '/dashboard/ai-providers', label: 'AI Provider', icon: Activity },
   { href: '/learning/knowledge', label: '知识库', icon: BookOpen },
   { href: '/learning/settings', label: '学习配置', icon: Sliders },
-  { href: '/settings', label: '设置', icon: Settings },
+  { href: '/docs', label: 'API 文档', icon: FileText },
+];
+
+// 管理员导航项（仅管理员可见）
+const adminNavItems = [
+  { href: '/admin/users', label: '用户管理', icon: Users },
+  { href: '/admin/logs', label: '系统日志', icon: BarChart3 },
+  { href: '/settings/system', label: '系统设置', icon: Settings2 },
+  { href: '/settings/database', label: '数据库管理', icon: Database },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
+  const allNavItems = isAdmin ? [...publicNavItems, ...adminNavItems] : publicNavItems;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -36,7 +50,7 @@ export function Header() {
             </span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            {navItems.map((item) => {
+            {allNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
