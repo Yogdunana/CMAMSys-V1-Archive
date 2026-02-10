@@ -8,9 +8,8 @@ import { verifyAccessToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import { ApiResponse } from '@/lib/types';
 import { createApiMiddleware, MiddlewarePresets, addSecurityHeaders } from '@/lib/api-middleware';
-import type { ApiVersion } from '@/lib/api-version';
 
-async function handler(request: NextRequest, version: ApiVersion = 'v1') {
+async function handler(request: NextRequest, context?: { params?: Promise<any> }) {
   try {
     // Verify authentication
     const authHeader = request.headers.get('authorization');

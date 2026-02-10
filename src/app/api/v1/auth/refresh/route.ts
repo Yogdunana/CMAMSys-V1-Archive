@@ -8,9 +8,8 @@ import { verifyRefreshToken, generateAccessToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import { ApiResponse, AuthResponse, UserDTO, UserRole } from '@/lib/types';
 import { createApiMiddleware, MiddlewarePresets, addSecurityHeaders } from '@/lib/api-middleware';
-import type { ApiVersion } from '@/lib/api-version';
 
-async function handler(request: NextRequest, version: ApiVersion = 'v1') {
+async function handler(request: NextRequest, context?: { params?: Promise<any> }) {
   try {
     const refreshToken = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -116,8 +115,9 @@ async function handler(request: NextRequest, version: ApiVersion = 'v1') {
     const userDTO: UserDTO = {
       id: user.id,
       email: user.email,
-      name: user.name,
+      username: user.username,
       role: user.role as UserRole,
+      isVerified: user.isVerified,
       isMfaEnabled: user.isMfaEnabled,
       createdAt: user.createdAt.toISOString(),
     };

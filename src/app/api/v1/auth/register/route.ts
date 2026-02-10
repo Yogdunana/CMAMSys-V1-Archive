@@ -11,7 +11,6 @@ import { generateToken } from '@/lib/crypto';
 import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { ApiResponse, RegisterRequest, AuthResponse, UserDTO, UserRole } from '@/lib/types';
 import { createApiMiddleware, MiddlewarePresets, addSecurityHeaders } from '@/lib/api-middleware';
-import type { ApiVersion } from '@/lib/api-version';
 
 // Validation schema
 const registerSchema = z.object({
@@ -34,7 +33,7 @@ const registerSchema = z.object({
   path: ['confirmPassword'],
 });
 
-async function handler(request: NextRequest, version: ApiVersion = 'v1') {
+async function handler(request: NextRequest, context?: { params?: Promise<any> }) {
   try {
     // Parse and validate request body
     const body: RegisterRequest = await request.json();
@@ -140,7 +139,6 @@ async function handler(request: NextRequest, version: ApiVersion = 'v1') {
     await prisma.refreshToken.create({
       data: {
         token: refreshToken,
-        tokenId: refreshTokenId,
         userId: user.id,
         expiresAt: refreshTokenExpiresAt,
       },

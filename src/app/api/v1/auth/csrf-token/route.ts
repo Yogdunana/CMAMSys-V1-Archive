@@ -6,9 +6,8 @@
 import { NextRequest } from 'next/server';
 import { getCSRFTokenHandler } from '@/lib/csrf';
 import { createApiMiddleware, MiddlewarePresets, addSecurityHeaders } from '@/lib/api-middleware';
-import type { ApiVersion } from '@/lib/api-version';
 
-async function handler(request: NextRequest, version: ApiVersion = 'v1') {
+async function handler(request: NextRequest, context?: { params?: Promise<any> }) {
   const response = await getCSRFTokenHandler(request);
   return addSecurityHeaders(response);
 }

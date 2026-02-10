@@ -14,11 +14,11 @@ import { withApiVersionControl, ApiVersion } from '@/lib/api-version';
 export interface MiddlewareConfig {
   rateLimit?: {
     enabled?: boolean;
-    preset?: keyof typeof RateLimitPresets;
+    preset?: string;
   };
   csrf?: {
     enabled?: boolean;
-    skipMethods?: string[];
+    skipMethods?: readonly string[] | string[];
   };
   version?: {
     enabled?: boolean;
@@ -31,7 +31,7 @@ export interface MiddlewareConfig {
  * 创建组合中间件
  */
 export function createApiMiddleware<T extends NextRequest>(
-  handler: (request: T, version?: ApiVersion, ...args: any[]) => Promise<NextResponse>,
+  handler: (request: T, context?: { params?: Promise<any> }) => Promise<Response | NextResponse>,
   config: MiddlewareConfig = {}
 ) {
   const {
@@ -56,7 +56,7 @@ export function createApiMiddleware<T extends NextRequest>(
   if (rateLimit.enabled && rateLimit.preset) {
     const rateLimiter = getRateLimiter(rateLimit.preset);
 
-    return async (request: T, ...args: any[]): Promise<NextResponse> => {
+    return async (request: T, context?: { params?: Promise<any> }): Promise<Response> => {
       // Apply rate limit
       const rateLimitResult = await rateLimiter(request);
 
@@ -65,7 +65,7 @@ export function createApiMiddleware<T extends NextRequest>(
       }
 
       // Call handler
-      return handler(request, ...args);
+      return handler(request, context);
     };
   }
 
@@ -163,7 +163,7 @@ export async function validateCSRFServerSide(request: NextRequest): Promise<bool
  * Helper: Add Security Headers
  * 辅助函数：添加安全响应头
  */
-export function addSecurityHeaders(response: NextResponse): NextResponse {
+export function addSecurityHeaders(response: Response): Response {
   // Content Security Policy
   response.headers.set(
     'Content-Security-Policy',
@@ -196,9 +196,9 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
  * 辅助函数：添加 CORS 响应头
  */
 export function addCORSHeaders(
-  response: NextResponse,
+  response: Response,
   origin: string = '*'
-): NextResponse {
+): Response {
   response.headers.set('Access-Control-Allow-Origin', origin);
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token');

@@ -38,9 +38,11 @@ Sentry.init({
 
   // Add integrations
   integrations: [
-    new Sentry.BrowserTracing(),
-    new Sentry.Integrations.Http({ tracing: true }),
-    new Sentry.Integrations.Postgres(),
+    // Note: BrowserTracing is only for client-side
+    // new Sentry.BrowserTracing(),
+    // Note: Integrations namespace may have changed in v9
+    // new Sentry.Integrations.Http({ tracing: true }),
+    // new Sentry.Integrations.Postgres(),
   ],
 
   // Ignore specific errors
