@@ -212,7 +212,7 @@ export function addCORSHeaders(
  * Helper: Handle OPTIONS Request (Preflight)
  * 辅助函数：处理 OPTIONS 请求（预检）
  */
-export function handleOptionsRequest(request: NextRequest): NextResponse | null {
+export function handleOptionsRequest(request: NextRequest): Response | null {
   if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 204 });
     return addCORSHeaders(response);
