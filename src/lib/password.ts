@@ -21,11 +21,95 @@ export async function verifyPassword(
   password: string,
   hash: string
 ): Promise<boolean> {
-  return await bcrypt.compare(password, hash);
+  try {
+    // Validate input types
+    if (!password || !hash) {
+      return false;
+    }
+
+    if (typeof password !== 'string' || typeof hash !== 'string') {
+      return false;
+    }
+
+    return await bcrypt.compare(password, hash);
+  } catch {
+    // bcrypt.compare may throw errors for invalid inputs
+    // Return false for all error cases
+    return false;
+  }
 }
 
 /**
- * Validate password strength
+ * Password Strength Enum
+ */
+export enum PasswordStrength {
+  WEAK = 'WEAK',
+  MEDIUM = 'MEDIUM',
+  STRONG = 'STRONG',
+  VERY_STRONG = 'VERY_STRONG',
+}
+
+/**
+ * Check password strength and return score and feedback
+ */
+export function checkPasswordStrength(password: string): {
+  strength: PasswordStrength;
+  score: number;
+  feedback: string[];
+} {
+  const feedback: string[] = [];
+  let score = 0;
+
+  // Length check (max 25 points)
+  if (password.length >= 8) score += 10;
+  if (password.length >= 12) score += 10;
+  if (password.length >= 16) score += 5;
+  else if (password.length > 0 && password.length < 8) feedback.push('Password is too short');
+
+  // Uppercase check (max 15 points)
+  if (/[A-Z]/.test(password)) {
+    score += 15;
+  } else {
+    feedback.push('Add uppercase letters');
+  }
+
+  // Lowercase check (max 15 points)
+  if (/[a-z]/.test(password)) {
+    score += 15;
+  } else {
+    feedback.push('Add lowercase letters');
+  }
+
+  // Numbers check (max 15 points)
+  if (/[0-9]/.test(password)) {
+    score += 15;
+  } else {
+    feedback.push('Add numbers');
+  }
+
+  // Special characters check (max 30 points)
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    score += 30;
+  } else {
+    feedback.push('Add special characters');
+  }
+
+  // Determine strength level
+  let strength: PasswordStrength;
+  if (score >= 80) strength = PasswordStrength.VERY_STRONG;
+  else if (score >= 55) strength = PasswordStrength.STRONG;
+  else if (score >= 30) strength = PasswordStrength.MEDIUM;
+  else strength = PasswordStrength.WEAK;
+
+  return {
+    strength,
+    score,
+    feedback,
+  };
+}
+
+/**
+ * Validate password strength (strict check)
  * Requirements:
  * - At least 8 characters
  * - Contains uppercase letter

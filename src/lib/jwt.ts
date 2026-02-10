@@ -37,7 +37,7 @@ export async function generateAccessToken(payload: TokenPayload): Promise<string
   const accessTokenExpiry = process.env.JWT_ACCESS_TOKEN_EXPIRY || '15m';
 
   return await new SignJWT({ ...payload, type: 'access' } as AccessTokenPayload)
-    .setProtectedHeader({ alg: 'HS256' })
+    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
     .setExpirationTime(accessTokenExpiry)
     .sign(JWT_SECRET);
@@ -56,7 +56,7 @@ export async function generateRefreshToken(
   return await new SignJWT(
     { ...payload, type: 'refresh', tokenId } as RefreshTokenPayload
   )
-    .setProtectedHeader({ alg: 'HS256' })
+    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
     .setExpirationTime(refreshTokenExpiry)
     .sign(REFRESH_TOKEN_SECRET);
