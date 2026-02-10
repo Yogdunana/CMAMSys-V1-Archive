@@ -5,7 +5,7 @@
 
 import { createLogger } from '@/lib/logger';
 
-const logger = createLogger({ category: 'REPORT_GENERATION' });
+const logger = createLogger('REPORT_GENERATION');
 
 export interface ReportConfig {
   reportType: 'full' | 'summary' | 'technical' | 'presentation';

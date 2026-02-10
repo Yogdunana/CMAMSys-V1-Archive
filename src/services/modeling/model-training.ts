@@ -5,7 +5,7 @@
 
 import { createLogger } from '@/lib/logger';
 
-const logger = createLogger({ category: 'MODEL_TRAINING' });
+const logger = createLogger('MODEL_TRAINING');
 
 export enum ModelType {
   CLASSIFICATION = 'classification',

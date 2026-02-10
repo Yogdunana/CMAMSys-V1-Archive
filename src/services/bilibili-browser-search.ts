@@ -7,7 +7,7 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { createLogger } from '@/lib/logger';
 
-const logger = createLogger({ category: 'BILIBILI_BROWSER_SEARCH' });
+const logger = createLogger('BILIBILI_BROWSER_SEARCH');
 
 interface BilibiliVideo {
   bvid: string;

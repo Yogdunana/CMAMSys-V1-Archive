@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getRateLimiter, RateLimitPresets } from '@/lib/rate-limit';
-import { withCSRFProtection, validateCSRFToken } from '@/lib/csrf';
+import { withCSRFProtection, verifyCSRFToken } from '@/lib/csrf';
 import { withApiVersionControl, ApiVersion } from '@/lib/api-version';
 
 /**
@@ -126,7 +126,7 @@ export const MiddlewarePresets = {
  */
 export function withPresetMiddleware<T extends NextRequest>(
   preset: keyof typeof MiddlewarePresets,
-  handler: (request: T, version?: ApiVersion, ...args: any[]) => Promise<NextResponse>
+  handler: (request: T, context?: { params?: Promise<any> }) => Promise<Response | NextResponse>
 ) {
   return createApiMiddleware(handler, MiddlewarePresets[preset]);
 }
@@ -144,7 +144,7 @@ export async function validateCSRFServerSide(request: NextRequest): Promise<bool
       const body = await request.json();
       const bodyToken = body.csrfToken;
       if (bodyToken) {
-        return await validateCSRFToken(bodyToken);
+        return (await verifyCSRFToken(bodyToken)) !== null;
       }
     } catch {
       // If body parsing fails, just return false
@@ -156,7 +156,7 @@ export async function validateCSRFServerSide(request: NextRequest): Promise<bool
     return false;
   }
 
-  return await validateCSRFToken(token);
+  return (await verifyCSRFToken(token)) !== null;
 }
 
 /**
@@ -164,26 +164,31 @@ export async function validateCSRFServerSide(request: NextRequest): Promise<bool
  * 辅助函数：添加安全响应头
  */
 export function addSecurityHeaders(response: Response): Response {
+  // Helper function to set headers safely
+  const setHeader = (key: string, value: string) => {
+    (response.headers as Headers).set(key, value);
+  };
+
   // Content Security Policy
-  response.headers.set(
+  setHeader(
     'Content-Security-Policy',
     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';"
   );
 
   // X-Content-Type-Options
-  response.headers.set('X-Content-Type-Options', 'nosniff');
+  setHeader('X-Content-Type-Options', 'nosniff');
 
   // X-Frame-Options
-  response.headers.set('X-Frame-Options', 'DENY');
+  setHeader('X-Frame-Options', 'DENY');
 
   // X-XSS-Protection
-  response.headers.set('X-XSS-Protection', '1; mode=block');
+  setHeader('X-XSS-Protection', '1; mode=block');
 
   // Referrer-Policy
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   // Permissions-Policy
-  response.headers.set(
+  setHeader(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=()'
   );
@@ -199,11 +204,16 @@ export function addCORSHeaders(
   response: Response,
   origin: string = '*'
 ): Response {
-  response.headers.set('Access-Control-Allow-Origin', origin);
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token');
-  response.headers.set('Access-Control-Allow-Credentials', 'true');
-  response.headers.set('Access-Control-Max-Age', '86400');
+  // Helper function to set headers safely
+  const setHeader = (key: string, value: string) => {
+    (response.headers as Headers).set(key, value);
+  };
+
+  setHeader('Access-Control-Allow-Origin', origin);
+  setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token');
+  setHeader('Access-Control-Allow-Credentials', 'true');
+  setHeader('Access-Control-Max-Age', '86400');
 
   return response;
 }

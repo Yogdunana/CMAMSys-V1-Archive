@@ -9,7 +9,7 @@ import { createLogger } from '@/lib/logger';
 import { isFeatureAvailable, FeatureFlag } from '@/lib/features';
 import { searchBilibiliVideosWithBrowser } from './bilibili-browser-search';
 
-const logger = createLogger({ category: 'BILIBILI_LEARNING' });
+const logger = createLogger('BILIBILI_LEARNING');
 
 // Bilibili API 配置
 const BILIBILI_API = {
