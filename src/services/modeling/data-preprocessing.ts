@@ -5,7 +5,7 @@
 
 import { createLogger } from '@/lib/logger';
 
-const logger = createLogger({ category: 'DATA_PREPROCESSING' });
+const logger = createLogger('DATA_PREPROCESSING');
 
 export interface DataConfig {
   filePath: string;

@@ -14,7 +14,7 @@ import {
 } from '@prisma/client';
 import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
-const logger = createLogger({ category: 'AI_PROVIDER_SERVICE' });
+const logger = createLogger('AI_PROVIDER_SERVICE');
 
 // AI Provider configurations
 export interface AIProviderConfig {

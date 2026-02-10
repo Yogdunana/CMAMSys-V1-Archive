@@ -5,7 +5,7 @@
 
 import { createLogger } from '@/lib/logger';
 
-const logger = createLogger({ category: 'MODEL_EVALUATION' });
+const logger = createLogger('MODEL_EVALUATION');
 
 export interface EvaluationConfig {
   metrics: EvaluationMetric[];

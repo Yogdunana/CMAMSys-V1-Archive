@@ -64,12 +64,15 @@ export function handleApiError(
   context: string = 'API'
 ): NextResponse {
   // Create logger with request context
-  const logger = createLogger({
-    category: context,
-    userId: request.headers.get('x-user-id') || undefined,
-    requestId: request.headers.get('x-request-id') || undefined,
-    ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-  });
+  const logger = createLogger(
+    context,
+    'error',
+    {
+      userId: request.headers.get('x-user-id') || undefined,
+      requestId: request.headers.get('x-request-id') || undefined,
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+    }
+  );
 
   // Log the error
   logger.error(`API Error: ${request.method} ${request.nextUrl.pathname}`, error);

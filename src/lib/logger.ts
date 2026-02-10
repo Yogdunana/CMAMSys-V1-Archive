@@ -19,7 +19,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 // Create logger instance
-export const logger = pino({
+const pinoLogger = pino({
   level: logLevel,
   transport:
     process.env.NODE_ENV === 'development'
@@ -50,6 +50,37 @@ export const logger = pino({
   }),
 });
 
+// Type-safe logger wrapper to fix TypeScript inference issues
+interface LoggerType {
+  info: (msg: string, ...args: any[]) => void;
+  debug: (msg: string, ...args: any[]) => void;
+  warn: (msg: string, ...args: any[]) => void;
+  error: (msg: string, ...args: any[]) => void;
+  fatal: (msg: string, ...args: any[]) => void;
+  trace: (msg: string, ...args: any[]) => void;
+  child: (bindings: any) => LoggerType;
+  level: string;
+  silent: () => void;
+  // Also support object-first style for child loggers
+  raw: any;
+}
+
+const createTypedLogger = (baseLogger: any): LoggerType => ({
+  info: (msg: string, ...args: any[]) => baseLogger.info(msg, ...args),
+  debug: (msg: string, ...args: any[]) => baseLogger.debug(msg, ...args),
+  warn: (msg: string, ...args: any[]) => baseLogger.warn(msg, ...args),
+  error: (msg: string, ...args: any[]) => baseLogger.error(msg, ...args),
+  fatal: (msg: string, ...args: any[]) => baseLogger.fatal(msg, ...args),
+  trace: (msg: string, ...args: any[]) => baseLogger.trace(msg, ...args),
+  child: (bindings: any) => createTypedLogger(baseLogger.child(bindings)),
+  get level() { return baseLogger.level; },
+  set level(lvl: LogLevel) { baseLogger.level = lvl; },
+  silent: () => { baseLogger.level = 'silent'; },
+  raw: baseLogger,
+});
+
+export const logger = createTypedLogger(pinoLogger);
+
 // Create separate loggers for different contexts
 export const authLogger = logger.child({ context: 'auth' });
 export const apiLogger = logger.child({ context: 'api' });
@@ -68,7 +99,7 @@ export function logAPIRequest(
   duration: number,
   userId?: string
 ) {
-  apiLogger.info({
+  apiLogger.raw.info({
     event: 'api_request',
     method,
     url,
@@ -89,7 +120,7 @@ export function logAPIError(
   statusCode: number,
   userId?: string
 ) {
-  errorLogger.error({
+  errorLogger.raw.error({
     event: 'api_error',
     method,
     url,
@@ -113,7 +144,7 @@ export function logAuthEvent(
   email?: string,
   metadata?: Record<string, any>
 ) {
-  authLogger.info({
+  authLogger.raw.info({
     event,
     userId,
     email,
@@ -129,7 +160,7 @@ export function logSecurityEvent(
   event: 'rate_limit_exceeded' | 'csrf_failed' | 'invalid_token' | 'suspicious_activity',
   details: Record<string, any>
 ) {
-  securityLogger.warn({
+  securityLogger.raw.warn({
     event,
     details,
     timestamp: new Date().toISOString(),
@@ -145,7 +176,7 @@ export function logDBQuery(
   duration: number,
   rowCount?: number
 ) {
-  dbLogger.debug({
+  dbLogger.raw.debug({
     event: 'db_query',
     operation,
     table,
@@ -163,7 +194,7 @@ export function logDBError(
   table: string,
   error: Error
 ) {
-  errorLogger.error({
+  errorLogger.raw.error({
     event: 'db_error',
     operation,
     table,
@@ -188,7 +219,7 @@ export function logAIRequest(
   error?: Error
 ) {
   if (error) {
-    aiLogger.error({
+    aiLogger.raw.error({
       event: 'ai_request_failed',
       provider,
       model,
@@ -199,7 +230,7 @@ export function logAIRequest(
       timestamp: new Date().toISOString(),
     });
   } else {
-    aiLogger.info({
+    aiLogger.raw.info({
       event: 'ai_request_success',
       provider,
       model,
@@ -230,7 +261,7 @@ export class PerformanceLogger {
    */
   end() {
     const duration = performance.now() - this.startTime;
-    logger.info({
+    logger.raw.info({
       event: 'performance',
       operation: this.operation,
       duration,
@@ -244,7 +275,7 @@ export class PerformanceLogger {
    */
   step(stepName: string) {
     const duration = performance.now() - this.startTime;
-    logger.debug({
+    logger.raw.debug({
       event: 'performance_step',
       operation: this.operation,
       step: stepName,
