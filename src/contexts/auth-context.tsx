@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { api } from '@/lib/api-service';
 
 interface User {
   id: string;
@@ -68,8 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   }
-
-import { api } from '@/lib/api-service';
 
   async function verifyToken(token: string): Promise<boolean> {
     try {
