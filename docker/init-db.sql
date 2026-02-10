@@ -61,23 +61,16 @@ VALUES
   (uuid_generate_v4(), 'Aliyun DashScope Default', 'ALIYUN', '', 'https://dashscope.aliyuncs.com/compatible-mode/v1', '["qwen-turbo", "qwen-plus", "qwen-max"]', false, 30, NOW(), NOW())
 ON CONFLICT DO NOTHING;
 
--- Create initial community edition license
-INSERT INTO "LicenseInfo" (id, "licenseKey", "plan", "status", "activatedAt", "expiresAt", "maxUsers", "maxTeams", "features", "metadata", "createdAt", "updatedAt")
-VALUES
-  (uuid_generate_v4(), 'CMAMSYS-COMMUNITY-UNLIMITED', 'COMMUNITY', 'ACTIVE', NOW(), '2099-12-31', 0, 0, '["basic_modeling", "team_collaboration", "report_generation"]', '{"edition": "community", "source": "self_hosted"}', NOW(), NOW())
-ON CONFLICT ("licenseKey") DO NOTHING;
+-- Note: Community license is configured in src/lib/license.ts (hardcoded)
+-- License features are available by default in the self-hosted edition
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_user_email ON "User"(email);
 CREATE INDEX IF NOT EXISTS idx_user_role ON "User"(role);
 CREATE INDEX IF NOT EXISTS idx_team_owner ON "Team"(ownerId);
 CREATE INDEX IF NOT EXISTS idx_competition_status ON "Competition"(status);
-CREATE INDEX IF NOT EXISTS idx_project_team ON "Project"(teamId);
-CREATE INDEX IF NOT EXISTS idx_project_status ON "Project"(status);
 CREATE INDEX IF NOT EXISTS idx_ai_request_provider ON "AIRequest"(provider);
 CREATE INDEX IF NOT EXISTS idx_ai_request_created ON "AIRequest"(createdAt);
-CREATE INDEX IF NOT EXISTS idx_log_level ON "SystemLog"(level);
-CREATE INDEX IF NOT EXISTS idx_log_created ON "SystemLog"(createdAt);
 
 -- Grant permissions (if using a non-superuser)
 -- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO cmamsys_user;
@@ -89,9 +82,8 @@ BEGIN
   RAISE NOTICE '========================================';
   RAISE NOTICE 'CMAMSys Database Initialized Successfully';
   RAISE NOTICE '========================================';
-  RAISE NOTICE 'Tables created: User, Team, Competition, Project, AIProvider, etc.';
+  RAISE NOTICE 'Tables created: User, Team, Competition, AIProvider, etc.';
   RAISE NOTICE 'Initial settings configured';
   RAISE NOTICE 'AI provider templates created';
-  RAISE NOTICE 'Community license activated';
   RAISE NOTICE '========================================';
 END $$;
