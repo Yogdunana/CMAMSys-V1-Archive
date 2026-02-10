@@ -6,6 +6,8 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Header } from '@/components/shared/header';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +32,25 @@ interface SystemConfig {
   databaseType: string;
 }
 
+// Helper function to fetch with authentication
+async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+  const accessToken = localStorage.getItem('accessToken');
+  const csrfToken = localStorage.getItem('csrfToken');
+
+  const headers = new Headers(options.headers);
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+  if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    headers.set('X-CSRF-Token', csrfToken);
+  }
+  if (!headers.has('Content-Type') && options.body) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return fetch(url, { ...options, headers });
+}
+
 export default function SystemSettingsPage() {
   const [config, setConfig] = useState<SystemConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,13 +63,13 @@ export default function SystemSettingsPage() {
 
   const loadConfig = async () => {
     try {
-      const response = await fetch('/api/settings/system');
+      const response = await fetchWithAuth('/api/settings/system');
       const result = await response.json();
 
       if (result.success) {
         setConfig(result.data);
       } else {
-        setMessage({ type: 'error', text: result.error.message });
+        setMessage({ type: 'error', text: result.error?.message || 'Failed to load configuration' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to load system configuration' });
@@ -64,9 +85,8 @@ export default function SystemSettingsPage() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/settings/system', {
+      const response = await fetchWithAuth('/api/settings/system', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           appName: config.appName,
           appUrl: config.appUrl,
@@ -87,7 +107,7 @@ export default function SystemSettingsPage() {
           text: `${result.data.message}. Please restart the service to apply changes.`,
         });
       } else {
-        setMessage({ type: 'error', text: result.error.message });
+        setMessage({ type: 'error', text: result.error?.message || 'Failed to save configuration' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save system configuration' });
@@ -114,13 +134,17 @@ export default function SystemSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage system-wide configuration and settings
-        </p>
-      </div>
+    <ProtectedRoute>
+      <div className="min-h-screen">
+        <Header />
+        <main className="container mx-auto py-8">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
+              <p className="text-muted-foreground mt-2">
+                Manage system-wide configuration and settings
+              </p>
+            </div>
 
       {message && (
         <Alert variant={message.type === 'success' ? 'default' : 'destructive'}>
@@ -319,6 +343,9 @@ export default function SystemSettingsPage() {
           )}
         </Button>
       </div>
-    </div>
+          </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
