@@ -69,8 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+import { api } from '@/lib/api-service';
+
   async function verifyToken(token: string): Promise<boolean> {
     try {
+      // 注意：/api/v1/auth/verify 端点需要创建
+      // 这里暂时使用备用方法验证 token
       const response = await fetch('/api/auth/verify', {
         method: 'GET',
         headers: {
@@ -100,26 +104,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
+      // 使用新的 API 客户端
+      const result = await api.auth.refreshToken(refreshToken);
 
-      if (!response.ok) {
-        logout();
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        setUser(data.data.user);
+      if (result.success && result.data) {
+        localStorage.setItem('accessToken', result.data.accessToken);
+        localStorage.setItem('refreshToken', result.data.refreshToken);
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+        setUser(result.data.user);
       } else {
         logout();
       }
