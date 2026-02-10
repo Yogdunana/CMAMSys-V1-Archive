@@ -183,10 +183,10 @@ export async function GET(request: NextRequest) {
           ...aiRequests.map((r) => ({
             id: r.id,
             type: 'aiRequest',
-            name: r.model,
+            name: r.modelName,
             provider: r.provider?.name,
             status: r.status,
-            responseTime: r.responseTime,
+            responseTime: r.latencyMs,
             createdAt: r.createdAt,
           }))
         );
@@ -201,11 +201,6 @@ export async function GET(request: NextRequest) {
         {
           success: true,
           data: activities,
-          meta: {
-            count: activities.length,
-            type,
-            limit,
-          },
           timestamp: new Date().toISOString(),
         },
         {
@@ -257,12 +252,6 @@ export async function GET(request: NextRequest) {
         {
           success: true,
           data: mockActivities.slice(0, limit),
-          meta: {
-            count: Math.min(mockActivities.length, limit),
-            type,
-            limit,
-            _mock: true,
-          },
           timestamp: new Date().toISOString(),
         },
         {

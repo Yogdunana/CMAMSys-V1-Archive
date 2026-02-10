@@ -107,12 +107,6 @@ export async function GET(
             email: true,
           },
         },
-        updatedBy: {
-          select: {
-            id: true,
-            username: true,
-          },
-        },
       },
     });
 
@@ -132,7 +126,7 @@ export async function GET(
         success: true,
         data: {
           ...task,
-          competitionName: task.competition?.name,
+          competitionName: (task as any).competition?.name,
         },
         timestamp: new Date().toISOString(),
       },
@@ -203,19 +197,15 @@ export async function PATCH(
     }
 
     // 验证 CSRF Token
-    const csrfResult = await validateCSRFToken({
-      request,
-      strict: true,
-    });
+    const csrfValid = await validateCSRFToken(request);
 
-    if (!csrfResult.valid) {
+    if (!csrfValid) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
           error: {
             code: 'CSRF_TOKEN_INVALID',
             message: 'Invalid CSRF token',
-            details: csrfResult,
           },
           timestamp: new Date().toISOString(),
         },
@@ -367,19 +357,15 @@ export async function DELETE(
     }
 
     // 验证 CSRF Token
-    const csrfResult = await validateCSRFToken({
-      request,
-      strict: true,
-    });
+    const csrfValid = await validateCSRFToken(request);
 
-    if (!csrfResult.valid) {
+    if (!csrfValid) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
           error: {
             code: 'CSRF_TOKEN_INVALID',
             message: 'Invalid CSRF token',
-            details: csrfResult,
           },
           timestamp: new Date().toISOString(),
         },
