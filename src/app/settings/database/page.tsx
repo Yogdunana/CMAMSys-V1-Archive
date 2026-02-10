@@ -6,6 +6,8 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Header } from '@/components/shared/header';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +20,25 @@ interface DatabaseConfig {
   type: 'sqlite' | 'postgresql';
   connectionString: string;
   isConfigured: boolean;
+}
+
+// Helper function to fetch with authentication
+async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+  const accessToken = localStorage.getItem('accessToken');
+  const csrfToken = localStorage.getItem('csrfToken');
+
+  const headers = new Headers(options.headers);
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+  if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    headers.set('X-CSRF-Token', csrfToken);
+  }
+  if (!headers.has('Content-Type') && options.body) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return fetch(url, { ...options, headers });
 }
 
 export default function DatabaseConfigPage() {
@@ -33,13 +54,13 @@ export default function DatabaseConfigPage() {
 
   const loadConfig = async () => {
     try {
-      const response = await fetch('/api/settings/database');
+      const response = await fetchWithAuth('/api/settings/database');
       const result = await response.json();
 
       if (result.success) {
         setConfig(result.data);
       } else {
-        setMessage({ type: 'error', text: result.error.message });
+        setMessage({ type: 'error', text: result.error?.message || 'Failed to load configuration' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to load database configuration' });
@@ -55,9 +76,8 @@ export default function DatabaseConfigPage() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/settings/database', {
+      const response = await fetchWithAuth('/api/settings/database', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...config,
           testConnection: true,
@@ -73,7 +93,7 @@ export default function DatabaseConfigPage() {
           text: `Connection successful! Latency: ${testResult.latency.toFixed(2)}ms`,
         });
       } else {
-        setMessage({ type: 'error', text: result.error.message });
+        setMessage({ type: 'error', text: result.error?.message || 'Failed to test connection' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to test database connection' });
@@ -89,9 +109,8 @@ export default function DatabaseConfigPage() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/settings/database', {
+      const response = await fetchWithAuth('/api/settings/database', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...config,
           testConnection: false,
@@ -106,7 +125,7 @@ export default function DatabaseConfigPage() {
           text: `${result.data.message}. Please restart the service to apply changes.`,
         });
       } else {
-        setMessage({ type: 'error', text: result.error.message });
+        setMessage({ type: 'error', text: result.error?.message || 'Failed to save configuration' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save database configuration' });
@@ -149,13 +168,17 @@ export default function DatabaseConfigPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Database Configuration</h1>
-        <p className="text-muted-foreground mt-2">
-          Configure database connection settings
-        </p>
-      </div>
+    <ProtectedRoute>
+      <div className="min-h-screen">
+        <Header />
+        <main className="container mx-auto py-8">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Database Configuration</h1>
+              <p className="text-muted-foreground mt-2">
+                Configure database connection settings
+              </p>
+            </div>
 
       {message && (
         <Alert variant={message.type === 'success' ? 'default' : 'destructive'}>
@@ -305,6 +328,9 @@ export default function DatabaseConfigPage() {
           </ol>
         </CardContent>
       </Card>
-    </div>
+          </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }

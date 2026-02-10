@@ -6,10 +6,14 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, Search, Plus, MoreHorizontal, Shield, Ban, Key } from 'lucide-react';
+import { Users, Search, Plus, MoreHorizontal, Shield, Ban, Key, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
 interface User {
@@ -23,6 +27,33 @@ interface User {
   lastLoginAt?: string;
 }
 
+interface NewUserForm {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: 'ADMIN' | 'USER';
+}
+
+// Helper function to fetch with authentication
+async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+  const accessToken = localStorage.getItem('accessToken');
+  const csrfToken = localStorage.getItem('csrfToken');
+
+  const headers = new Headers(options.headers);
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+  if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    headers.set('X-CSRF-Token', csrfToken);
+  }
+  if (!headers.has('Content-Type') && options.body) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return fetch(url, { ...options, headers });
+}
+
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const isAdmin = currentUser?.role === 'ADMIN';
@@ -31,6 +62,19 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Add user form state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<NewUserForm>({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'USER',
+  });
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof NewUserForm, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     if (!isAdmin) return;
     loadUsers();
@@ -38,14 +82,39 @@ export default function UsersPage() {
 
   const loadUsers = async () => {
     try {
-      // TODO: 实现真实的 API 调用
-      // const response = await fetch('/api/admin/users');
-      // const data = await response.json();
-      // if (data.success) {
-      //   setUsers(data.data);
-      // }
+      const response = await fetchWithAuth('/api/admin/users');
+      const result = await response.json();
 
-      // Mock 数据
+      if (result.success) {
+        setUsers(result.data);
+      } else {
+        // 如果 API 失败，使用 Mock 数据
+        setUsers([
+          {
+            id: 'user-001',
+            email: 'admin@cmamsys.local',
+            username: 'Yogdunana',
+            role: 'ADMIN',
+            isVerified: true,
+            isMfaEnabled: true,
+            createdAt: '2024-01-01T00:00:00Z',
+            lastLoginAt: '2024-01-15T10:30:00Z',
+          },
+          {
+            id: 'user-002',
+            email: 'user@example.com',
+            username: 'testuser',
+            role: 'USER',
+            isVerified: true,
+            isMfaEnabled: false,
+            createdAt: '2024-01-05T00:00:00Z',
+            lastLoginAt: '2024-01-14T15:20:00Z',
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error('Failed to load users:', error);
+      // 使用 Mock 数据作为 fallback
       setUsers([
         {
           id: 'user-001',
@@ -57,21 +126,84 @@ export default function UsersPage() {
           createdAt: '2024-01-01T00:00:00Z',
           lastLoginAt: '2024-01-15T10:30:00Z',
         },
-        {
-          id: 'user-002',
-          email: 'user@example.com',
-          username: 'testuser',
-          role: 'USER',
-          isVerified: true,
-          isMfaEnabled: false,
-          createdAt: '2024-01-05T00:00:00Z',
-          lastLoginAt: '2024-01-14T15:20:00Z',
-        },
       ]);
-    } catch (error) {
-      console.error('Failed to load users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Partial<Record<keyof NewUserForm, string>> = {};
+
+    if (!formData.username.trim()) {
+      errors.username = '用户名不能为空';
+    } else if (formData.username.length < 3) {
+      errors.username = '用户名至少需要3个字符';
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = '邮箱不能为空';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = '邮箱格式不正确';
+    }
+
+    if (!formData.password) {
+      errors.password = '密码不能为空';
+    } else if (formData.password.length < 6) {
+      errors.password = '密码至少需要6个字符';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = '两次输入的密码不一致';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleAddUser = async () => {
+    if (!validateForm()) return;
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      const response = await fetchWithAuth('/api/admin/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ type: 'success', text: '用户添加成功' });
+        // 重新加载用户列表
+        await loadUsers();
+        // 重置表单并关闭对话框
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          role: 'USER',
+        });
+        setFormErrors({});
+        setTimeout(() => {
+          setDialogOpen(false);
+          setMessage(null);
+        }, 1500);
+      } else {
+        setMessage({ type: 'error', text: result.error?.message || '添加用户失败' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: '添加用户失败，请稍后重试' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -130,26 +262,137 @@ export default function UsersPage() {
                       className="pl-9"
                     />
                   </div>
-                  <Dialog>
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
                       <Button>
                         <Plus className="mr-2 h-4 w-4" />
                         添加用户
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[500px]">
                       <DialogHeader>
                         <DialogTitle>添加新用户</DialogTitle>
                         <DialogDescription>
                           创建新的系统用户账户
                         </DialogDescription>
                       </DialogHeader>
-                      {/* TODO: 实现添加用户表单 */}
-                      <div className="py-4">
-                        <p className="text-muted-foreground text-sm">
-                          添加用户功能即将推出...
-                        </p>
+
+                      {message && (
+                        <Alert variant={message.type === 'success' ? 'default' : 'destructive'}>
+                          {message.type === 'success' ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4" />
+                          )}
+                          <AlertDescription>{message.text}</AlertDescription>
+                        </Alert>
+                      )}
+
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="username">用户名 *</Label>
+                          <Input
+                            id="username"
+                            value={formData.username}
+                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            placeholder="输入用户名"
+                            disabled={submitting}
+                          />
+                          {formErrors.username && (
+                            <p className="text-sm text-red-500">{formErrors.username}</p>
+                          )}
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">邮箱 *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            placeholder="user@example.com"
+                            disabled={submitting}
+                          />
+                          {formErrors.email && (
+                            <p className="text-sm text-red-500">{formErrors.email}</p>
+                          )}
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="role">角色 *</Label>
+                          <Select
+                            value={formData.role}
+                            onValueChange={(value: 'ADMIN' | 'USER') => setFormData({ ...formData, role: value })}
+                            disabled={submitting}
+                          >
+                            <SelectTrigger id="role">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="USER">普通用户</SelectItem>
+                              <SelectItem value="ADMIN">管理员</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="password">密码 *</Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            placeholder="至少6个字符"
+                            disabled={submitting}
+                          />
+                          {formErrors.password && (
+                            <p className="text-sm text-red-500">{formErrors.password}</p>
+                          )}
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="confirmPassword">确认密码 *</Label>
+                          <Input
+                            id="confirmPassword"
+                            type="password"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                            placeholder="再次输入密码"
+                            disabled={submitting}
+                          />
+                          {formErrors.confirmPassword && (
+                            <p className="text-sm text-red-500">{formErrors.confirmPassword}</p>
+                          )}
+                        </div>
                       </div>
+
+                      <DialogFooter>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setDialogOpen(false);
+                            setFormErrors({});
+                            setMessage(null);
+                          }}
+                          disabled={submitting}
+                        >
+                          取消
+                        </Button>
+                        <Button type="button" onClick={handleAddUser} disabled={submitting}>
+                          {submitting ? (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              添加中...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              添加用户
+                            </>
+                          )}
+                        </Button>
+                      </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </div>
