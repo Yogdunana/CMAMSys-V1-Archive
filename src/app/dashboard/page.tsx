@@ -6,7 +6,7 @@ import { Header } from '@/components/shared/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Activity, ArrowRight, Trophy, Users, Zap, Clock } from 'lucide-react';
+import { Activity, ArrowRight, Trophy, Users, Zap, Clock, FolderTree, Bot, Plus } from 'lucide-react';
 
 interface Competition {
   id: string;
@@ -175,6 +175,64 @@ export default function DashboardPage() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* 快速操作 */}
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">快速操作</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Link href="/dashboard/modeling-tasks">
+                <Card className="hover:border-primary transition-colors cursor-pointer">
+                  <CardHeader>
+                    <FolderTree className="h-8 w-8 mb-2 text-blue-500" />
+                    <CardTitle className="text-lg">建模任务</CardTitle>
+                    <CardDescription>
+                      管理和查看您的建模任务
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" size="sm">
+                      查看任务
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/dashboard/auto-modeling">
+                <Card className="hover:border-primary transition-colors cursor-pointer">
+                  <CardHeader>
+                    <Bot className="h-8 w-8 mb-2 text-purple-500" />
+                    <CardTitle className="text-lg">自动化建模</CardTitle>
+                    <CardDescription>
+                      启动全自动化建模流程
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full" size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      新建任务
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/dashboard/ai-providers">
+                <Card className="hover:border-primary transition-colors cursor-pointer">
+                  <CardHeader>
+                    <Activity className="h-8 w-8 mb-2 text-green-500" />
+                    <CardTitle className="text-lg">AI Provider</CardTitle>
+                    <CardDescription>
+                      配置和管理 AI 服务
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" size="sm">
+                      管理配置
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
