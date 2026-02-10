@@ -102,7 +102,7 @@ export const CacheExpiry = {
  * 生成缓存过期时间
  */
 export function getCacheExpirySeconds(
-  duration: keyof typeof CacheExpiry = CacheExpiry.MEDIUM
+  duration: keyof typeof CacheExpiry = 'MEDIUM'
 ): number {
   return CacheExpiry[duration];
 }
@@ -111,7 +111,7 @@ export function getCacheExpirySeconds(
  * 生成过期日期
  */
 export function getCacheExpiryDate(
-  duration: keyof typeof CacheExpiry = CacheExpiry.MEDIUM
+  duration: keyof typeof CacheExpiry = 'MEDIUM'
 ): Date {
   const seconds = getCacheExpirySeconds(duration);
   return new Date(Date.now() + seconds * 1000);
