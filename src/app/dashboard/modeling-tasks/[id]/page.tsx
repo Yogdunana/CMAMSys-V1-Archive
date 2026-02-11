@@ -32,6 +32,7 @@ import {
   File,
   Image,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ModelingTask {
   id: string;
@@ -210,24 +211,35 @@ export default function TaskDetailPage() {
   const handleStartTask = async () => {
     try {
       const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        toast.error('请先登录');
+        return;
+      }
+
       const response = await fetch(`/api/modeling-tasks/${taskId}/start`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
 
       const data = await response.json();
       if (data.success) {
+        toast.success('任务已启动');
         loadTask(taskId);
         addLog({
           timestamp: new Date().toISOString(),
           level: 'success',
           message: '任务已启动',
         });
+      } else {
+        toast.error(data.error?.message || '启动失败');
       }
     } catch (error) {
       console.error('Failed to start task:', error);
+      toast.error('启动失败，请稍后重试');
     }
   };
 
