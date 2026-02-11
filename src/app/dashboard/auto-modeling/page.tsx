@@ -456,21 +456,30 @@ export default function AutoModelingPage() {
                     <ScrollArea className="max-h-[200px]">
                       <div className="space-y-4">
                         {currentTaskId ? (
-                          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                            <div className="flex items-center gap-3">
-                              {taskStatus ? getOverallStatusIcon(taskStatus.overallStatus) : <Clock className="w-5 h-5 text-yellow-500" />}
-                              <div>
-                                <p className="font-medium">
-                                  {taskStatus ? getOverallStatusText(taskStatus.overallStatus) : '执行中...'}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  任务 ID: {currentTaskId}
-                                </p>
+                          <div className="p-4 bg-muted rounded-lg">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                {taskStatus ? getOverallStatusIcon(taskStatus.overallStatus) : <Clock className="w-5 h-5 text-yellow-500" />}
+                                <div>
+                                  <p className="font-medium">
+                                    {taskStatus ? getOverallStatusText(taskStatus.overallStatus) : '执行中...'}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    任务 ID: {currentTaskId}
+                                  </p>
+                                </div>
                               </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.location.href = `/dashboard/auto-modeling/${currentTaskId}`}
+                              >
+                                查看详情
+                              </Button>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Progress value={taskStatus?.progress || 0} className="w-32" />
-                              <span className="text-sm font-medium">{taskStatus?.progress || 0}%</span>
+                              <Progress value={taskStatus?.progress || 0} className="flex-1" />
+                              <span className="text-sm font-medium min-w-[50px]">{taskStatus?.progress || 0}%</span>
                             </div>
                           </div>
                         ) : (

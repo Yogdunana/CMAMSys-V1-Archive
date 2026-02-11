@@ -16,7 +16,6 @@ const publicNavItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
   { href: '/dashboard/competitions', label: '竞赛', icon: Trophy },
   { href: '/dashboard/modeling-tasks', label: '建模任务', icon: FolderTree },
-  { href: '/dashboard/code-generation', label: '代码生成', icon: Code2 },
   { href: '/dashboard/auto-modeling', label: '自动化建模', icon: Bot },
   { href: '/dashboard/ai-providers', label: 'AI Provider', icon: Activity },
   { href: '/learning/knowledge', label: '知识库', icon: BookOpen },
