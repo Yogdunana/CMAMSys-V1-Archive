@@ -80,6 +80,7 @@ export default function TaskDetailPage() {
   const [logs, setLogs] = useState<TaskLog[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const taskId = params.id as string;
 
@@ -92,6 +93,9 @@ export default function TaskDetailPage() {
     return () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
       }
     };
   }, [taskId]);
@@ -127,6 +131,16 @@ export default function TaskDetailPage() {
 
   const connectToLogs = (id: string) => {
     try {
+      // 清除之前的重连定时器
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+
+      // 关闭之前的连接
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
       // 使用 SSE 连接实时日志
       const eventSource = new EventSource(`/api/modeling-tasks/${id}/logs`);
       eventSourceRef.current = eventSource;
@@ -143,7 +157,17 @@ export default function TaskDetailPage() {
       eventSource.onmessage = (event) => {
         try {
           const log = JSON.parse(event.data);
-          addLog(log);
+          
+          // 如果收到完成消息，关闭连接
+          if (log.message === '模拟日志流演示完成' || log.message === '任务执行完成') {
+            eventSource.close();
+            setIsConnected(false);
+          }
+          
+          // 过滤掉 debug 级别的消息（如心跳包）
+          if (log.level !== 'debug') {
+            addLog(log);
+          }
         } catch (e) {
           addLog({
             timestamp: new Date().toISOString(),
@@ -155,11 +179,20 @@ export default function TaskDetailPage() {
 
       eventSource.onerror = (error) => {
         setIsConnected(false);
+        eventSource.close();
+        
+        // 添加一条错误日志
         addLog({
           timestamp: new Date().toISOString(),
           level: 'error',
           message: '日志连接断开',
         });
+
+        // 延迟 3 秒后尝试重连
+        reconnectTimeoutRef.current = setTimeout(() => {
+          console.log('Attempting to reconnect to logs...');
+          connectToLogs(id);
+        }, 3000);
       };
 
       return () => {
