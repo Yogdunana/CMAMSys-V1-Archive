@@ -213,36 +213,6 @@ Content-Type: application/json
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>建模任务 API</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm">
-                      <div className="border-l-4 border-blue-500 pl-3">
-                        <p className="font-mono font-semibold">GET /api/v1/modeling-tasks</p>
-                        <p className="text-muted-foreground">获取任务列表（支持分页）</p>
-                      </div>
-                      <div className="border-l-4 border-green-500 pl-3">
-                        <p className="font-mono font-semibold">POST /api/v1/modeling-tasks</p>
-                        <p className="text-muted-foreground">创建任务</p>
-                      </div>
-                      <div className="border-l-4 border-blue-500 pl-3">
-                        <p className="font-mono font-semibold">GET /api/v1/modeling-tasks/[id]</p>
-                        <p className="text-muted-foreground">获取任务详情</p>
-                      </div>
-                      <div className="border-l-4 border-yellow-500 pl-3">
-                        <p className="font-mono font-semibold">PATCH /api/v1/modeling-tasks/[id]</p>
-                        <p className="text-muted-foreground">更新任务</p>
-                      </div>
-                      <div className="border-l-4 border-red-500 pl-3">
-                        <p className="font-mono font-semibold">DELETE /api/v1/modeling-tasks/[id]</p>
-                        <p className="text-muted-foreground">删除任务</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
                     <CardTitle>仪表盘 API</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -326,15 +296,16 @@ const task = await api.modelingTasks.create({
 curl -X GET http://localhost:5000/api/v1/dashboard/stats \\
   -H "Authorization: Bearer YOUR_TOKEN"
 
-# 创建建模任务
-curl -X POST http://localhost:5000/api/v1/modeling-tasks \\
+# 启动自动化建模
+curl -X POST http://localhost:5000/api/auto-modeling/start \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "X-CSRF-Token: YOUR_CSRF_TOKEN" \\
   -d '{
-    "name": "新任务",
-    "description": "任务描述",
-    "problemType": "EVALUATION"
+    "competitionType": "MCM",
+    "problemType": "OPTIMIZATION",
+    "problemTitle": "示例题目",
+    "problemContent": "题目内容..."
   }'`}
                     </pre>
                   </CardContent>

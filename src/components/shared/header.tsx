@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { UserMenu } from '@/components/auth/user-menu';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders, LogIn, Bot, FolderTree, Database, Shield, FileText, BarChart3, Settings2, Code2 } from 'lucide-react';
+import { LayoutDashboard, Trophy, Users, Settings, Activity, BookOpen, Sliders, LogIn, Bot, Database, Shield, FileText, BarChart3, Settings2, Code2 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/auth-context';
 
@@ -15,7 +15,6 @@ import { useAuth } from '@/contexts/auth-context';
 const publicNavItems = [
   { href: '/dashboard', label: '仪表盘', icon: LayoutDashboard },
   { href: '/dashboard/competitions', label: '竞赛', icon: Trophy },
-  { href: '/dashboard/modeling-tasks', label: '建模任务', icon: FolderTree },
   { href: '/dashboard/auto-modeling', label: '自动化建模', icon: Bot },
   { href: '/dashboard/ai-providers', label: 'AI Provider', icon: Activity },
   { href: '/learning/knowledge', label: '知识库', icon: BookOpen },
