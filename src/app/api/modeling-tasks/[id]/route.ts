@@ -1,75 +1,55 @@
 /**
- * Modeling Task Detail API
- * GET /api/modeling-tasks/[id] - 获取任务详情
+ * 删除建模任务 API
+ * DELETE /api/modeling-tasks/[id]
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAccessToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
-import { ApiResponse } from '@/lib/types';
 
-/**
- * GET: 获取任务详情
- */
-export async function GET(
+export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const params = await context.params;
+    // 验证身份
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
+    const payload = await verifyAccessToken(token);
+    if (!payload) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // 检查任务是否存在
     const task = await prisma.modelingTask.findUnique({
-      where: {
-        id: params.id,
-        deletedAt: null,
-      },
-      include: {
-        competition: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-          },
-        },
-      },
+      where: { id },
     });
 
     if (!task) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: { code: 'NOT_FOUND', message: 'Task not found' },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Task not found' }, { status: 404 });
     }
 
-    return NextResponse.json<ApiResponse>(
-      {
-        success: true,
-        data: {
-          ...task,
-          competitionName: task.competition?.name,
-        },
-        timestamp: new Date().toISOString(),
-      },
-      { status: 200 }
-    );
+    // 删除任务
+    await prisma.modelingTask.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: '任务删除成功',
+    });
   } catch (error) {
-    return NextResponse.json<ApiResponse>(
+    console.error('Error deleting modeling task:', error);
+    return NextResponse.json(
       {
         success: false,
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch task details',
-        },
-        timestamp: new Date().toISOString(),
+        error: '删除任务失败',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

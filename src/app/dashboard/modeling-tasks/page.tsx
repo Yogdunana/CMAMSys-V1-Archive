@@ -147,6 +147,56 @@ export default function ModelingTasksPage() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  // 处理设置按钮点击
+  const handleSettingsClick = (task: ModelingTask) => {
+    toast({
+      title: '设置',
+      description: `打开任务 "${task.name}" 的设置`,
+    });
+    // TODO: 打开设置对话框
+  };
+
+  // 处理删除按钮点击
+  const handleDeleteClick = async (task: ModelingTask) => {
+    if (!window.confirm(`确定要删除任务 "${task.name}" 吗？此操作不可恢复。`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/modeling-tasks/${task.id}`, {
+        method: 'DELETE',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: '删除成功',
+          description: `任务 "${task.name}" 已删除`,
+        });
+        // 重新加载任务列表
+        loadTasks();
+      } else {
+        toast({
+          title: '删除失败',
+          description: data.error || '删除任务失败',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('删除任务失败:', error);
+      toast({
+        title: '删除失败',
+        description: '网络错误，请稍后重试',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -343,10 +393,20 @@ export default function ModelingTasksPage() {
                         </TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSettingsClick(task)}
+                              title="设置"
+                            >
                               <Settings className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(task)}
+                              title="删除"
+                            >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
