@@ -62,25 +62,7 @@ export default function AutoModelingPage() {
 
   // 任务状态
   const [taskStatus, setTaskStatus] = useState<any>(null);
-  const [tasksList, setTasksList] = useState<any[]>([]);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 加载任务列表
-  useEffect(() => {
-    loadTasksList();
-  }, []);
-
-  const loadTasksList = async () => {
-    try {
-      const response = await fetch('/api/auto-modeling/tasks');
-      const data = await response.json();
-      if (data.success) {
-        setTasksList(data.data);
-      }
-    } catch (error) {
-      console.error('加载任务列表失败:', error);
-    }
-  };
 
   const handleStartAutoProcess = async () => {
     if (!formData.competitionType || !formData.problemType || !formData.problemTitle || !formData.problemContent) {
@@ -254,18 +236,14 @@ export default function AutoModelingPage() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+            <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
               <TabsTrigger value="new-task">
                 <Rocket className="w-4 h-4 mr-2" />
                 新建任务
               </TabsTrigger>
               <TabsTrigger value="task-status">
                 <Clock className="w-4 h-4 mr-2" />
-                当前任务
-              </TabsTrigger>
-              <TabsTrigger value="history">
-                <FileText className="w-4 h-4 mr-2" />
-                历史任务
+                任务状态
               </TabsTrigger>
             </TabsList>
 
@@ -439,85 +417,6 @@ export default function AutoModelingPage() {
                         </>
                       )}
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* 历史任务列表 */}
-            <TabsContent value="history" className="mt-6">
-              <Card className="max-w-7xl mx-auto">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    历史任务列表
-                  </CardTitle>
-                  <CardDescription>
-                    查看所有已创建的自动化建模任务，点击任务可查看详情
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {tasksList.length === 0 ? (
-                      <div className="text-center py-12 text-slate-500">
-                        <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>暂无历史任务</p>
-                        <p className="text-sm mt-2">在"新建任务"标签页创建任务后，此处将显示</p>
-                      </div>
-                    ) : (
-                      tasksList.map((task) => (
-                        <Card
-                          key={task.id}
-                          className="cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => router.push(`/dashboard/auto-modeling/${task.id}`)}
-                        >
-                          <CardContent className="pt-6">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="font-semibold text-lg">{task.problemTitle}</h3>
-                                  <Badge variant={
-                                    task.overallStatus === 'COMPLETED' ? 'default' :
-                                    task.overallStatus === 'FAILED' ? 'destructive' :
-                                    'secondary'
-                                  }>
-                                    {task.overallStatus === 'PENDING' ? '待处理' :
-                                     task.overallStatus === 'DISCUSSING' ? '讨论中' :
-                                     task.overallStatus === 'CODING' ? '代码生成中' :
-                                     task.overallStatus === 'VALIDATING' ? '校验中' :
-                                     task.overallStatus === 'RETRYING' ? '优化中' :
-                                     task.overallStatus === 'PAPER_GENERATING' ? '论文生成中' :
-                                     task.overallStatus === 'COMPLETED' ? '已完成' :
-                                     task.overallStatus}
-                                  </Badge>
-                                </div>
-                                <div className="space-y-1 text-sm text-muted-foreground">
-                                  <div className="flex items-center gap-4">
-                                    <span>竞赛类型: {task.competitionType}</span>
-                                    <span>题目类型: {task.problemType}</span>
-                                  </div>
-                                  <div className="flex items-center gap-4">
-                                    <span>创建时间: {new Date(task.createdAt).toLocaleString('zh-CN')}</span>
-                                    {task.updatedAt !== task.createdAt && (
-                                      <span>更新时间: {new Date(task.updatedAt).toLocaleString('zh-CN')}</span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="mt-3">
-                                  <div className="flex items-center gap-2">
-                                    <Progress value={task.progress} className="flex-1" />
-                                    <span className="text-sm font-medium min-w-[50px]">{task.progress}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Button variant="outline" size="sm">
-                                查看详情
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
                   </div>
                 </CardContent>
               </Card>

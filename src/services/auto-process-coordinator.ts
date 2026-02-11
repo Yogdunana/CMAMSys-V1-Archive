@@ -76,7 +76,10 @@ export async function executeFullAutoProcess(
     autoTask.overallStatus = OverallStatus.CODING;
     await prisma.autoModelingTask.update({
       where: { id: autoTask.id },
-      data: { overallStatus: OverallStatus.CODING },
+      data: {
+        overallStatus: OverallStatus.CODING,
+        progress: 45,
+      },
     });
 
     const codeGeneration = await generateCode(
@@ -85,12 +88,20 @@ export async function executeFullAutoProcess(
       discussionResult.summary
     );
 
+    await prisma.autoModelingTask.update({
+      where: { id: autoTask.id },
+      data: {
+        progress: 50,
+      },
+    });
+
     const executionResult = await executeCode(codeGeneration.id);
 
     await prisma.autoModelingTask.update({
       where: { id: autoTask.id },
       data: {
         codeGenerationId: codeGeneration.id,
+        progress: 55,
       },
     });
 
@@ -101,7 +112,10 @@ export async function executeFullAutoProcess(
     autoTask.overallStatus = OverallStatus.VALIDATING;
     await prisma.autoModelingTask.update({
       where: { id: autoTask.id },
-      data: { overallStatus: OverallStatus.VALIDATING },
+      data: {
+        overallStatus: OverallStatus.VALIDATING,
+        progress: 60,
+      },
     });
 
     let validationPassed = false;
@@ -109,6 +123,14 @@ export async function executeFullAutoProcess(
 
     while (!validationPassed && retryCount < MAX_RETRY_ROUNDS) {
       console.log(`执行第 ${retryCount + 1} 轮校验...`);
+
+      // 更新校验进度
+      await prisma.autoModelingTask.update({
+        where: { id: autoTask.id },
+        data: {
+          progress: 65 + (retryCount * 5),
+        },
+      });
 
       const validationResults = await executeFullValidation(
         autoTask.id,
@@ -300,12 +322,16 @@ export async function getAutoTaskStatus(autoTaskId: string) {
         break;
       case 'CODING':
         // 代码生成阶段：40-60%
-        progress = 50;
+        // 使用任务中已保存的进度，如果没有则使用默认值
+        progress = task.progress || 50;
         break;
       case 'VALIDATING':
         // 校验阶段：60-80%
-        if (task.validations && task.validations.length > 0) {
-          const validationProgress = 60 + (Math.min(task.validations.length, 3) / 3) * 20;
+        // 使用任务中已保存的进度，如果没有则根据校验轮次计算
+        if (task.progress) {
+          progress = task.progress;
+        } else if (task.validations && task.validations.length > 0) {
+          const validationProgress = 65 + (Math.min(task.validations.length, 3) * 5);
           progress = validationProgress;
         } else {
           progress = 65;
@@ -313,11 +339,11 @@ export async function getAutoTaskStatus(autoTaskId: string) {
         break;
       case 'RETRYING':
         // 回溯优化阶段：70-85%
-        progress = 75;
+        progress = task.progress || 75;
         break;
       case 'PAPER_GENERATING':
         // 论文生成阶段：85-95%
-        progress = 90;
+        progress = task.progress || 90;
         break;
       case 'COMPLETED':
         // 已完成：100%
