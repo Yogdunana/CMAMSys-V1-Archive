@@ -62,6 +62,9 @@ export default function AutoModelingPage() {
 
   // 任务状态
   const [taskStatus, setTaskStatus] = useState<any>(null);
+  const [tasksList, setTasksList] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [taskFilter, setTaskFilter] = useState<'all' | 'running' | 'completed' | 'failed'>('all');
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleStartAutoProcess = async () => {
@@ -155,6 +158,28 @@ export default function AutoModelingPage() {
     };
   }, []);
 
+  // 加载历史任务列表
+  useEffect(() => {
+    loadTasksList();
+  }, []);
+
+  const loadTasksList = async () => {
+    setHistoryLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/auto-modeling/tasks');
+      const data = await response.json();
+      if (data.success) {
+        setTasksList(data.data || []);
+      }
+    } catch (error) {
+      console.error('加载任务列表失败:', error);
+      toast.error('加载任务列表失败');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   // 组件加载时获取最新的运行中任务
   useEffect(() => {
     const fetchLatestTask = async () => {
@@ -236,14 +261,18 @@ export default function AutoModelingPage() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+            <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
               <TabsTrigger value="new-task">
                 <Rocket className="w-4 h-4 mr-2" />
                 新建任务
               </TabsTrigger>
               <TabsTrigger value="task-status">
                 <Clock className="w-4 h-4 mr-2" />
-                任务状态
+                当前任务
+              </TabsTrigger>
+              <TabsTrigger value="history" onClick={() => loadTasksList()}>
+                <BarChart3 className="w-4 h-4 mr-2" />
+                历史任务
               </TabsTrigger>
             </TabsList>
 
@@ -634,6 +663,163 @@ In this paper, we...
                       />
                     </CardContent>
                   </Card>
+                )}
+              </div>
+              <Toaster />
+            </TabsContent>
+
+            {/* 历史任务标签页 */}
+            <TabsContent value="history" className="mt-6">
+              <div className="max-w-7xl mx-auto space-y-6">
+                {/* 筛选和搜索栏 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-primary" />
+                      历史任务管理
+                    </CardTitle>
+                    <CardDescription>
+                      查看和管理所有的自动化建模任务
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">筛选：</span>
+                        <div className="flex gap-2">
+                          <Button
+                            variant={taskFilter === 'all' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setTaskFilter('all')}
+                          >
+                            全部
+                          </Button>
+                          <Button
+                            variant={taskFilter === 'running' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setTaskFilter('running')}
+                          >
+                            运行中
+                          </Button>
+                          <Button
+                            variant={taskFilter === 'completed' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setTaskFilter('completed')}
+                          >
+                            已完成
+                          </Button>
+                          <Button
+                            variant={taskFilter === 'failed' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setTaskFilter('failed')}
+                          >
+                            失败
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex-1" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={loadTasksList}
+                        disabled={historyLoading}
+                      >
+                        <Loader2 className={`w-4 h-4 mr-2 ${historyLoading ? 'animate-spin' : ''}`} />
+                        刷新
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 任务列表 */}
+                {historyLoading ? (
+                  <Card>
+                    <CardContent className="py-12">
+                      <div className="flex flex-col items-center justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+                        <p className="text-muted-foreground">加载任务列表中...</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : tasksList.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <BarChart3 className="w-16 h-16 mb-4 opacity-50" />
+                        <p className="text-lg font-medium">暂无任务</p>
+                        <p className="text-sm mt-2">在"新建任务"标签页创建第一个任务</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {tasksList
+                      .filter((task) => {
+                        if (taskFilter === 'all') return true;
+                        if (taskFilter === 'running') {
+                          return ['PENDING', 'DISCUSSING', 'CODING', 'VALIDATING', 'RETRYING', 'PAPER_GENERATING'].includes(task.overallStatus);
+                        }
+                        if (taskFilter === 'completed') return task.overallStatus === 'COMPLETED';
+                        if (taskFilter === 'failed') return task.overallStatus === 'FAILED';
+                        return true;
+                      })
+                      .map((task) => (
+                        <Card
+                          key={task.id}
+                          className="cursor-pointer hover:shadow-lg transition-all hover:border-primary"
+                          onClick={() => router.push(`/dashboard/auto-modeling/${task.id}`)}
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                {getOverallStatusIcon(task.overallStatus)}
+                                <Badge variant="outline" className="text-xs">
+                                  {getOverallStatusText(task.overallStatus)}
+                                </Badge>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {task.progress || 0}%
+                              </div>
+                            </div>
+                            <CardTitle className="text-base line-clamp-2">
+                              {task.problemTitle}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {task.competitionType} · {task.problemType}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <Progress value={task.progress || 0} className="h-2" />
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{new Date(task.createdAt).toLocaleString('zh-CN')}</span>
+                              </div>
+                              {task.overallStatus === 'COMPLETED' && (
+                                <div className="flex items-center gap-1 text-green-600">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>已完成</span>
+                                </div>
+                              )}
+                              {task.overallStatus === 'FAILED' && (
+                                <div className="flex items-center gap-1 text-red-600">
+                                  <XCircle className="w-3 h-3" />
+                                  <span>失败</span>
+                                </div>
+                              )}
+                            </div>
+                            {task.errorLog && (
+                              <Alert className="py-2">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription className="text-xs">
+                                  {task.errorLog.substring(0, 50)}...
+                                </AlertDescription>
+                              </Alert>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
                 )}
               </div>
               <Toaster />
