@@ -66,7 +66,7 @@ export function CostMonitor({ taskId, onWarning }: CostMonitorProps) {
         `/api/cost/stats${taskId ? `?taskId=${taskId}` : ''}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         }
       );
