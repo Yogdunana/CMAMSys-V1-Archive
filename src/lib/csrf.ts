@@ -47,21 +47,29 @@ export async function verifyCSRFToken(token: string): Promise<CSRFPayload | null
 }
 
 /**
- * Generate CSRF Token and Set Cookie
- * 生成 CSRF Token 并设置 Cookie
+ * Set CSRF Token Cookie (服务器端)
+ * 设置 CSRF Token Cookie
  */
 export function setCSRFCookie(response: Response, token: string): void {
-  // Set HTTP-only cookie (cannot be accessed via JavaScript)
-  document.cookie = `csrf_token=${token}; path=/; secure; samesite=strict; max-age=${60 * 60}`;
+  // 服务器端通过 Response Headers 设置 Cookie
+  // 这个函数在服务器端不应使用 document.cookie
+  // 应该直接在创建 Response 时设置 Set-Cookie header
+  // 示例：headers.set('Set-Cookie', `csrf_token=${token}; path=/; secure; samesite=strict; max-age=3600`)
+  console.warn('setCSRFCookie is deprecated for server-side use. Use Response headers instead.');
 }
 
 /**
- * Get CSRF Token from Cookie
- * 从 Cookie 获取 CSRF Token
+ * Extract CSRF Token from Cookie
+ * 从 Cookie 获取 CSRF Token (服务器端)
  */
-export function getCSRFCookie(): string | undefined {
+export function getCSRFCookie(request: Request): string | undefined {
+  const cookieHeader = request.headers.get('cookie');
+  if (!cookieHeader) {
+    return undefined;
+  }
+
+  const cookies = cookieHeader.split(';');
   const name = 'csrf_token=';
-  const cookies = document.cookie.split(';');
 
   for (const cookie of cookies) {
     const trimmed = cookie.trim();
@@ -114,7 +122,7 @@ export async function validateCSRFToken(request: Request): Promise<boolean> {
   }
 
   // Get token from cookie
-  const cookieToken = getCSRFCookie();
+  const cookieToken = getCSRFCookie(request);
 
   if (!cookieToken) {
     return false;
