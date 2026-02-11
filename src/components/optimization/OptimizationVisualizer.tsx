@@ -61,17 +61,69 @@ export function OptimizationVisualizer({
   const [convergenceData, setConvergenceData] = useState<OptimizationPoint[]>([]);
   const [logs, setLogs] = useState<OptimizationLog[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
+  // 从 localStorage 加载保存的状态
   useEffect(() => {
-    if (isOptimizing || isSimulating) {
+    const savedState = localStorage.getItem(`optimization-${taskId}`);
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        if (state.isCompleted) {
+          setMetrics(state.metrics);
+          setConvergenceData(state.convergenceData);
+          setLogs(state.logs);
+          setIsCompleted(true);
+        }
+      } catch (error) {
+        console.error('加载优化状态失败:', error);
+      }
+    }
+  }, [taskId]);
+
+  // 优化完成后自动停止
+  useEffect(() => {
+    if (metrics.currentIteration >= metrics.totalIterations && !isCompleted) {
+      setIsSimulating(false);
+      setIsCompleted(true);
+      toast.success('优化完成！');
+
+      // 添加完成日志
+      const completeLog: OptimizationLog = {
+        timestamp: new Date().toISOString(),
+        iteration: metrics.currentIteration,
+        message: `优化完成！最佳解: ${metrics.bestSolution.toFixed(2)}, 收敛度: ${(metrics.convergence * 100).toFixed(1)}%`,
+        type: 'success',
+      };
+      setLogs((prev) => [...prev, completeLog]);
+
+      // 保存状态到 localStorage
+      const state = {
+        metrics,
+        convergenceData,
+        logs: [...logs, completeLog],
+        isCompleted: true,
+      };
+      localStorage.setItem(`optimization-${taskId}`, JSON.stringify(state));
+    }
+  }, [metrics.currentIteration, metrics.totalIterations, taskId, metrics, convergenceData, logs, isCompleted]);
+
+  // 运行优化模拟
+  useEffect(() => {
+    if ((isOptimizing || isSimulating) && !isCompleted) {
       const interval = setInterval(() => {
         simulateOptimization();
       }, 500);
       return () => clearInterval(interval);
     }
-  }, [isOptimizing, isSimulating]);
+  }, [isOptimizing, isSimulating, isCompleted]);
 
   const simulateOptimization = () => {
+    // 如果已完成，不再模拟
+    if (isCompleted || metrics.currentIteration >= metrics.totalIterations) {
+      return;
+    }
+
     setMetrics((prev) => {
       const newIteration = Math.min(prev.currentIteration + 1, prev.totalIterations);
       const baseValue = 1000;
@@ -99,19 +151,6 @@ export function OptimizationVisualizer({
         setLogs((prev) => [...prev.slice(-20), newLog]);
       }
 
-      // 完成
-      if (newIteration >= prev.totalIterations) {
-        setIsSimulating(false);
-        toast.success('优化完成！');
-        const completeLog: OptimizationLog = {
-          timestamp: new Date().toISOString(),
-          iteration: newIteration,
-          message: `优化完成！最佳解: ${bestValue.toFixed(2)}, 收敛度: ${(convergence * 100).toFixed(1)}%`,
-          type: 'success',
-        };
-        setLogs((prev) => [...prev.slice(-20), completeLog]);
-      }
-
       return {
         ...prev,
         currentIteration: newIteration,
@@ -124,6 +163,10 @@ export function OptimizationVisualizer({
   };
 
   const startSimulation = () => {
+    // 清除之前保存的状态
+    localStorage.removeItem(`optimization-${taskId}`);
+
+    // 重置状态
     setConvergenceData([]);
     setLogs([]);
     setMetrics({
@@ -135,6 +178,7 @@ export function OptimizationVisualizer({
       fitnessScore: 0,
     });
     setIsSimulating(true);
+    setIsCompleted(false);
     toast.info('开始优化模拟...');
   };
 
@@ -303,27 +347,58 @@ export function OptimizationVisualizer({
               </CardTitle>
               <CardDescription>实时优化过程记录</CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                startSimulation();
-                onRefresh?.();
-              }}
-              disabled={isSimulating || isOptimizing}
-            >
-              {isSimulating || isOptimizing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  优化中...
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  开始优化
-                </>
+            <div className="flex gap-2">
+              {isCompleted && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    localStorage.removeItem(`optimization-${taskId}`);
+                    setIsCompleted(false);
+                    setConvergenceData([]);
+                    setLogs([]);
+                    setMetrics({
+                      currentIteration: 0,
+                      totalIterations: 100,
+                      bestSolution: 0,
+                      currentSolution: 0,
+                      convergence: 0,
+                      fitnessScore: 0,
+                    });
+                    toast.info('状态已清除，可以重新开始优化');
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  清除状态
+                </Button>
               )}
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  startSimulation();
+                  onRefresh?.();
+                }}
+                disabled={isSimulating || isOptimizing || isCompleted}
+              >
+                {isCompleted ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
+                    优化完成
+                  </>
+                ) : isSimulating || isOptimizing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    优化中...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    开始优化
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -331,9 +406,17 @@ export function OptimizationVisualizer({
             <div className="space-y-2">
               {logs.length === 0 && (
                 <div className="text-gray-500 text-sm text-center py-10">
-                  {isSimulating || isOptimizing
-                    ? '正在优化中...'
-                    : '点击"开始优化"按钮启动优化过程'}
+                  {isCompleted ? (
+                    <>
+                      <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                      <p>优化已完成</p>
+                      <p className="text-xs mt-2">最佳解: {metrics.bestSolution.toFixed(2)}</p>
+                    </>
+                  ) : isSimulating || isOptimizing ? (
+                    '正在优化中...'
+                  ) : (
+                    '点击"开始优化"按钮启动优化过程'
+                  )}
                 </div>
               )}
               {logs.map((log, index) => (
