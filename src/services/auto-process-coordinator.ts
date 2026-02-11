@@ -167,37 +167,62 @@ export async function executeFullAutoProcess(
             },
           });
 
-          // 回溯：重新讨论
-          console.log('重新开始群聊讨论...');
-          const newDiscussionResult = await executeFullDiscussion(
-            competitionType,
-            problemType,
-            problemTitle,
-            problemContent,
-            userId,
-            autoTask.id
-          );
+          try {
+            // 回溯：重新讨论
+            console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 重新开始群聊讨论...`);
+            const newDiscussionResult = await executeFullDiscussion(
+              competitionType,
+              problemType,
+              problemTitle,
+              problemContent,
+              userId,
+              autoTask.id
+            );
 
-          // 重新生成代码
-          console.log('重新生成代码...');
-          const newCodeGeneration = await generateCode(
-            autoTask.id,
-            newDiscussionResult.discussion.id,
-            newDiscussionResult.summary
-          );
+            // 重新生成代码
+            console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 重新生成代码...`);
+            const newCodeGeneration = await generateCode(
+              autoTask.id,
+              newDiscussionResult.discussion.id,
+              newDiscussionResult.summary
+            );
 
-          const newExecutionResult = await executeCode(newCodeGeneration.id);
+            console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 执行代码...`);
+            const newExecutionResult = await executeCode(newCodeGeneration.id);
 
-          await prisma.autoModelingTask.update({
-            where: { id: autoTask.id },
-            data: {
-              discussionId: newDiscussionResult.discussion.id,
-              codeGenerationId: newCodeGeneration.id,
-            },
-          });
+            await prisma.autoModelingTask.update({
+              where: { id: autoTask.id },
+              data: {
+                discussionId: newDiscussionResult.discussion.id,
+                codeGenerationId: newCodeGeneration.id,
+              },
+            });
 
-          // 更新讨论总结，用于下一轮校验
-          discussionResult.summary = newDiscussionResult.summary;
+            // 更新代码生成引用，用于下一轮校验
+            codeGeneration.id = newCodeGeneration.id;
+            codeGeneration.codeContent = newCodeGeneration.codeContent;
+            codeGeneration.executionStatus = newExecutionResult;
+
+            // 更新讨论总结，用于下一轮校验
+            discussionResult.summary = newDiscussionResult.summary;
+          } catch (retryError) {
+            console.error(`回溯第 ${retryCount} 轮失败:`, retryError);
+            // 如果回溯过程中出错，标记任务失败
+            await prisma.autoModelingTask.update({
+              where: { id: autoTask.id },
+              data: {
+                validationStatus: 'FAILED' as any,
+                errorLog: `回溯第 ${retryCount} 轮失败: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`,
+                overallStatus: OverallStatus.FAILED,
+              },
+            });
+
+            return {
+              success: false,
+              task: autoTask,
+              error: `回溯失败: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`,
+            };
+          }
         } else {
           console.log(`已达到最大回溯次数 ${MAX_RETRY_ROUNDS}，停止回溯`);
           await prisma.autoModelingTask.update({
