@@ -256,6 +256,8 @@ export async function executeFullAutoProcess(
  */
 export async function getAutoTaskStatus(autoTaskId: string) {
   try {
+    console.log(`[getAutoTaskStatus] Starting for task: ${autoTaskId}`);
+
     const task = await prisma.autoModelingTask.findUnique({
       where: { id: autoTaskId },
       include: {
@@ -272,7 +274,10 @@ export async function getAutoTaskStatus(autoTaskId: string) {
       },
     });
 
+    console.log(`[getAutoTaskStatus] Query result:`, task ? 'found' : 'not found');
+
     if (!task) {
+      console.log(`[getAutoTaskStatus] Task not found, returning null`);
       return null;
     }
 
