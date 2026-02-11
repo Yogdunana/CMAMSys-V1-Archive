@@ -1,88 +1,40 @@
 /**
- * 获取自动化任务列表 API
- * GET /api/auto-modeling/tasks
+ * 获取所有自动化任务列表
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // 验证身份
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const payload = await verifyAccessToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // 获取查询参数
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const status = searchParams.get('status');
-
-    // 构建查询条件
-    const where: any = {};
-
-    if (status && status !== 'ALL') {
-      where.overallStatus = status;
-    }
-
-    // 获取任务列表
-    const [tasks, total] = await Promise.all([
-      prisma.autoModelingTask.findMany({
-        where,
-        include: {
-          discussion: {
-            select: {
-              id: true,
-              status: true,
-              currentRound: true,
-            },
-          },
-          codeGeneration: {
-            select: {
-              id: true,
-              executionStatus: true,
-            },
-          },
-          paper: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.autoModelingTask.count({ where }),
-    ]);
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        tasks,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
+    const tasks = await prisma.autoModelingTask.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        problemTitle: true,
+        competitionType: true,
+        problemType: true,
+        overallStatus: true,
+        progress: true,
+        createdAt: true,
+        updatedAt: true,
+        discussionId: true,
+        codeGenerationId: true,
+        paperId: true,
       },
     });
+
+    return Response.json({
+      success: true,
+      data: tasks,
+    });
   } catch (error) {
-    console.error('Error getting auto modeling tasks:', error);
-    return NextResponse.json(
+    console.error('获取任务列表失败:', error);
+    return Response.json(
       {
+        success: false,
         error: '获取任务列表失败',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
