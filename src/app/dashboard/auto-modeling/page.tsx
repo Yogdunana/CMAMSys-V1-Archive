@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Header } from '@/components/shared/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@/components/ui/button';
@@ -60,6 +60,7 @@ export default function AutoModelingPage() {
 
   // 任务状态
   const [taskStatus, setTaskStatus] = useState<any>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleStartAutoProcess = async () => {
     if (!formData.competitionType || !formData.problemType || !formData.problemTitle || !formData.problemContent) {
@@ -85,7 +86,10 @@ export default function AutoModelingPage() {
         toast.success(data.message);
         setActiveTab('task-status');
         // 开始轮询任务状态
-        // TODO: 实现状态轮询
+        if (data.taskId) {
+          setCurrentTaskId(data.taskId);
+          startPolling(data.taskId);
+        }
       } else {
         toast.error(data.error || '启动失败');
       }
@@ -96,6 +100,58 @@ export default function AutoModelingPage() {
       setLoading(false);
     }
   };
+
+  const startPolling = (taskId: string) => {
+    // 清除之前的轮询
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+    }
+
+    // 立即查询一次
+    fetchTaskStatus(taskId);
+
+    // 每2秒轮询一次
+    pollIntervalRef.current = setInterval(() => {
+      fetchTaskStatus(taskId);
+    }, 2000);
+  };
+
+  const stopPolling = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  };
+
+  const fetchTaskStatus = async (taskId: string) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/auto-modeling/${taskId}/status`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await response.json();
+      if (data.success && data.data) {
+        setTaskStatus(data.data);
+
+        // 如果任务完成或失败，停止轮询
+        if (['COMPLETED', 'FAILED'].includes(data.data.overallStatus)) {
+          stopPolling();
+        }
+      }
+    } catch (error) {
+      console.error('查询任务状态失败:', error);
+    }
+  };
+
+  // 组件卸载时停止轮询
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, []);
 
   const getOverallStatusIcon = (status: string) => {
     switch (status) {
