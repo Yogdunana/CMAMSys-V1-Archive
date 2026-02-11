@@ -10,10 +10,10 @@ import { PaperFormat, PaperLanguage, OverallStatus } from '@prisma/client';
 
 export async function POST(
   request: NextRequest,
-  context: { params: { taskId: string } }
+  context: { params: Promise<{ taskId: string }> }
 ) {
   try {
-    const taskId = context.params.taskId;
+    const taskId = (await context.params).taskId;
 
     // 获取任务信息
     const task = await prisma.autoModelingTask.findUnique({
@@ -60,8 +60,8 @@ export async function POST(
         ],
       },
       coreAlgorithms: discussion.messages.map((msg) => ({
-        content: msg.content,
-        role: msg.role,
+        content: msg.messageContent,
+        role: msg.senderName,
       })),
       disagreements: [],
     };

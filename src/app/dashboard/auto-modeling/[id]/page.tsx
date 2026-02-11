@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
+import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from 'sonner';
 import {
@@ -26,6 +27,7 @@ import {
   ArrowLeft,
   Clock,
   MessageSquare,
+  TrendingUp,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -106,10 +108,8 @@ export default function AutoModelingTaskDetailPage() {
           setCodeGeneration(data.data.codeGeneration);
         }
 
-        // 根据 discussionId 加载 TODO 列表
-        if (data.data.discussionId) {
-          loadTodos();
-        }
+        // 加载 TODO 列表（基于任务状态和进度）
+        loadTodos();
       }
     } catch (error) {
       console.error('加载任务状态失败:', error);
@@ -137,15 +137,72 @@ export default function AutoModelingTaskDetailPage() {
   };
 
   const loadTodos = () => {
-    setTodos([
-      { id: 1, text: '分析讨论记录，提取核心算法', status: 'completed', estimatedTime: '30s' },
-      { id: 2, text: '设计数据结构（Region, Station）', status: 'completed', estimatedTime: '20s' },
-      { id: 3, text: '实现遗传算法（GeneticAlgorithm）', status: 'in-progress', estimatedTime: '60s' },
+    if (!taskStatus) return;
+
+    const progress = taskStatus.progress || 0;
+    const status = taskStatus.overallStatus;
+
+    // 基础 TODO 列表
+    const baseTodos: TodoItem[] = [
+      { id: 1, text: '分析讨论记录，提取核心算法', status: 'pending', estimatedTime: '30s' },
+      { id: 2, text: '设计数据结构（Region, Station）', status: 'pending', estimatedTime: '20s' },
+      { id: 3, text: '实现遗传算法（GeneticAlgorithm）', status: 'pending', estimatedTime: '60s' },
       { id: 4, text: '实现蚁群算法（AntColonyOptimization）', status: 'pending', estimatedTime: '50s' },
       { id: 5, text: '实现混合优化器（HybridOptimizer）', status: 'pending', estimatedTime: '30s' },
       { id: 6, text: '编写测试用例和验证代码', status: 'pending', estimatedTime: '40s' },
       { id: 7, text: '生成可视化报告', status: 'pending', estimatedTime: '30s' },
-    ]);
+    ];
+
+    // 根据进度和状态更新 TODO 状态
+    let completedCount = 0;
+    let currentTaskIndex = 0;
+
+    if (status === 'COMPLETED' || status === 'PAPER_GENERATING') {
+      // 所有任务已完成
+      completedCount = 7;
+      currentTaskIndex = 7;
+    } else if (status === 'VALIDATING' || status === 'RETRYING') {
+      // 代码生成完成，正在校验
+      completedCount = 5;
+      currentTaskIndex = 5;
+    } else if (status === 'CODING') {
+      // 正在生成代码，根据进度判断
+      if (progress >= 60) {
+        completedCount = 5;
+        currentTaskIndex = 5;
+      } else if (progress >= 50) {
+        completedCount = 4;
+        currentTaskIndex = 4;
+      } else if (progress >= 40) {
+        completedCount = 3;
+        currentTaskIndex = 3;
+      } else if (progress >= 30) {
+        completedCount = 2;
+        currentTaskIndex = 2;
+      } else if (progress >= 20) {
+        completedCount = 1;
+        currentTaskIndex = 1;
+      }
+    } else if (status === 'DISCUSSING') {
+      // 正在讨论
+      if (progress >= 30) {
+        completedCount = 1;
+        currentTaskIndex = 1;
+      }
+    }
+
+    // 更新 TODO 状态
+    const updatedTodos = baseTodos.map((todo, index) => {
+      if (index < completedCount) {
+        return { ...todo, status: 'completed' as const };
+      } else if (index === completedCount && status !== 'COMPLETED' && status !== 'PAPER_GENERATING') {
+        return { ...todo, status: 'in-progress' as const };
+      } else {
+        return { ...todo, status: 'pending' as const };
+      }
+    });
+
+    setTodos(updatedTodos);
   };
 
   const simulateCodeWriting = async () => {
@@ -285,6 +342,10 @@ export default function AutoModelingTaskDetailPage() {
               <TabsTrigger value="code-generation" className="flex items-center gap-2">
                 <Code2 className="h-4 w-4" />
                 代码生成
+              </TabsTrigger>
+              <TabsTrigger value="optimization" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                优化状态
               </TabsTrigger>
               <TabsTrigger value="discussion" className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
@@ -451,6 +512,15 @@ export default function AutoModelingTaskDetailPage() {
                   </Card>
                 </div>
               </div>
+            </TabsContent>
+
+            {/* 优化状态标签页 */}
+            <TabsContent value="optimization" className="space-y-6">
+              <OptimizationVisualizer
+                taskId={taskId}
+                isOptimizing={taskStatus.overallStatus === 'RETRYING'}
+                onRefresh={loadTaskStatus}
+              />
             </TabsContent>
 
             {/* 群聊讨论标签页 */}
