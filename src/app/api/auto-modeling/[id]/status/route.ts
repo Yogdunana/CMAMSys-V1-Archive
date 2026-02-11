@@ -15,18 +15,22 @@ export async function GET(
     // 验证身份
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
+      console.log('[Status API] No token provided');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload = await verifyAccessToken(token);
     if (!payload) {
+      console.log('[Status API] Invalid token');
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const { id } = await params;
+    console.log(`[Status API] Fetching status for task: ${id}`);
 
     // 获取任务状态
     const task = await getAutoTaskStatus(id);
+    console.log(`[Status API] Task result:`, task ? 'found' : 'not found');
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
@@ -37,7 +41,7 @@ export async function GET(
       data: task,
     });
   } catch (error) {
-    console.error('Error getting auto task status:', error);
+    console.error('[Status API] Error getting auto task status:', error);
     return NextResponse.json(
       {
         error: '获取任务状态失败',
