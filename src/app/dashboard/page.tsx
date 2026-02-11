@@ -181,23 +181,6 @@ export default function DashboardPage() {
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">快速操作</h2>
             <div className="grid gap-4 md:grid-cols-3">
-              <Link href="/dashboard/modeling-tasks">
-                <Card className="hover:border-primary transition-colors cursor-pointer">
-                  <CardHeader>
-                    <FolderTree className="h-8 w-8 mb-2 text-blue-500" />
-                    <CardTitle className="text-lg">建模任务</CardTitle>
-                    <CardDescription>
-                      管理和查看您的建模任务
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" className="w-full" size="sm">
-                      查看任务
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Link>
-
               <Link href="/dashboard/auto-modeling">
                 <Card className="hover:border-primary transition-colors cursor-pointer">
                   <CardHeader>

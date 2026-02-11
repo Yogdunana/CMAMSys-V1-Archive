@@ -28,7 +28,6 @@ model User {
   deletedAt           DateTime?
   aiProviders         AIProvider[]
   competitions        Competition[]  @relation("UserCompetitions")
-  modelingTasks       ModelingTask[] @relation("UserTasks")
   refreshTokens       RefreshToken[]
   teamMemberships     TeamMember[]
   ownedTeams          Team[]         @relation("TeamOwner")
@@ -155,7 +154,6 @@ model Competition {
   updatedAt   DateTime        @updatedAt
   deletedAt   DateTime?
   createdBy   User            @relation("UserCompetitions", fields: [createdById], references: [id], onDelete: Cascade)
-  tasks       ModelingTask[]  @relation("CompetitionTasks")
   problems    Problem[]
 
   @@index([createdById])
@@ -232,41 +230,6 @@ model AIGeneratedContent {
   @@index([solutionId])
   @@index([type])
   @@map("ai_generated_contents")
-}
-
-model ModelingTask {
-  id              String       @id @default(cuid())
-  name            String
-  description     String?
-  competitionId   String?
-  problemType     ProblemType
-  status          TaskStatus   @default(PENDING)
-  progress        Int          @default(0)
-  dataFilePath    String?
-  problemFilePath String?
-  modelFilePath   String?
-  reportFilePath  String?
-  visualizations  String[]
-  algorithm       String?
-  hyperparameters Json?
-  approachNumber  Int?
-  metrics         Json?
-  logs            String?
-  errorMessage    String?
-  startedAt       DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  deletedAt       DateTime?
-  createdById     String
-  competition     Competition? @relation("CompetitionTasks", fields: [competitionId], references: [id])
-  createdBy       User         @relation("UserTasks", fields: [createdById], references: [id], onDelete: Cascade)
-
-  @@index([createdById])
-  @@index([competitionId])
-  @@index([status])
-  @@index([problemType])
-  @@map("modeling_tasks")
 }
 
 model SystemSetting {

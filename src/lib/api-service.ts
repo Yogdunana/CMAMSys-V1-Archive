@@ -69,7 +69,6 @@ export const authApi = {
 
 export interface DashboardStats {
   activeCompetitions: number;
-  modelingTasks: number;
   teamMembers: number;
   aiRequests: number;
   aiProviders: number;
@@ -193,99 +192,6 @@ export const aiProvidersApi = {
 
 // ============= Modeling Tasks API =============
 
-export interface ModelingTask {
-  id: string;
-  name: string;
-  description?: string;
-  problemType: string;
-  status: 'PENDING' | 'PREPROCESSING' | 'MODELING' | 'EVALUATING' | 'REPORTING' | 'COMPLETED' | 'FAILED';
-  progress: number;
-  algorithm?: string;
-  approachNumber?: number;
-  priority?: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-  competitionId?: string;
-  competitionName?: string;
-  dataFilePath: string;
-  problemFilePath: string;
-  createdById: string;
-  createdBy?: {
-    id: string;
-    username: string;
-    email: string;
-  };
-  updatedById: string;
-  updatedBy?: {
-    id: string;
-    username: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateModelingTaskRequest {
-  name: string;
-  description?: string;
-  problemType?: string;
-  competitionId?: string;
-  algorithm?: string;
-  approachNumber?: number;
-  priority?: string;
-}
-
-export interface UpdateModelingTaskRequest {
-  name?: string;
-  description?: string;
-  status?: string;
-  progress?: number;
-  algorithm?: string;
-  approachNumber?: number;
-  priority?: string;
-}
-
-export const modelingTasksApi = {
-  /**
-   * 获取建模任务列表
-   */
-  async list(
-    page: number = 1,
-    limit: number = 20,
-    status?: string,
-    competitionId?: string
-  ): Promise<ApiResponse<ModelingTask[]>> {
-    return apiClient.get<ModelingTask[]>('/modeling-tasks', {
-      queryParams: { page, limit, status, competitionId },
-    });
-  },
-
-  /**
-   * 获取建模任务详情
-   */
-  async get(id: string): Promise<ApiResponse<ModelingTask>> {
-    return apiClient.get<ModelingTask>(`/modeling-tasks/${id}`);
-  },
-
-  /**
-   * 创建建模任务
-   */
-  async create(data: CreateModelingTaskRequest): Promise<ApiResponse<ModelingTask>> {
-    return apiClient.post<ModelingTask>('/modeling-tasks', data);
-  },
-
-  /**
-   * 更新建模任务
-   */
-  async update(id: string, data: UpdateModelingTaskRequest): Promise<ApiResponse<ModelingTask>> {
-    return apiClient.patch<ModelingTask>(`/modeling-tasks/${id}`, data);
-  },
-
-  /**
-   * 删除建模任务
-   */
-  async delete(id: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`/modeling-tasks/${id}`);
-  },
-};
-
 // ============= Auto Modeling API =============
 
 export interface StartAutoModelingRequest {
@@ -313,7 +219,6 @@ export const api = {
   dashboard: dashboardApi,
   user: userApi,
   aiProviders: aiProvidersApi,
-  modelingTasks: modelingTasksApi,
   autoModeling: autoModelingApi,
 };
 
