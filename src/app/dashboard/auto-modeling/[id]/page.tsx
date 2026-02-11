@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
 import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
 import { Toaster } from '@/components/ui/toaster';
@@ -28,6 +29,8 @@ import {
   Clock,
   MessageSquare,
   TrendingUp,
+  Eye,
+  Info,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -78,6 +81,8 @@ export default function AutoModelingTaskDetailPage() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -278,6 +283,519 @@ export default function AutoModelingTaskDetailPage() {
     setTodos(updatedTodos);
   };
 
+  // 任务详情内容
+  const getTodoDetails = (todoId: number) => {
+    const details: Record<number, { title: string; description: string; content: string }> = {
+      1: {
+        title: '分析讨论记录，提取核心算法',
+        description: '从群聊讨论中提取核心算法、创新点和关键技术方案',
+        content: `**核心算法提取结果：**
+
+1. **遗传算法 (Genetic Algorithm)**
+   - 用于全局搜索和优化
+   - 特点：能够跳出局部最优，找到全局最优解
+   - 适用场景：大规模组合优化问题
+
+2. **蚁群算法 (Ant Colony Optimization)**
+   - 用于路径规划和调度优化
+   - 特点：基于信息素的自适应搜索机制
+   - 适用场景：网络路由、车辆路径问题
+
+3. **混合优化策略**
+   - 结合 GA 的全局搜索能力和 ACO 的局部优化能力
+   - 自适应权重机制，动态调整算法参数
+   - 并行优化策略，提高搜索效率`,
+      },
+      2: {
+        title: '设计数据结构（Region, Station）',
+        description: '设计城市共享单车投放优化问题的数据结构',
+        content: `**数据结构设计：**
+
+\`\`\`python
+class Region:
+    """城市区域数据结构"""
+    def __init__(self, id: str, name: str, center: tuple, demand: float):
+        self.id = id          # 区域ID
+        self.name = name      # 区域名称
+        self.center = center  # 中心坐标 (lat, lng)
+        self.demand = demand  # 需求量
+        self.stations = []    # 区域内的站点列表
+
+class Station:
+    """共享单车站点数据结构"""
+    def __init__(self, id: str, location: tuple, capacity: int):
+        self.id = id              # 站点ID
+        self.location = location  # 站点坐标
+        self.capacity = capacity  # 容量
+        self.current_bikes = 0    # 当前单车数量
+        self.utilization = 0.0    # 利用率
+\`\`\``,
+      },
+      3: {
+        title: '实现遗传算法（GeneticAlgorithm）',
+        description: '实现用于共享单车投放优化的遗传算法',
+        content: `**遗传算法核心实现：**
+
+\`\`\`python
+class GeneticAlgorithm:
+    def __init__(self, population_size=100, generations=500):
+        self.population_size = population_size
+        self.generations = generations
+        self.mutation_rate = 0.1
+        self.crossover_rate = 0.8
+        
+    def initialize_population(self):
+        """初始化种群"""
+        return [self.random_solution() for _ in range(self.population_size)]
+    
+    def fitness_function(self, solution):
+        """适应度函数"""
+        # 计算总成本（建设成本 + 运营成本）
+        total_cost = self.calculate_cost(solution)
+        # 计算覆盖率
+        coverage = self.calculate_coverage(solution)
+        # 适应度 = 覆盖率 / 成本
+        return coverage / (total_cost + 1e-6)
+    
+    def crossover(self, parent1, parent2):
+        """交叉操作"""
+        # 采用单点交叉
+        point = np.random.randint(1, len(parent1))
+        child1 = np.concatenate([parent1[:point], parent2[point:]])
+        child2 = np.concatenate([parent2[:point], parent1[point:]])
+        return child1, child2
+    
+    def mutate(self, solution):
+        """变异操作"""
+        # 随机变异某个站点数量
+        idx = np.random.randint(0, len(solution))
+        solution[idx] = np.random.randint(0, 50)
+        return solution
+    
+    def evolve(self):
+        """进化过程"""
+        population = self.initialize_population()
+        best_solution = None
+        best_fitness = 0
+        
+        for gen in range(self.generations):
+            # 评估适应度
+            fitness_scores = [self.fitness_function(sol) for sol in population]
+            
+            # 记录最优解
+            current_best_idx = np.argmax(fitness_scores)
+            if fitness_scores[current_best_idx] > best_fitness:
+                best_fitness = fitness_scores[current_best_idx]
+                best_solution = population[current_best_idx]
+            
+            # 选择、交叉、变异
+            new_population = self.selection(population, fitness_scores)
+            offspring = []
+            
+            for i in range(0, len(new_population), 2):
+                if i + 1 < len(new_population):
+                    child1, child2 = self.crossover(new_population[i], new_population[i+1])
+                    child1 = self.mutate(child1)
+                    child2 = self.mutate(child2)
+                    offspring.extend([child1, child2])
+            
+            population = offspring
+        
+        return best_solution
+\`\`\``,
+      },
+      4: {
+        title: '实现蚁群算法（AntColonyOptimization）',
+        description: '实现用于路径优化的蚁群算法',
+        content: `**蚁群算法核心实现：**
+
+\`\`\`python
+class AntColonyOptimization:
+    def __init__(self, num_ants=20, max_iter=200):
+        self.num_ants = num_ants
+        self.max_iter = max_iter
+        self.alpha = 1.0      # 信息素重要程度
+        self.beta = 2.0       # 启发信息重要程度
+        self.rho = 0.5        # 信息素挥发系数
+        self.Q = 100          # 信息素强度
+        
+    def initialize_pheromones(self, num_nodes):
+        """初始化信息素矩阵"""
+        return np.ones((num_nodes, num_nodes)) / num_nodes
+    
+    def calculate_probabilities(self, pheromones, distances):
+        """计算转移概率"""
+        probabilities = []
+        for i in range(len(pheromones)):
+            row = []
+            for j in range(len(pheromones[i])):
+                if i != j:
+                    # 概率公式: pheromone^alpha * (1/distance)^beta
+                    prob = (pheromones[i][j] ** self.alpha) * \
+                           ((1.0 / distances[i][j]) ** self.beta)
+                    row.append(prob)
+                else:
+                    row.append(0)
+            
+            # 归一化
+            total = sum(row)
+            if total > 0:
+                row = [p / total for p in row]
+            probabilities.append(row)
+        
+        return probabilities
+    
+    def construct_solution(self, start_node, probabilities):
+        """蚂蚁构建解"""
+        path = [start_node]
+        visited = set([start_node])
+        
+        while len(visited) < len(probabilities):
+            current = path[-1]
+            probs = probabilities[current]
+            
+            # 选择下一个节点（轮盘赌）
+            next_node = np.random.choice(len(probs), p=probs)
+            
+            # 检查是否已访问
+            if next_node in visited:
+                # 随机选择未访问的节点
+                unvisited = [i for i in range(len(probs)) if i not in visited]
+                if unvisited:
+                    next_node = np.random.choice(unvisited)
+                else:
+                    break
+            
+            path.append(next_node)
+            visited.add(next_node)
+        
+        return path
+    
+    def update_pheromones(self, pheromones, solutions, distances):
+        """更新信息素"""
+        # 信息素挥发
+        pheromones = pheromones * (1 - self.rho)
+        
+        # 信息素沉积
+        for solution in solutions:
+            path_length = self.calculate_path_length(solution, distances)
+            delta = self.Q / path_length
+            
+            for i in range(len(solution) - 1):
+                from_node = solution[i]
+                to_node = solution[i + 1]
+                pheromones[from_node][to_node] += delta
+                pheromones[to_node][from_node] += delta
+        
+        return pheromones
+    
+    def run(self, distances):
+        """运行蚁群算法"""
+        num_nodes = len(distances)
+        pheromones = self.initialize_pheromones(num_nodes)
+        best_path = None
+        best_length = float('inf')
+        
+        for iteration in range(self.max_iter):
+            # 计算转移概率
+            probabilities = self.calculate_probabilities(pheromones, distances)
+            
+            # 所有蚂蚁构建解
+            solutions = []
+            for ant in range(self.num_ants):
+                start_node = np.random.randint(0, num_nodes)
+                path = self.construct_solution(start_node, probabilities)
+                solutions.append(path)
+            
+            # 更新最优解
+            for solution in solutions:
+                length = self.calculate_path_length(solution, distances)
+                if length < best_length:
+                    best_length = length
+                    best_path = solution
+            
+            # 更新信息素
+            pheromones = self.update_pheromones(pheromones, solutions, distances)
+        
+        return best_path, best_length
+\`\`\``,
+      },
+      5: {
+        title: '实现混合优化器（HybridOptimizer）',
+        description: '结合遗传算法和蚁群算法的混合优化器',
+        content: `**混合优化器核心实现：**
+
+\`\`\`python
+class HybridOptimizer:
+    def __init__(self):
+        self.ga = GeneticAlgorithm(population_size=100, generations=300)
+        self.aco = AntColonyOptimization(num_ants=20, max_iter=150)
+        self.adaptive_weight = 0.5  # 初始权重
+        
+    def adaptive_weight_adjustment(self, iteration, max_iterations):
+        """自适应权重调整"""
+        # 随着迭代进行，逐渐增加蚁群算法权重
+        self.adaptive_weight = 0.3 + 0.7 * (iteration / max_iterations)
+        return self.adaptive_weight
+    
+    def parallel_optimization(self, regions):
+        """并行优化"""
+        results = {}
+        
+        # Stage 1: GA 全局搜索
+        ga_solutions = {}
+        for region in regions:
+            ga_solutions[region.id] = self.ga.evolve()
+        
+        # Stage 2: ACO 局部优化
+        aco_solutions = {}
+        for region in regions:
+            distances = self.calculate_distances(region, ga_solutions[region.id])
+            aco_solutions[region.id] = self.aco.run(distances)
+        
+        # Stage 3: 混合融合
+        for region in regions:
+            weight = self.adaptive_weight_adjustment(0, 100)
+            
+            # 融合 GA 和 ACO 的解
+            ga_sol = ga_solutions[region.id]
+            aco_sol = aco_solutions[region.id]
+            
+            hybrid_sol = weight * np.array(ga_sol) + (1 - weight) * np.array(aco_sol)
+            results[region.id] = hybrid_sol
+        
+        return results
+    
+    def local_search(self, solution, region):
+        """局部搜索优化"""
+        best_solution = solution.copy()
+        best_fitness = self.ga.fitness_function(solution)
+        
+        # 邻域搜索
+        for i in range(len(solution)):
+            # 尝试调整每个站点的数量
+            for delta in [-1, 1]:
+                new_solution = solution.copy()
+                new_solution[i] = max(0, min(50, new_solution[i] + delta))
+                
+                new_fitness = self.ga.fitness_function(new_solution)
+                if new_fitness > best_fitness:
+                    best_fitness = new_fitness
+                    best_solution = new_solution
+        
+        return best_solution
+    
+    def optimize(self, regions, max_iterations=100):
+        """执行混合优化"""
+        best_global_solution = None
+        best_global_fitness = 0
+        
+        for iteration in range(max_iterations):
+            # 调整自适应权重
+            weight = self.adaptive_weight_adjustment(iteration, max_iterations)
+            
+            # 并行优化
+            solutions = self.parallel_optimization(regions)
+            
+            # 局部搜索
+            for region_id, solution in solutions.items():
+                region = next(r for r in regions if r.id == region_id)
+                solutions[region_id] = self.local_search(solution, region)
+            
+            # 评估全局最优解
+            total_fitness = sum(self.ga.fitness_function(sol) for sol in solutions.values())
+            
+            if total_fitness > best_global_fitness:
+                best_global_fitness = total_fitness
+                best_global_solution = solutions.copy()
+            
+            print(f"Iteration {iteration}: Weight={weight:.2f}, Fitness={total_fitness:.4f}")
+        
+        return best_global_solution
+\`\`\``,
+      },
+      6: {
+        title: '编写测试用例和验证代码',
+        description: '编写单元测试和验证代码',
+        content: `**测试用例设计：**
+
+\`\`\`python
+import unittest
+import numpy as np
+
+class TestGeneticAlgorithm(unittest.TestCase):
+    def setUp(self):
+        self.ga = GeneticAlgorithm(population_size=20, generations=50)
+    
+    def test_initialization(self):
+        """测试初始化"""
+        self.assertIsNotNone(self.ga)
+        self.assertEqual(self.ga.population_size, 20)
+    
+    def test_fitness_function(self):
+        """测试适应度函数"""
+        solution = np.array([10, 20, 15, 30, 25])
+        fitness = self.ga.fitness_function(solution)
+        self.assertGreater(fitness, 0)
+    
+    def test_crossover(self):
+        """测试交叉操作"""
+        parent1 = np.array([1, 2, 3, 4, 5])
+        parent2 = np.array([6, 7, 8, 9, 10])
+        child1, child2 = self.ga.crossover(parent1, parent2)
+        self.assertEqual(len(child1), len(parent1))
+        self.assertEqual(len(child2), len(parent2))
+    
+    def test_mutation(self):
+        """测试变异操作"""
+        solution = np.array([10, 20, 15, 30, 25])
+        mutated = self.ga.mutate(solution.copy())
+        self.assertNotEqual(solution[mutated != solution].size, 0)
+
+class TestAntColonyOptimization(unittest.TestCase):
+    def setUp(self):
+        self.aco = AntColonyOptimization(num_ants=10, max_iter=100)
+    
+    def test_pheromone_initialization(self):
+        """测试信息素初始化"""
+        pheromones = self.aco.initialize_pheromones(5)
+        self.assertEqual(pheromones.shape, (5, 5))
+    
+    def test_path_construction(self):
+        """测试路径构建"""
+        distances = np.random.rand(5, 5)
+        np.fill_diagonal(distances, np.inf)
+        pheromones = self.aco.initialize_pheromones(5)
+        probs = self.aco.calculate_probabilities(pheromones, distances)
+        path = self.aco.construct_solution(0, probs)
+        self.assertGreater(len(path), 0)
+
+class TestHybridOptimizer(unittest.TestCase):
+    def setUp(self):
+        self.optimizer = HybridOptimizer()
+        self.regions = [
+            Region("R1", "Center", (39.9, 116.4), 100),
+            Region("R2", "North", (39.95, 116.4), 80),
+        ]
+    
+    def test_optimization(self):
+        """测试混合优化"""
+        solution = self.optimizer.optimize(self.regions, max_iterations=10)
+        self.assertIsNotNone(solution)
+        self.assertEqual(len(solution), 2)
+\`\`\`
+
+**验证结果：**
+- ✅ 所有单元测试通过
+- ✅ 适应度函数正确计算
+- ✅ 交叉和变异操作有效
+- ✅ 混合优化收敛性良好
+- ✅ 最优解质量提升 15%`,
+      },
+      7: {
+        title: '生成可视化报告',
+        description: '生成优化结果的可视化报告',
+        content: `**可视化报告生成：**
+
+\`\`\`python
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+class VisualizationReport:
+    def generate_convergence_plot(self, fitness_history):
+        """生成收敛曲线"""
+        plt.figure(figsize=(12, 6))
+        plt.plot(fitness_history, linewidth=2, label='Best Fitness')
+        plt.xlabel('Iteration', fontsize=12)
+        plt.ylabel('Fitness', fontsize=12)
+        plt.title('Optimization Convergence', fontsize=14)
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.savefig('convergence.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    
+    def generate_distribution_plot(self, solution):
+        """生成投放分布图"""
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # 站点数量分布
+        ax1.bar(range(len(solution)), solution, color='skyblue')
+        ax1.set_xlabel('Station ID', fontsize=12)
+        ax1.set_ylabel('Bike Count', fontsize=12)
+        ax1.set_title('Bike Distribution', fontsize=14)
+        
+        # 利用率分布
+        utilization = [s / 50 * 100 for s in solution]
+        ax2.pie(utilization, labels=[f'S{i}' for i in range(len(solution))],
+                autopct='%1.1f%%', startangle=90)
+        ax2.set_title('Utilization Rate', fontsize=14)
+        
+        plt.savefig('distribution.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    
+    def generate_comparison_plot(self, results):
+        """生成算法对比图"""
+        algorithms = list(results.keys())
+        fitness_values = [results[alg] for alg in algorithms]
+        
+        plt.figure(figsize=(10, 6))
+        bars = plt.bar(algorithms, fitness_values, color=['#ff6b6b', '#4ecdc4', '#45b7d1'])
+        plt.xlabel('Algorithm', fontsize=12)
+        plt.ylabel('Final Fitness', fontsize=12)
+        plt.title('Algorithm Performance Comparison', fontsize=14)
+        
+        # 添加数值标签
+        for bar, value in zip(bars, fitness_values):
+            plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
+                    f'{value:.4f}', ha='center', va='bottom')
+        
+        plt.savefig('comparison.png', dpi=300, bbox_inches='tight')
+        plt.close()
+    
+    def generate_heatmap(self, regions, solution):
+        """生成热力图"""
+        import folium
+        from folium.plugins import HeatMap
+        
+        m = folium.Map(location=[39.9, 116.4], zoom_start=12)
+        
+        # 添加站点标记
+        for region in regions:
+            bikes = solution[region.id]
+            folium.CircleMarker(
+                location=region.center,
+                radius=bikes / 2,
+                popup=f'{region.name}: {bikes} bikes',
+                color='red',
+                fill=True,
+                fillColor='#ff6b6b',
+                fillOpacity=0.6
+            ).add_to(m)
+        
+        # 添加热力图
+        heat_data = [[region.center[0], region.center[1], solution[region.id]] 
+                    for region in regions]
+        HeatMap(heat_data).add_to(m)
+        
+        m.save('heatmap.html')
+\`\`\`
+
+**报告内容：**
+1. 收敛曲线：显示算法优化过程中的适应度变化
+2. 投放分布：各区域站点的单车投放数量分布
+3. 算法对比：GA、ACO、混合算法的性能对比
+4. 地图热力图：地理空间上的投放密度可视化`,
+      },
+    };
+
+    return details[todoId] || { title: '', description: '', content: '' };
+  };
+
+  const handleTodoClick = (todo: TodoItem) => {
+    setSelectedTodo(todo);
+    setIsDetailDialogOpen(true);
+  };
+
   const simulateCodeWriting = async () => {
     setIsGenerating(true);
     addLog('info', '开始生成代码...');
@@ -441,7 +959,7 @@ export default function AutoModelingTaskDetailPage() {
                         {todos.filter(t => t.status === 'completed').length}/{todos.length}
                       </Badge>
                     </div>
-                    <CardDescription>AI 正在按顺序完成这些任务</CardDescription>
+                    <CardDescription>AI 正在按顺序完成这些任务（点击查看详情）</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-[600px] pr-4">
@@ -449,12 +967,13 @@ export default function AutoModelingTaskDetailPage() {
                         {todos.map((todo, index) => (
                           <div
                             key={todo.id}
-                            className={`p-3 rounded-lg border ${
+                            onClick={() => handleTodoClick(todo)}
+                            className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
                               todo.status === 'completed'
-                                ? 'bg-green-50 border-green-200'
+                                ? 'bg-green-50 border-green-200 hover:bg-green-100'
                                 : todo.status === 'in-progress'
-                                ? 'bg-blue-50 border-blue-200'
-                                : 'bg-gray-50 border-gray-200'
+                                ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                             }`}
                           >
                             <div className="flex items-start gap-3">
@@ -462,7 +981,10 @@ export default function AutoModelingTaskDetailPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="font-medium text-sm">{todo.text}</span>
-                                  <span className="text-xs text-gray-500">{todo.estimatedTime}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500">{todo.estimatedTime}</span>
+                                    <Eye className="h-3 w-3 text-gray-400" />
+                                  </div>
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-gray-500">
                                   <span>{index + 1}.</span>
@@ -613,6 +1135,37 @@ export default function AutoModelingTaskDetailPage() {
             </TabsContent>
           </Tabs>
         </main>
+        
+        {/* 任务详情对话框 */}
+        <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh]">
+            {selectedTodo && (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-3">
+                    {getTodoIcon(selectedTodo.status)}
+                    <DialogTitle className="text-xl">{getTodoDetails(selectedTodo.id).title}</DialogTitle>
+                  </div>
+                  <DialogDescription>
+                    {getTodoDetails(selectedTodo.id).description}
+                  </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh]">
+                  <div className="prose prose-sm max-w-none">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <pre className="whitespace-pre-wrap text-sm font-mono bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                          {getTodoDetails(selectedTodo.id).content}
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+        
         <Toaster />
       </div>
     </ProtectedRoute>
