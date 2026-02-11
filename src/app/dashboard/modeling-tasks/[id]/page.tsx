@@ -117,14 +117,32 @@ export default function TaskDetailPage() {
         },
       });
 
-      const data = await response.json();
+      // 检查响应状态
+      if (!response.ok) {
+        console.error('Failed to load task:', response.status, response.statusText);
+        router.push('/dashboard/modeling-tasks');
+        return;
+      }
+
+      // 检查响应内容是否为空
+      const text = await response.text();
+      if (!text || text.trim() === '') {
+        console.error('Empty response from server');
+        router.push('/dashboard/modeling-tasks');
+        return;
+      }
+
+      // 解析 JSON
+      const data = JSON.parse(text);
       if (data.success) {
         setTask(data.data);
       } else {
+        console.error('API returned error:', data.error);
         router.push('/dashboard/modeling-tasks');
       }
     } catch (error) {
       console.error('Failed to load task:', error);
+      router.push('/dashboard/modeling-tasks');
     } finally {
       setIsLoading(false);
     }
