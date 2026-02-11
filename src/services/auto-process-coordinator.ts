@@ -272,7 +272,71 @@ export async function getAutoTaskStatus(autoTaskId: string) {
       },
     });
 
-    return task;
+    if (!task) {
+      return null;
+    }
+
+    // 计算任务进度
+    let progress = 0;
+
+    // 根据整体状态计算进度
+    switch (task.overallStatus) {
+      case 'PENDING':
+        progress = 0;
+        break;
+      case 'DISCUSSING':
+        // 讨论阶段：根据当前回合计算进度
+        if (task.discussion) {
+          const roundProgress = (task.discussion.currentRound / task.discussion.maxRounds) * 40;
+          progress = roundProgress;
+        } else {
+          progress = 5;
+        }
+        break;
+      case 'CODING':
+        // 代码生成阶段：40-60%
+        progress = 50;
+        break;
+      case 'VALIDATING':
+        // 校验阶段：60-80%
+        if (task.validations && task.validations.length > 0) {
+          const validationProgress = 60 + (Math.min(task.validations.length, 3) / 3) * 20;
+          progress = validationProgress;
+        } else {
+          progress = 65;
+        }
+        break;
+      case 'RETRYING':
+        // 回溯优化阶段：70-85%
+        progress = 75;
+        break;
+      case 'PAPER_GENERATING':
+        // 论文生成阶段：85-95%
+        progress = 90;
+        break;
+      case 'COMPLETED':
+        // 已完成：100%
+        progress = 100;
+        break;
+      case 'FAILED':
+        // 失败：保持当前进度
+        progress = task.progress || 0;
+        break;
+      default:
+        progress = 0;
+    }
+
+    // 更新任务进度
+    await prisma.autoModelingTask.update({
+      where: { id: autoTaskId },
+      data: { progress },
+    });
+
+    // 返回包含进度的任务
+    return {
+      ...task,
+      progress,
+    };
   } catch (error) {
     console.error('Error getting auto task status:', error);
     return null;

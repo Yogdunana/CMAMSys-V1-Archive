@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DiscussionViewer } from '@/components/discussion/DiscussionViewer';
+import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
 import { CodeResultViewer } from '@/components/code/CodeResultViewer';
 import { PaperViewer } from '@/components/paper/PaperViewer';
 import { CostMonitor } from '@/components/cost/CostMonitor';
@@ -151,6 +151,35 @@ export default function AutoModelingPage() {
     return () => {
       stopPolling();
     };
+  }, []);
+
+  // 组件加载时获取最新的运行中任务
+  useEffect(() => {
+    const fetchLatestTask = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/auto-modeling/latest', {
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        const data = await response.json();
+        if (data.success && data.data && data.data.id) {
+          const latestTask = data.data;
+          // 只有当任务未完成时才自动加载
+          if (['PENDING', 'DISCUSSING', 'CODING', 'VALIDATING', 'RETRYING', 'PAPER_GENERATING'].includes(latestTask.overallStatus)) {
+            setCurrentTaskId(latestTask.id);
+            startPolling(latestTask.id);
+            console.log(`已加载最新的运行中任务: ${latestTask.id}`);
+          }
+        }
+      } catch (error) {
+        console.error('获取最新任务失败:', error);
+      }
+    };
+
+    fetchLatestTask();
   }, []);
 
   const getOverallStatusIcon = (status: string) => {
@@ -466,14 +495,14 @@ export default function AutoModelingPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <DiscussionViewer
-                        discussionId={currentTaskId}
-                        providers={[
-                          { id: 'provider1', name: 'DeepSeek', type: 'Reasoning' },
-                          { id: 'provider2', name: '豆包', type: 'General' },
-                          { id: 'provider3', name: '阿里百炼', type: 'General' },
-                        ]}
-                      />
+                      {currentTaskId ? (
+                        <DiscussionHistoryViewer discussionId={currentTaskId} />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                          <Clock className="w-12 h-12 mb-4" />
+                          <p>暂无讨论消息</p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
