@@ -31,14 +31,32 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // 获取所有 AI Provider 信息
+    const aiProviders = await prisma.aIProvider.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+      },
+    });
+
+    // 创建 Provider ID 到名称的映射
+    const providerNameMap = new Map<string, string>();
+    aiProviders.forEach(provider => {
+      providerNameMap.set(provider.id, provider.name);
+    });
+
     // 按 Provider 聚合数据
     const providerMap = new Map<string, any>();
 
     costRecords.forEach(record => {
+      const providerName = providerNameMap.get(record.providerId) || record.providerId;
+
       if (!providerMap.has(record.providerId)) {
         providerMap.set(record.providerId, {
           providerId: record.providerId,
-          providerName: record.providerId, // 暂时使用 ID，可以后续关联 AI Provider 表
+          providerName: providerName, // 使用真实名称
           inputTokens: Math.floor(record.tokensUsed * 0.4), // 假设输入占 40%
           outputTokens: Math.floor(record.tokensUsed * 0.6), // 假设输出占 60%
           totalTokens: record.tokensUsed,
