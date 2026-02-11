@@ -636,6 +636,7 @@ model AutoModelingTask {
   paperStatus       PaperStatus           @default(DRAFT)
   overallStatus     OverallStatus         @default(PENDING)
   errorLog          String?               @db.Text
+  progress          Int                   @default(0) // 任务进度 0-100
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
 

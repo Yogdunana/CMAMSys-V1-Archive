@@ -304,14 +304,22 @@ async function callAIProvider(provider: AIProvider, prompt: string) {
   // 这里需要根据 provider.type 调用不同的 AI 服务
   // 暂时返回模拟数据
 
-  return {
-    content: `模拟回复：${provider.name} 的解题思路`,
+  console.log(`[callAIProvider] 调用 ${provider.name} (${provider.type})`);
+  console.log(`[callAIProvider] Prompt 长度: ${prompt.length}`);
+
+  const response = {
+    content: `模拟回复：${provider.name} 的解题思路。\n\n针对城市共享单车投放优化问题，我建议采用以下方法：\n\n1. 核心算法：遗传算法 + 模拟退火混合算法\n2. 创新点：基于区域需求预测的自适应投放策略\n3. 可行性分析：时间复杂度 O(n²)，能够满足实时调度需求`,
     coreAlgorithms: '遗传算法、蚁群算法',
     innovations: '混合算法设计、自适应参数调整',
     feasibility: '时间复杂度 O(n²)，数据需求适中',
     disagreements: '',
     tokenCount: 500,
   };
+
+  console.log(`[callAIProvider] 返回 content 长度: ${response.content.length}`);
+  console.log(`[callAIProvider] 返回 content 预览: ${response.content.substring(0, 100)}...`);
+
+  return response;
 }
 
 /**
