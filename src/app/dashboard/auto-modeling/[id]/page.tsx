@@ -79,9 +79,18 @@ export default function AutoModelingTaskDetailPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 加载任务状态
   useEffect(() => {
     loadTaskStatus();
+    
+    // 开始状态轮询（每 2 秒）
+    startPolling();
+    
+    return () => {
+      stopPolling();
+    };
   }, [taskId]);
 
   useEffect(() => {
@@ -109,12 +118,75 @@ export default function AutoModelingTaskDetailPage() {
         }
 
         // 加载 TODO 列表（基于任务状态和进度）
-        loadTodos();
+        loadTodos(data.data);
+
+        // 如果任务已完成或失败，停止轮询
+        if (
+          data.data.overallStatus === 'COMPLETED' ||
+          data.data.overallStatus === 'FAILED'
+        ) {
+          stopPolling();
+        }
       }
     } catch (error) {
       console.error('加载任务状态失败:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const startPolling = () => {
+    // 清除之前的轮询
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+    }
+
+    // 每 2 秒轮询一次
+    pollingRef.current = setInterval(() => {
+      fetchTaskStatus();
+    }, 2000);
+  };
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
+
+  // 获取任务状态（不带加载状态更新，用于轮询）
+  const fetchTaskStatus = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/auto-modeling/${taskId}/status`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        const newTaskStatus = data.data;
+        setTaskStatus(newTaskStatus);
+
+        // 如果任务有代码生成，加载代码
+        if (newTaskStatus.codeGeneration && !codeGeneration) {
+          setCodeGeneration(newTaskStatus.codeGeneration);
+        }
+
+        // 更新 TODO 列表
+        loadTodos(newTaskStatus);
+
+        // 如果任务已完成或失败，停止轮询
+        if (
+          newTaskStatus.overallStatus === 'COMPLETED' ||
+          newTaskStatus.overallStatus === 'FAILED'
+        ) {
+          stopPolling();
+        }
+      }
+    } catch (error) {
+      console.error('轮询任务状态失败:', error);
     }
   };
 
@@ -136,11 +208,12 @@ export default function AutoModelingTaskDetailPage() {
     }
   };
 
-  const loadTodos = () => {
-    if (!taskStatus) return;
+  const loadTodos = (currentTaskStatus?: TaskStatus) => {
+    const statusToUse = currentTaskStatus || taskStatus;
+    if (!statusToUse) return;
 
-    const progress = taskStatus.progress || 0;
-    const status = taskStatus.overallStatus;
+    const progress = statusToUse.progress || 0;
+    const status = statusToUse.overallStatus;
 
     // 基础 TODO 列表
     const baseTodos: TodoItem[] = [
