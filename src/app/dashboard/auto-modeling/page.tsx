@@ -495,8 +495,8 @@ export default function AutoModelingPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {currentTaskId ? (
-                        <DiscussionHistoryViewer discussionId={currentTaskId} />
+                      {taskStatus?.discussionId ? (
+                        <DiscussionHistoryViewer discussionId={taskStatus.discussionId} />
                       ) : (
                         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                           <Clock className="w-12 h-12 mb-4" />
