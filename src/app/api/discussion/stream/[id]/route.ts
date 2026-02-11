@@ -4,7 +4,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { verifyRefreshToken } from '@/lib/jwt';
+import { verifyAccessToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import { streamAIResponse } from '@/services/ai-stream';
 
@@ -25,7 +25,7 @@ export async function GET(
           return;
         }
 
-        const payload = await verifyRefreshToken(token);
+        const payload = await verifyAccessToken(token);
         if (!payload) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'Invalid token' })}\n\n`));
           controller.close();
