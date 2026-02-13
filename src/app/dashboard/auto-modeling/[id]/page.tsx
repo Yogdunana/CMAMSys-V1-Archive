@@ -1041,17 +1041,21 @@ class VisualizationReport:
                     </CardHeader>
                     <CardContent>
                       <div className="relative">
-                        <div className="absolute top-0 left-0 w-12 h-full bg-gray-100 border-r border-gray-200 flex flex-col items-center py-4 text-xs text-gray-500">
-                          {Array.from({ length: Math.max(30, (codeGeneration?.codeContent || '').split('\n').length) }, (_, i) => (
-                            <div key={i} className="leading-6">
-                              {i + 1}
+                        <ScrollArea className="h-[500px] bg-gray-900 rounded-lg overflow-x-auto">
+                          <div className="flex">
+                            {/* 行号列 */}
+                            <div className="flex-shrink-0 w-12 py-4 text-xs text-gray-500 text-right pr-2 bg-gray-800 select-none">
+                              {Array.from({ length: Math.max(30, (codeGeneration?.codeContent || '').split('\n').length) }, (_, i) => (
+                                <div key={i} className="leading-6">
+                                  {i + 1}
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                        <ScrollArea className="h-[500px] ml-12 bg-gray-900 rounded-lg">
-                          <pre className="p-4 text-sm font-mono text-gray-100 whitespace-pre-wrap">
-                            {codeGeneration?.codeContent || '// 代码生成中...'}
-                          </pre>
+                            {/* 代码内容 */}
+                            <pre className="flex-1 p-4 text-sm font-mono text-gray-100 whitespace-pre">
+                              {codeGeneration?.codeContent || '// 代码生成中...'}
+                            </pre>
+                          </div>
                         </ScrollArea>
                       </div>
                       {codeGeneration?.qualityScore && (
