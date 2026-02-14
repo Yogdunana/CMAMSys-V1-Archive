@@ -24,7 +24,7 @@ interface TaskIssue {
   fixType: string;
 }
 
-export function TaskStatusFixPage() {
+export default function TaskStatusFixPage() {
   const [taskId, setTaskId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
