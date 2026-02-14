@@ -13,6 +13,14 @@ const REFRESH_TOKEN_SECRET = new TextEncoder().encode(
   process.env.REFRESH_TOKEN_SECRET || 'your-super-secret-refresh-token-key'
 );
 
+// 调试：输出 Secret（只在开发环境）
+if (process.env.NODE_ENV === 'development') {
+  console.log('[JWT] JWT_SECRET loaded:', JWT_SECRET.byteLength, 'bytes');
+  console.log('[JWT] REFRESH_TOKEN_SECRET loaded:', REFRESH_TOKEN_SECRET.byteLength, 'bytes');
+  console.log('[JWT] JWT_SECRET from env:', !!process.env.JWT_SECRET);
+  console.log('[JWT] REFRESH_TOKEN_SECRET from env:', !!process.env.REFRESH_TOKEN_SECRET);
+}
+
 export interface TokenPayload {
   userId: string;
   email: string;
@@ -68,9 +76,21 @@ export async function generateRefreshToken(
 export async function verifyAccessToken(token: string): Promise<AccessTokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
+
+    // 验证 token 类型
+    if (payload.type !== 'access') {
+      console.error('[JWT] Invalid token type, expected "access", got:', payload.type);
+      return null;
+    }
+
     return payload as unknown as AccessTokenPayload;
-  } catch (error) {
-    console.error('Invalid access token:', error);
+  } catch (error: any) {
+    console.error('[JWT] Invalid access token:', error.name, error.message);
+    // 添加更多调试信息
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[JWT] Token:', token.substring(0, 50) + '...');
+      console.error('[JWT] Secret length:', JWT_SECRET.byteLength);
+    }
     return null;
   }
 }
@@ -83,9 +103,21 @@ export async function verifyRefreshToken(
 ): Promise<RefreshTokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, REFRESH_TOKEN_SECRET);
+
+    // 验证 token 类型
+    if (payload.type !== 'refresh') {
+      console.error('[JWT] Invalid token type, expected "refresh", got:', payload.type);
+      return null;
+    }
+
     return payload as unknown as RefreshTokenPayload;
-  } catch (error) {
-    console.error('Invalid refresh token:', error);
+  } catch (error: any) {
+    console.error('[JWT] Invalid refresh token:', error.name, error.message);
+    // 添加更多调试信息
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[JWT] Token:', token.substring(0, 50) + '...');
+      console.error('[JWT] Secret length:', REFRESH_TOKEN_SECRET.byteLength);
+    }
     return null;
   }
 }
