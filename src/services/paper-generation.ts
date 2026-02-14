@@ -20,6 +20,17 @@ export async function generatePaper(
   userId?: string
 ) {
   try {
+    console.log('[generatePaper] ===== 开始生成论文 =====');
+    console.log('[generatePaper] autoTaskId:', autoTaskId);
+    console.log('[generatePaper] discussionId:', discussionId);
+    console.log('[generatePaper] format:', format);
+    console.log('[generatePaper] language:', language);
+    console.log('[generatePaper] userId:', userId);
+    console.log('[generatePaper] userId type:', typeof userId);
+    console.log('[generatePaper] userId === undefined:', userId === undefined);
+    console.log('[generatePaper] userId === null:', userId === null);
+    console.log('[generatePaper] userId === "":', userId === '');
+
     // 构建论文生成 Prompt
     const prompt = buildPaperPrompt(
       discussionSummary,
@@ -28,8 +39,12 @@ export async function generatePaper(
       language
     );
 
+    console.log('[generatePaper] Prompt 构建完成，长度:', prompt.length);
+
     // 调用 AI 生成论文
     const paperContent = await generatePaperContentWithAI(prompt, format, language, userId);
+
+    console.log('[generatePaper] 论文内容生成完成，字数:', paperContent.wordCount);
 
     // 创建论文记录
     const paper = await prisma.generatedPaper.create({
@@ -46,9 +61,12 @@ export async function generatePaper(
       },
     });
 
+    console.log('[generatePaper] 论文记录创建成功，ID:', paper.id);
+    console.log('[generatePaper] ===== 论文生成完成 =====');
+
     return paper;
   } catch (error) {
-    console.error('Error generating paper:', error);
+    console.error('[generatePaper] 生成论文失败:', error);
     throw error;
   }
 }
@@ -129,11 +147,13 @@ async function generatePaperContentWithAI(
   userId?: string
 ) {
   if (!userId) {
-    console.warn('No userId provided, using fallback paper template');
+    console.warn('[generatePaperContentWithAI] No userId provided, using fallback paper template');
     return getFallbackPaperContent(format, language);
   }
 
   try {
+    console.log('[generatePaperContentWithAI] 开始生成论文内容，userId:', userId);
+
     // 获取用户的默认 AI Provider
     const providers = await prisma.aIProvider.findMany({
       where: {
@@ -142,26 +162,33 @@ async function generatePaperContentWithAI(
       },
     });
 
+    console.log(`[generatePaperContentWithAI] 找到 ${providers.length} 个激活的 AI Provider`);
+
     if (providers.length === 0) {
-      console.warn('No active AI providers found, using fallback paper template');
+      console.warn('[generatePaperContentWithAI] 没有激活的 AI Provider，使用备用模板');
       return getFallbackPaperContent(format, language);
     }
 
     // 选择优先级最高的 Provider
     const provider = providers.sort((a, b) => b.priority - a.priority)[0];
+    console.log(`[generatePaperContentWithAI] 使用 Provider: ${provider.name} (${provider.type})`);
 
     // 调用 AI 生成论文
-    const { response: content } = await callAI(
+    const result = await callAI(
       provider.id,
       provider.supportedModels[0] || 'default',
       prompt,
       {
-        modelType: 'WRITING' as any,
+        modelType: 'CHAT',
         taskId: '',
-        context: 'modeling',
+        context: 'paper-generation',
       },
       userId
     );
+
+    const content = result.response || '';
+
+    console.log(`[generatePaperContentWithAI] AI 生成完成，内容长度: ${content.length}`);
 
     return {
       content,
@@ -169,7 +196,8 @@ async function generatePaperContentWithAI(
       wordCount: content.length,
     };
   } catch (error) {
-    console.error('Error generating paper content with AI:', error);
+    console.error('[generatePaperContentWithAI] AI 生成失败:', error);
+    console.error('[generatePaperContentWithAI] 错误详情:', error instanceof Error ? error.message : 'Unknown error');
     return getFallbackPaperContent(format, language);
   }
 }

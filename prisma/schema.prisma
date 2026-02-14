@@ -608,9 +608,12 @@ model AutoModelingTask {
   validations       CodeValidation[]
   paper             GeneratedPaper?       @relation(fields: [paperId], references: [id])
 
+  @@index([overallStatus])
   @@index([discussionStatus])
   @@index([validationStatus])
-  @@index([overallStatus])
+  @@index([paperStatus])
+  @@index([progress])
+  @@index([createdAt])
   @@map("auto_modeling_tasks")
 }
 
@@ -634,6 +637,8 @@ model GroupDiscussion {
   messages          DiscussionMessage[]
 
   @@index([status])
+  @@index([autoTaskId])
+  @@index([createdAt])
   @@map("group_discussions")
 }
 
@@ -657,7 +662,9 @@ model DiscussionMessage {
   discussion        GroupDiscussion     @relation(fields: [discussionId], references: [id], onDelete: Cascade)
 
   @@index([discussionId])
+  @@index([round])
   @@index([senderProviderId])
+  @@index([createdAt])
   @@map("discussion_messages")
 }
 
@@ -677,6 +684,13 @@ model CodeGeneration {
   updatedAt         DateTime            @updatedAt
 
   autoTask          AutoModelingTask?   @relation
+
+  @@index([autoTaskId])
+  @@index([discussionId])
+  @@index([executionStatus])
+  @@index([createdAt])
+  @@map("code_generations")
+}
   validations       CodeValidation[]
 
   @@index([executionStatus])
@@ -722,7 +736,9 @@ model GeneratedPaper {
 
   autoTask          AutoModelingTask?   @relation
 
+  @@index([autoTaskId])
   @@index([status])
+  @@index([createdAt])
   @@map("generated_papers")
 }
 
