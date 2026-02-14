@@ -16,13 +16,13 @@ export async function GET(
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       console.log('[Status API] No token provided');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload = await verifyAccessToken(token);
     if (!payload) {
       console.log('[Status API] Invalid token');
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -33,7 +33,7 @@ export async function GET(
     console.log(`[Status API] Task result:`, task ? 'found' : 'not found');
 
     if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Task not found' }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -44,6 +44,7 @@ export async function GET(
     console.error('[Status API] Error getting auto task status:', error);
     return NextResponse.json(
       {
+        success: false,
         error: '获取任务状态失败',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
