@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { TokenExpiredDialog } from '@/components/auth/token-expired-dialog';
 
 type TokenExpiredReason = 'unauthorized' | 'expired' | 'invalid';
 
@@ -39,6 +40,3 @@ export function useTokenExpired() {
   }
   return context;
 }
-
-// 导出 Dialog 组件以便在 Provider 中使用
-import { TokenExpiredDialog } from './token-expired-dialog';
