@@ -8,7 +8,7 @@ import prisma from '@/lib/prisma';
 import { ApiResponse } from '@/lib/types';
 
 /**
- * GET: 获取最近活动（最近查看或创建的题目）
+ * GET: 获取最近活动（最近创建的自动化建模任务）
  */
 export async function GET(request: NextRequest) {
   try {
@@ -33,19 +33,10 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      // 获取最近创建的题目
-      const problems = await prisma.problem.findMany({
+      // 获取最近创建的自动化建模任务
+      const tasks = await prisma.autoModelingTask.findMany({
         where: {
           deletedAt: null,
-        },
-        include: {
-          competition: {
-            select: {
-              id: true,
-              name: true,
-              year: true,
-            },
-          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -56,45 +47,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json<ApiResponse>(
         {
           success: true,
-          data: problems.map(p => ({
-            id: p.id,
-            name: `${p.competition.name} - ${p.title}`,
-            problemNumber: p.problemNumber,
-            competitionName: p.competition.name,
-            createdAt: p.createdAt,
-            updatedAt: p.updatedAt,
+          data: tasks.map(t => ({
+            id: t.id,
+            name: t.problemTitle,
+            problemNumber: '', // 自动化任务没有问题编号
+            competitionName: t.competitionType,
+            createdAt: t.createdAt,
+            updatedAt: t.updatedAt,
           })),
           timestamp: new Date().toISOString(),
         },
         { status: 200 }
       );
     } catch (dbError) {
-      // 数据库不可用时返回 mock 数据
+      // 数据库不可用时返回错误
       console.error('Database error:', dbError);
       return NextResponse.json<ApiResponse>(
         {
-          success: true,
-          data: [
-            {
-              id: 'prob-001',
-              name: '2025-MCM-A - 持续捕鱼',
-              problemNumber: 'A',
-              competitionName: '2025-MCM',
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              id: 'prob-002',
-              name: '2024-MCM-B - 地球生态系统的碳汇',
-              problemNumber: 'B',
-              competitionName: '2024-MCM',
-              createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-              updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            },
-          ],
+          success: false,
+          error: {
+            code: 'DATABASE_ERROR',
+            message: 'Failed to fetch dashboard activities from database',
+            details: isDev ? String(dbError) : undefined,
+          },
           timestamp: new Date().toISOString(),
         },
-        { status: 200 }
+        { status: 500 }
       );
     }
   } catch (error) {

@@ -40,52 +40,41 @@ export default function DashboardPage() {
 
   const loadDashboardData = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
+
       // 尝试从 API 获取数据
       const [statsResponse, activitiesResponse] = await Promise.all([
-        fetch('/api/dashboard/stats'),
-        fetch('/api/dashboard/activities'),
+        fetch('/api/dashboard/stats', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        }),
+        fetch('/api/dashboard/activities', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        }),
       ]);
 
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         if (statsData.success) {
           setStats(statsData.data);
+        } else {
+          console.error('Stats API error:', statsData.error);
         }
+      } else {
+        console.error('Stats API failed:', statsResponse.status);
       }
 
       if (activitiesResponse.ok) {
         const activitiesData = await activitiesResponse.json();
         if (activitiesData.success) {
           setRecentActivities(activitiesData.data);
+        } else {
+          console.error('Activities API error:', activitiesData.error);
         }
+      } else {
+        console.error('Activities API failed:', activitiesResponse.status);
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      // 如果 API 不可用，使用 mock 数据
-      setStats({
-        activeCompetitions: 3,
-        modelingTasks: 12,
-        teamMembers: 8,
-        aiRequests: 1234,
-      });
-      setRecentActivities([
-        {
-          id: 'prob-001',
-          name: '2025-MCM-A - 持续捕鱼',
-          problemNumber: 'A',
-          competitionName: '2025-MCM',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: 'prob-002',
-          name: '2024-MCM-B - 地球生态系统的碳汇',
-          problemNumber: 'B',
-          competitionName: '2024-MCM',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ]);
     } finally {
       setLoading(false);
     }
