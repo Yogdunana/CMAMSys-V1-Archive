@@ -40,6 +40,7 @@ import {
   DollarSign,
   Shield,
   Bell,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -177,6 +178,82 @@ export default function AutoModelingPage() {
       toast.error('加载任务列表失败');
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  // 重新开始任务
+  const handleRestartTask = async (taskId: string) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/auto-modeling/${taskId}/manage`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('任务已重新启动');
+        loadTasksList();
+      } else {
+        toast.error(data.error || '重新启动失败');
+      }
+    } catch (error) {
+      console.error('重新启动任务失败:', error);
+      toast.error('重新启动任务失败');
+    }
+  };
+
+  // 停止任务
+  const handleStopTask = async (taskId: string) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/auto-modeling/${taskId}/stop`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('任务已停止');
+        loadTasksList();
+      } else {
+        toast.error(data.error || '停止任务失败');
+      }
+    } catch (error) {
+      console.error('停止任务失败:', error);
+      toast.error('停止任务失败');
+    }
+  };
+
+  // 删除任务
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('确定要删除此任务吗？此操作不可恢复。')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/auto-modeling/${taskId}/manage`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('任务已删除');
+        loadTasksList();
+      } else {
+        toast.error(data.error || '删除任务失败');
+      }
+    } catch (error) {
+      console.error('删除任务失败:', error);
+      toast.error('删除任务失败');
     }
   };
 
@@ -452,218 +529,51 @@ export default function AutoModelingPage() {
             </TabsContent>
 
             <TabsContent value="task-status" className="mt-6">
-              <div className="max-w-7xl mx-auto space-y-6">
-                {/* 成本监控面板 */}
-                <Tabs defaultValue="monitor">
-                  <TabsList>
-                    <TabsTrigger value="monitor" className="gap-2">
-                      <BarChart3 className="w-4 h-4" />
-                      成本监控
-                    </TabsTrigger>
-                    <TabsTrigger value="alerts" className="gap-2">
-                      <Bell className="w-4 h-4" />
-                      成本预警
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="monitor" className="mt-4">
-                    <CostMonitor taskId={currentTaskId || undefined} />
-                  </TabsContent>
-
-                  <TabsContent value="alerts" className="mt-4">
-                    <CostAlertManager taskId={currentTaskId || undefined} />
-                  </TabsContent>
-                </Tabs>
-
-                {/* 任务流程状态 */}
+              <div className="max-w-7xl mx-auto">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Rocket className="w-5 h-5 text-primary" />
-                      自动化任务执行状态
+                      <Clock className="w-5 h-5 text-primary" />
+                      当前任务执行状态
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ScrollArea className="max-h-[200px]">
+                    {currentTaskId ? (
                       <div className="space-y-4">
-                        {currentTaskId ? (
-                          <div className="p-4 bg-muted rounded-lg">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-3">
-                                {taskStatus ? getOverallStatusIcon(taskStatus.overallStatus) : <Clock className="w-5 h-5 text-yellow-500" />}
-                                <div>
-                                  <p className="font-medium">
-                                    {taskStatus ? getOverallStatusText(taskStatus.overallStatus) : '执行中...'}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    任务 ID: {currentTaskId}
-                                  </p>
-                                </div>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => router.push(`/dashboard/auto-modeling/${currentTaskId}`)}
-                              >
-                                查看详情
-                              </Button>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Progress value={taskStatus?.progress || 0} className="flex-1" />
-                              <span className="text-sm font-medium min-w-[50px]">{taskStatus?.progress || 0}%</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {getOverallStatusIcon(taskStatus?.overallStatus)}
+                            <div>
+                              <p className="font-medium">
+                                {taskStatus?.problemTitle || '未知任务'}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {getOverallStatusText(taskStatus?.overallStatus)}
+                              </p>
                             </div>
                           </div>
-                        ) : (
-                          <div className="text-center py-12 text-slate-500">
-                            <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>暂无运行中的任务</p>
-                            <p className="text-sm mt-2">在"新建任务"标签页创建任务后，此处将显示执行状态</p>
-                          </div>
-                        )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/auto-modeling/${currentTaskId}`)}
+                          >
+                            查看详情
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Progress value={taskStatus?.progress || 0} className="flex-1" />
+                          <span className="text-sm font-medium min-w-[50px]">{taskStatus?.progress || 0}%</span>
+                        </div>
                       </div>
-                    </ScrollArea>
+                    ) : (
+                      <div className="text-center py-12 text-slate-500">
+                        <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>暂无运行中的任务</p>
+                        <p className="text-sm mt-2">在"新建任务"标签页创建任务后，此处将显示执行状态</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-
-                {/* 群聊讨论可视化 */}
-                {currentTaskId && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MessageSquare className="w-5 h-5 text-blue-500" />
-                        群聊讨论实时展示
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {taskStatus?.discussionId ? (
-                        <DiscussionHistoryViewer discussionId={taskStatus.discussionId} />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                          <Clock className="w-12 h-12 mb-4" />
-                          <p>暂无讨论消息</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* 代码执行结果 */}
-                {currentTaskId && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Code className="w-5 h-5 text-purple-500" />
-                        代码执行结果
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CodeResultViewer
-                        code={`import numpy as np
-import matplotlib.pyplot as plt
-
-# 示例代码：数据可视化
-x = np.linspace(0, 10, 100)
-y = np.sin(x)
-
-plt.figure(figsize=(10, 6))
-plt.plot(x, y, label='sin(x)', linewidth=2)
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Sinusoidal Function')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-print(f"Generated {len(x)} data points")
-print(f"Max value: {y.max():.4f}")
-print(f"Min value: {y.min():.4f}")`}
-                        language="python"
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* 论文预览和编辑 */}
-                {currentTaskId && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-cyan-500" />
-                        论文预览与编辑
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <PaperViewer
-                        paperId={currentTaskId}
-                        initialContent={`# Mathematical Modeling Competition Paper
-
-## Abstract
-
-This paper presents a comprehensive mathematical model to address the given problem. Through rigorous analysis and innovative approaches, we develop a solution that...
-
-## 1. Introduction
-
-### 1.1 Problem Background
-
-The problem we are addressing involves...
-
-### 1.2 Problem Statement
-
-Our objective is to...
-
-## 2. Model Development
-
-### 2.1 Assumptions
-
-To simplify the problem, we make the following assumptions:
-
-1. ...
-2. ...
-3. ...
-
-### 2.2 Notation
-
-We define the following notation:
-
-- $x$: ...
-- $y$: ...
-
-### 2.3 Mathematical Model
-
-The core of our model is based on...
-
-## 3. Solution Methodology
-
-### 3.1 Algorithm Design
-
-We propose the following algorithm...
-
-### 3.2 Implementation
-
-Our implementation uses...
-
-## 4. Results and Analysis
-
-### 4.1 Numerical Results
-
-The results show that...
-
-### 4.2 Sensitivity Analysis
-
-We performed sensitivity analysis to...
-
-## 5. Conclusion
-
-In this paper, we...
-
-## References
-
-1. ...
-2. ...`}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
               </div>
               <Toaster />
             </TabsContent>
@@ -766,8 +676,7 @@ In this paper, we...
                       .map((task) => (
                         <Card
                           key={task.id}
-                          className="cursor-pointer hover:shadow-lg transition-all hover:border-primary"
-                          onClick={() => router.push(`/dashboard/auto-modeling/${task.id}`)}
+                          className="hover:shadow-lg transition-all hover:border-primary"
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between mb-2">
@@ -781,7 +690,13 @@ In this paper, we...
                                 {task.progress || 0}%
                               </div>
                             </div>
-                            <CardTitle className="text-base line-clamp-2">
+                            <CardTitle 
+                              className="text-base line-clamp-2 cursor-pointer hover:text-primary transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/dashboard/auto-modeling/${task.id}`);
+                              }}
+                            >
                               {task.problemTitle}
                             </CardTitle>
                             <CardDescription className="text-xs">
@@ -816,6 +731,46 @@ In this paper, we...
                                 </AlertDescription>
                               </Alert>
                             )}
+                            {/* 任务管理按钮 */}
+                            <div className="flex gap-2 pt-2 border-t">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRestartTask(task.id);
+                                }}
+                                disabled={task.overallStatus === 'PENDING' || task.overallStatus === 'DISCUSSING' || task.overallStatus === 'CODING' || task.overallStatus === 'VALIDATING' || task.overallStatus === 'RETRYING' || task.overallStatus === 'PAPER_GENERATING'}
+                              >
+                                <RefreshCw className="w-3 h-3 mr-1" />
+                                重新开始
+                              </Button>
+                              <Button
+                                variant={task.overallStatus === 'PENDING' || task.overallStatus === 'DISCUSSING' || task.overallStatus === 'CODING' || task.overallStatus === 'VALIDATING' || task.overallStatus === 'RETRYING' || task.overallStatus === 'PAPER_GENERATING' ? 'destructive' : 'outline'}
+                                size="sm"
+                                className="flex-1 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStopTask(task.id);
+                                }}
+                                disabled={task.overallStatus === 'COMPLETED' || task.overallStatus === 'FAILED'}
+                              >
+                                <XCircle className="w-3 h-3 mr-1" />
+                                {task.overallStatus === 'PENDING' || task.overallStatus === 'DISCUSSING' || task.overallStatus === 'CODING' || task.overallStatus === 'VALIDATING' || task.overallStatus === 'RETRYING' || task.overallStatus === 'PAPER_GENERATING' ? '停止' : '已停止'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteTask(task.id);
+                                }}
+                              >
+                                <XCircle className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
