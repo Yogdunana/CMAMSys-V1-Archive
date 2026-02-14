@@ -93,7 +93,7 @@ export default function TaskStatusFixPage() {
       // 问题 4: 讨论状态为 COMPLETED，但没有讨论记录
       if (
         task.discussionStatus === 'COMPLETED' &&
-        !taskData.discussion
+        !data.hasDiscussion
       ) {
         foundIssues.push({
           type: 'warning',
