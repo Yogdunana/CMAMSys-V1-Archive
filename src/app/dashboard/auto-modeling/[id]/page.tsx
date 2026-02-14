@@ -15,6 +15,7 @@ import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHisto
 import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from 'sonner';
+import { useFetchWithAuth } from '@/lib/fetch-with-auth';
 import {
   Loader2,
   CheckCircle2,
@@ -78,6 +79,7 @@ export default function AutoModelingTaskDetailPage() {
   const params = useParams();
   const router = useRouter();
   const taskId = params.id as string;
+  const { fetchWithAuth } = useFetchWithAuth();
 
   const [loading, setLoading] = useState(true);
   const [taskStatus, setTaskStatus] = useState<TaskStatus | null>(null);
@@ -110,48 +112,43 @@ export default function AutoModelingTaskDetailPage() {
 
   const loadTaskStatus = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
       console.log('[loadTaskStatus] Task ID:', taskId);
-      console.log('[loadTaskStatus] Token exists:', !!token);
 
-      const response = await fetch(`/api/auto-modeling/${taskId}/status`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
+      const response = await fetchWithAuth(`/api/auto-modeling/${taskId}/status`);
 
-      console.log('[loadTaskStatus] Response status:', response.status);
+      console.log('[loadTaskStatus] Response:', response);
 
-      const data = await response.json();
-      console.log('[loadTaskStatus] Response data:', data);
-
-      if (data.success) {
-        setTaskStatus(data.data);
+      if (response.success) {
+        setTaskStatus(response.data);
 
         // 如果任务有代码生成，加载代码
-        if (data.data.codeGeneration) {
-          setCodeGeneration(data.data.codeGeneration);
+        if (response.data.codeGeneration) {
+          setCodeGeneration(response.data.codeGeneration);
         }
 
         // 加载 TODO 列表（基于任务状态和进度）
-        loadTodos(data.data);
+        loadTodos(response.data);
 
         // 如果任务已完成或失败，停止轮询
         if (
-          data.data.overallStatus === 'COMPLETED' ||
-          data.data.overallStatus === 'FAILED'
+          response.data.overallStatus === 'COMPLETED' ||
+          response.data.overallStatus === 'FAILED'
         ) {
           stopPolling();
         }
       } else {
-        console.error('[loadTaskStatus] API returned error:', data.error);
-        if (response.status === 401) {
-          console.error('[loadTaskStatus] Unauthorized - redirecting to login');
-          window.location.href = '/auth/login';
+        console.error('[loadTaskStatus] API returned error:', response.error);
+        // Token 过期或其他错误会自动显示弹窗
+        if (response.error === 'Unauthorized') {
+          // 弹窗已经自动显示，不需要额外处理
+          setLoading(false);
+        } else {
+          toast.error(response.error || '加载任务状态失败');
         }
       }
     } catch (error) {
       console.error('[loadTaskStatus] 加载任务状态失败:', error);
+      toast.error('加载任务状态失败');
     } finally {
       setLoading(false);
     }
@@ -179,16 +176,10 @@ export default function AutoModelingTaskDetailPage() {
   // 获取任务状态（不带加载状态更新，用于轮询）
   const fetchTaskStatus = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/auto-modeling/${taskId}/status`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
+      const response = await fetchWithAuth(`/api/auto-modeling/${taskId}/status`);
 
-      const data = await response.json();
-      if (data.success) {
-        const newTaskStatus = data.data;
+      if (response.success) {
+        const newTaskStatus = response.data;
         setTaskStatus(newTaskStatus);
 
         // 如果任务有代码生成，加载代码
@@ -206,6 +197,9 @@ export default function AutoModelingTaskDetailPage() {
         ) {
           stopPolling();
         }
+      } else if (response.error === 'Unauthorized') {
+        // Token 过期，停止轮询（弹窗已自动显示）
+        stopPolling();
       }
     } catch (error) {
       console.error('轮询任务状态失败:', error);
@@ -214,16 +208,10 @@ export default function AutoModelingTaskDetailPage() {
 
   const loadCodeGeneration = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/code-generation/task/${taskId}`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
+      const response = await fetchWithAuth(`/api/code-generation/task/${taskId}`);
 
-      const data = await response.json();
-      if (data.success && data.data) {
-        setCodeGeneration(data.data);
+      if (response.success && response.data) {
+        setCodeGeneration(response.data);
       }
     } catch (error) {
       console.error('加载代码生成失败:', error);

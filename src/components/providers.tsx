@@ -8,6 +8,7 @@
 import { ReactNode } from 'react';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { AuthProvider } from '@/contexts/auth-context';
+import { TokenExpiredProvider } from '@/contexts/token-expired-context';
 import type { Locale } from '@/i18n/config';
 import { defaultLocale } from '@/i18n/config';
 
@@ -20,7 +21,9 @@ export function Providers({ children, initialLocale = defaultLocale }: Providers
   return (
     <AuthProvider>
       <LanguageProvider initialLocale={initialLocale}>
-        {children}
+        <TokenExpiredProvider>
+          {children}
+        </TokenExpiredProvider>
       </LanguageProvider>
     </AuthProvider>
   );
