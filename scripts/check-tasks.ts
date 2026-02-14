@@ -1,5 +1,5 @@
 /**
- * 检查数据库中的自动化任务状态
+ * 查询任务详情
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -8,53 +8,52 @@ const prisma = new PrismaClient();
 
 async function checkTasks() {
   try {
-    const tasks = await prisma.autoModelingTask.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5,
+    const task1 = await prisma.autoModelingTask.findUnique({
+      where: { id: 'cmlmg9cq00001hqry34db2zmy' },
       include: {
         discussion: true,
         codeGeneration: true,
         validations: true,
         paper: true,
       },
-    })
+    });
 
-    console.log(`找到 ${tasks.length} 个最近的自动化任务:\n`)
+    const task2 = await prisma.autoModelingTask.findUnique({
+      where: { id: 'cmlhkso4d0000cf20hil05nfg' },
+      include: {
+        discussion: true,
+        codeGeneration: true,
+        validations: true,
+        paper: true,
+      },
+    });
 
-    tasks.forEach((task, index) => {
-      console.log(`${index + 1}. Task ID: ${task.id}`)
-      console.log(`   Title: ${task.problemTitle}`)
-      console.log(`   Status: ${task.overallStatus}`)
-      console.log(`   Progress: ${task.progress}%`)
-      console.log(`   Discussion Status: ${task.discussionStatus}`)
-      console.log(`   Validation Status: ${task.validationStatus}`)
-      console.log(`   Paper Status: ${task.paperStatus}`)
-      console.log(`   Idea: ${task.idea ? '已生成' : '未生成'}`)
-      console.log(`   Discussion ID: ${task.discussionId || '无'}`)
-      console.log(`   Created At: ${task.createdAt}`)
-      console.log(`   Updated At: ${task.updatedAt}`)
+    console.log('Task 1 (cmlmg9cq00001hqry34db2zmy):');
+    console.log(JSON.stringify(task1, null, 2));
 
-      if (task.codeGeneration) {
-        console.log(`   Code Generation:`)
-        console.log(`     - Status: ${task.codeGeneration.status}`)
-        console.log(`     - Execution Status: ${task.codeGeneration.executionStatus}`)
-        console.log(`     - Runtime: ${task.codeGeneration.runtimeMs}ms`)
-        console.log(`     - Memory: ${task.codeGeneration.memoryUsageBytes}B`)
-      }
+    console.log('\nTask 2 (cmlhkso4d0000cf20hil05nfg):');
+    console.log(JSON.stringify(task2, null, 2));
 
-      if (task.paperGeneration) {
-        console.log(`   Paper Generation:`)
-        console.log(`     - Status: ${task.paperGeneration.status}`)
-        console.log(`     - Content Length: ${task.paperGeneration.content?.length || 0}`)
-      }
+    // 查询所有任务
+    const allTasks = await prisma.autoModelingTask.findMany({
+      include: {
+        discussion: true,
+        codeGeneration: true,
+        validations: true,
+        paper: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-      console.log('')
-    })
+    console.log(`\n总共有 ${allTasks.length} 个任务:`);
+    allTasks.forEach((task, index) => {
+      console.log(`${index + 1}. ${task.id} - ${task.title} - Status: ${task.status} - Progress: ${task.progress}%`);
+    });
   } catch (error) {
-    console.error('Error checking tasks:', error)
+    console.error('Error:', error);
   } finally {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
 }
 
-checkTasks()
+checkTasks();
