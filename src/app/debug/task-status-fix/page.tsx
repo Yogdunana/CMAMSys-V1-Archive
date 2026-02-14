@@ -42,9 +42,12 @@ export default function TaskStatusFixPage() {
     setTaskData(null);
 
     try {
+      console.log('[checkTaskStatus] 开始检查任务:', taskId);
       const response = await fetchWithAuth(
         `/api/debug/debug-code-generation?taskId=${taskId}`
       );
+
+      console.log('[checkTaskStatus] 检查响应:', response);
 
       if (!response.success) {
         toast.error(response.error || '检查失败');
@@ -53,6 +56,8 @@ export default function TaskStatusFixPage() {
 
       const data = response.data;
       setTaskData(data);
+
+      console.log('[checkTaskStatus] 任务数据:', data);
 
       // 分析问题
       const foundIssues: TaskIssue[] = [];
@@ -134,23 +139,31 @@ export default function TaskStatusFixPage() {
     setIsFixing(true);
 
     try {
+      console.log('[fixIssue] 开始修复，类型:', fixType);
       const response = await fetchWithAuth('/api/debug/fix-task-status', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           taskId,
           fixType,
         }),
       });
 
+      console.log('[fixIssue] 修复响应:', response);
+
       if (response.success) {
         toast.success(response.message || '修复成功');
+        console.log('[fixIssue] 修复成功，重新检查');
         // 重新检查
         checkTaskStatus();
       } else {
+        console.error('[fixIssue] 修复失败:', response.error);
         toast.error(response.error || '修复失败');
       }
     } catch (error) {
-      console.error('修复失败:', error);
+      console.error('[fixIssue] 修复异常:', error);
       toast.error('修复失败');
     } finally {
       setIsFixing(false);
