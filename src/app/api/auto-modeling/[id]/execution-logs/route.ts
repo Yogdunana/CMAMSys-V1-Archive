@@ -132,14 +132,12 @@ export async function GET(
               sendLog('info', `⏱️ 执行时间: ${executionTime}秒`);
               sendLog('info', `📤 输出长度: ${stdout.length} 字符`);
 
-              // 更新代码生成状态
+              // 更新代码生成状态（只更新模型中存在的字段）
               await prisma.codeGeneration.update({
                 where: { id: task.codeGeneration!.id },
                 data: {
                   executionStatus: 'SUCCESS',
-                  executionTime: parseFloat(executionTime),
-                  executionOutput: stdout,
-                  updatedAt: new Date(),
+                  errorLog: null,
                 },
               });
 
@@ -149,14 +147,12 @@ export async function GET(
               sendLog('error', `⏱️ 执行时间: ${executionTime}秒`);
               sendLog('error', `📤 错误输出: ${stderr}`);
 
-              // 更新代码生成状态
+              // 更新代码生成状态（只更新模型中存在的字段）
               await prisma.codeGeneration.update({
                 where: { id: task.codeGeneration!.id },
                 data: {
                   executionStatus: 'FAILED',
-                  executionTime: parseFloat(executionTime),
                   errorLog: stderr,
-                  updatedAt: new Date(),
                 },
               });
 

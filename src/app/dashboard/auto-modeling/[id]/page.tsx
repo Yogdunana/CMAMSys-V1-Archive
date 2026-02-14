@@ -1055,13 +1055,9 @@ class VisualizationReport:
                               <CheckCircle2 className="h-5 w-5" />
                               <span className="font-medium">执行成功</span>
                             </div>
-                            {codeGeneration.executionOutput && (
-                              <div className="bg-gray-900 rounded-lg p-4">
-                                <pre className="text-sm font-mono text-gray-100 whitespace-pre-wrap">
-                                  {codeGeneration.executionOutput}
-                                </pre>
-                              </div>
-                            )}
+                            <div className="text-sm text-gray-600">
+                              请在"代码执行"标签页中查看详细的执行输出
+                            </div>
                           </div>
                         ) : (
                           <div className="space-y-4">
