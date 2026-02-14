@@ -6,7 +6,7 @@ import { Header } from '@/components/shared/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Activity, ArrowRight, Trophy, Users, Zap, Clock, FolderTree, Bot, Plus } from 'lucide-react';
+import { Activity, ArrowRight, Trophy, Users, Zap, Clock, FolderTree, Bot, Plus, BookOpen } from 'lucide-react';
 
 interface Competition {
   id: string;
@@ -200,6 +200,23 @@ export default function DashboardPage() {
                   <CardContent>
                     <Button variant="outline" className="w-full" size="sm">
                       管理配置
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/dashboard/learning">
+                <Card className="hover:border-primary transition-colors cursor-pointer">
+                  <CardHeader>
+                    <BookOpen className="h-8 w-8 mb-2 text-blue-500" />
+                    <CardTitle className="text-lg">学习资源</CardTitle>
+                    <CardDescription>
+                      浏览学习视频和知识库
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" size="sm">
+                      开始学习
                     </Button>
                   </CardContent>
                 </Card>
