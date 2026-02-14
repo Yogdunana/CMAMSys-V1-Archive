@@ -94,12 +94,20 @@ export async function GET(
 
           // 执行代码
           sendLog('info', '⚙️ 正在执行代码...');
+          sendLog('info', '⏰ 超时限制: 60 秒');
 
           const startTime = Date.now();
+          const TIMEOUT_MS = 60000; // 60 秒超时
 
           const pythonProcess = spawn('python3', [codeFilePath], {
             cwd: tempDir,
           });
+
+          // 设置超时保护
+          const timeout = setTimeout(() => {
+            sendLog('warn', '⚠️ 执行超时，终止进程...');
+            pythonProcess.kill('SIGKILL');
+          }, TIMEOUT_MS);
 
           let stdout = '';
           let stderr = '';
@@ -116,7 +124,29 @@ export async function GET(
             sendLog('warn', error.trim());
           });
 
-          pythonProcess.on('close', async (code) => {
+          pythonProcess.on('close', async (code, signal) => {
+            clearTimeout(timeout);
+
+            // 如果是被超时终止的
+            if (signal === 'SIGKILL') {
+              const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+              sendLog('error', `❌ 执行超时 (${executionTime}秒)`);
+              sendLog('error', `⏱️ 超时限制: ${TIMEOUT_MS / 1000}秒`);
+
+              // 更新代码生成状态
+              await prisma.codeGeneration.update({
+                where: { id: task.codeGeneration!.id },
+                data: {
+                  executionStatus: 'FAILED',
+                  errorLog: `执行超时（超过${TIMEOUT_MS / 1000}秒）`,
+                },
+              });
+
+              sendComplete(false);
+              controller.close();
+              return;
+            }
+
             const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
             // 清理临时文件
@@ -131,6 +161,9 @@ export async function GET(
               sendLog('success', `✅ 执行成功 (退出码: 0)`);
               sendLog('info', `⏱️ 执行时间: ${executionTime}秒`);
               sendLog('info', `📤 输出长度: ${stdout.length} 字符`);
+              if (stdout) {
+                sendLog('info', `📋 输出预览: ${stdout.substring(0, 200)}${stdout.length > 200 ? '...' : ''}`);
+              }
 
               // 更新代码生成状态（只更新模型中存在的字段）
               await prisma.codeGeneration.update({
@@ -163,6 +196,7 @@ export async function GET(
           });
 
           pythonProcess.on('error', (error) => {
+            clearTimeout(timeout);
             sendLog('error', `❌ 进程错误: ${error.message}`);
             sendComplete(false);
             controller.close();
