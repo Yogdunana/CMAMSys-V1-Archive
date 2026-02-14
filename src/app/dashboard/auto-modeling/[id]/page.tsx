@@ -111,13 +111,20 @@ export default function AutoModelingTaskDetailPage() {
   const loadTaskStatus = async () => {
     try {
       const token = localStorage.getItem('accessToken');
+      console.log('[loadTaskStatus] Task ID:', taskId);
+      console.log('[loadTaskStatus] Token exists:', !!token);
+
       const response = await fetch(`/api/auto-modeling/${taskId}/status`, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
       });
 
+      console.log('[loadTaskStatus] Response status:', response.status);
+
       const data = await response.json();
+      console.log('[loadTaskStatus] Response data:', data);
+
       if (data.success) {
         setTaskStatus(data.data);
 
@@ -136,9 +143,15 @@ export default function AutoModelingTaskDetailPage() {
         ) {
           stopPolling();
         }
+      } else {
+        console.error('[loadTaskStatus] API returned error:', data.error);
+        if (response.status === 401) {
+          console.error('[loadTaskStatus] Unauthorized - redirecting to login');
+          window.location.href = '/auth/login';
+        }
       }
     } catch (error) {
-      console.error('加载任务状态失败:', error);
+      console.error('[loadTaskStatus] 加载任务状态失败:', error);
     } finally {
       setLoading(false);
     }
