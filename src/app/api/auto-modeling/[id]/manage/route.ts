@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken } from '@/lib/auth';
+import { verifyAccessToken } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 
 // 重新开始任务
