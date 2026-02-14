@@ -80,17 +80,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate new tokens
+    // 注意：payload 字段必须与登录时保持一致
     const newAccessToken = await generateAccessToken({
       userId: tokenRecord.userId,
       email: tokenRecord.user.email,
-      username: tokenRecord.user.username,
       role: tokenRecord.user.role,
     });
 
     const newRefreshToken = await generateRefreshToken({
       userId: tokenRecord.userId,
       email: tokenRecord.user.email,
-      username: tokenRecord.user.username,
       role: tokenRecord.user.role,
     }, tokenRecord.id);
 
