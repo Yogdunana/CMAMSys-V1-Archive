@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       take: 20,
       include: {
         codeGeneration: true,
-        codeValidations: {
+        validations: {
           orderBy: { createdAt: 'desc' },
           take: 5,
         },
