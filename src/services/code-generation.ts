@@ -137,7 +137,7 @@ async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId
         provider.supportedModels[0] || 'default',
         prompt,
         {
-          modelType: 'CODING' as any,
+          modelType: 'CHAT',
           taskId: '',
           context: 'coding',
         },
