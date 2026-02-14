@@ -704,7 +704,7 @@ async function makeProviderRequest(
   const decryptedApiKey = decrypt(provider.apiKey);
 
   // Use coze-coding-dev-sdk for Aliyun and VolcEngine providers
-  if (provider.type === AIProviderType.ALIYUN || provider.type === AIProviderType.VOLCENGINE) {
+  if (provider.type === AIProviderType.VOLCENGINE) {
     try {
       const config = new Config({
         apiKey: decryptedApiKey,
@@ -714,13 +714,12 @@ async function makeProviderRequest(
       const client = new LLMClient(config);
       const messages = [{ role: 'user' as const, content: prompt }];
 
-      // For VolcEngine, use endpoint name if available in config
+      // For VolcEngine, use endpoint name directly
       let actualModel = model;
-      if (provider.type === AIProviderType.VOLCENGINE && provider.config) {
+      if (provider.config && (provider.config as any).endpointMapping) {
         const endpointMapping = (provider.config as any).endpointMapping;
-        if (endpointMapping && endpointMapping[model]) {
+        if (endpointMapping[model]) {
           actualModel = endpointMapping[model];
-          logger.info(`Using VolcEngine endpoint: ${model} -> ${actualModel}`);
         }
       }
 
@@ -732,15 +731,15 @@ async function makeProviderRequest(
 
       return {
         content: response.content,
-        tokensUsed: 0, // Token count is not available in the current SDK response
+        tokensUsed: 0,
       };
     } catch (error) {
-      logger.error(`${provider.type} API request failed`, error);
-      throw error;
+      logger.error(`${provider.type} SDK API request failed, falling back to HTTP`, error);
+      // Fall through to HTTP call
     }
   }
 
-  // Generic API call for other providers
+  // Generic API call for other providers (including ALIYUN and fallback for VOLCENGINE)
   try {
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: 'POST',
