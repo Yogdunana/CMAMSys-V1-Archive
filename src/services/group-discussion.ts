@@ -328,7 +328,7 @@ async function callAIProvider(provider: AIProvider, prompt: string, userId?: str
       provider.supportedModels[0] || 'default',
       prompt,
       {
-        modelType: 'DISCUSSION' as any,
+        modelType: 'CHAT' as any,
         taskId: '',
         context: 'modeling',
       },

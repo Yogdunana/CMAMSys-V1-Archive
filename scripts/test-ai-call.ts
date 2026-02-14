@@ -26,14 +26,14 @@ async function testAI() {
       console.log(`${i + 1}. ${p.name} (${p.type}) - Priority: ${p.priority}`);
     });
 
-    // 选择 Test Provider（如果存在）
-    const testProvider = providers.find(p => p.name === 'Test Provider');
-    if (!testProvider) {
-      console.log('\nTest Provider not found. Please create it first.');
+    // 选择优先级最高的真实 Provider
+    const realProviders = providers.filter(p => p.name !== 'Test Provider');
+    if (realProviders.length === 0) {
+      console.log('\nNo real AI providers found. Please configure some.');
       return;
     }
 
-    const provider = testProvider;
+    const provider = realProviders.sort((a, b) => b.priority - a.priority)[0];
     console.log(`\nSelected: ${provider.name}`);
     console.log(`Provider created by: ${provider.createdById}`);
 
