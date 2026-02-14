@@ -86,6 +86,10 @@ export default function AutoModelingTaskDetailPage() {
   const [errorLog, setErrorLog] = useState<string | null>(null);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [paperContent, setPaperContent] = useState<any>(null);
+  const [isPaperLoading, setIsPaperLoading] = useState(false);
+  const [isEditingPaper, setIsEditingPaper] = useState(false);
+  const [editedPaperContent, setEditedPaperContent] = useState('');
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // 加载任务状态
@@ -318,6 +322,96 @@ export default function AutoModelingTaskDetailPage() {
 
     setTodos(updatedTodos);
   };
+
+  const loadPaperContent = async () => {
+    if (!taskStatus?.paperId || isPaperLoading) return;
+
+    setIsPaperLoading(true);
+    try {
+      console.log('[loadPaperContent] 加载论文内容，paperId:', taskStatus.paperId);
+      const response = await fetchWithAuth(`/api/auto-modeling/${taskId}/paper`);
+
+      if (response.success) {
+        console.log('[loadPaperContent] 论文内容加载成功，字数:', response.data.wordCount);
+        setPaperContent(response.data);
+      } else {
+        console.error('[loadPaperContent] 论文内容加载失败:', response.error);
+        toast.error(response.error || '加载论文内容失败');
+      }
+    } catch (error) {
+      console.error('[loadPaperContent] 加载论文内容失败:', error);
+      toast.error('加载论文内容失败');
+    } finally {
+      setIsPaperLoading(false);
+    }
+  };
+
+  const handleDownloadPaper = async (format: 'word' | 'pdf') => {
+    if (!paperContent?.content) {
+      toast.error('没有可下载的论文内容');
+      return;
+    }
+
+    try {
+      console.log(`[handleDownloadPaper] 下载论文，格式: ${format}`);
+
+      // 创建 Blob
+      const blob = new Blob([paperContent.content], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${taskStatus.problemTitle}.${format === 'word' ? 'txt' : 'txt'}`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`论文下载成功 (${format})`);
+    } catch (error) {
+      console.error('[handleDownloadPaper] 下载失败:', error);
+      toast.error('下载失败');
+    }
+  };
+
+  const handleEditPaper = () => {
+    setIsEditingPaper(true);
+    setEditedPaperContent(paperContent?.content || '');
+  };
+
+  const handleSavePaper = async () => {
+    try {
+      console.log('[handleSavePaper] 保存论文内容');
+
+      const response = await fetchWithAuth(`/api/auto-modeling/${taskId}/paper`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          content: editedPaperContent,
+        }),
+      });
+
+      if (response.success) {
+        toast.success('论文保存成功');
+        setIsEditingPaper(false);
+        // 重新加载论文内容
+        setPaperContent({ ...paperContent, content: editedPaperContent });
+      } else {
+        toast.error(response.error || '保存失败');
+      }
+    } catch (error) {
+      console.error('[handleSavePaper] 保存失败:', error);
+      toast.error('保存失败');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingPaper(false);
+    setEditedPaperContent(paperContent?.content || '');
+  };
+
+  // 当任务状态更新且论文完成时，加载论文内容
+  useEffect(() => {
+    if (taskStatus?.paperStatus === 'COMPLETED' && taskStatus?.paperId && !paperContent) {
+      loadPaperContent();
+    }
+  }, [taskStatus?.paperStatus, taskStatus?.paperId]);
 
   // 任务详情内容
   const getTodoDetails = (todoId: number) => {
@@ -1188,27 +1282,90 @@ class VisualizationReport:
                   ) : taskStatus.paperStatus === 'COMPLETED' ? (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold">论文预览</h3>
+                        <div>
+                          <h3 className="text-lg font-semibold">{paperContent?.title || taskStatus.problemTitle}</h3>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                            <span>格式: {paperContent?.format}</span>
+                            <span>语言: {paperContent?.language}</span>
+                            <span>字数: {paperContent?.wordCount}</span>
+                          </div>
+                        </div>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-2" />
-                            下载 Word
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-2" />
-                            下载 PDF
-                          </Button>
+                          {isEditingPaper ? (
+                            <>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleSavePaper}
+                              >
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                保存
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                取消
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleEditPaper}
+                              >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                编辑
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadPaper('word')}
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                下载 Word
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadPaper('pdf')}
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                下载 PDF
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-6 min-h-[500px]">
-                        <div className="prose prose-sm max-w-none">
-                          <h1>{taskStatus.problemTitle}</h1>
-                          {/* 论文内容将在这里显示 */}
-                          <p className="text-gray-500">
-                            论文内容加载中... ({taskStatus.paperId})
-                          </p>
+                      <ScrollArea className="h-[600px] bg-gray-50 rounded-lg p-6">
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                          {isPaperLoading ? (
+                            <div className="flex items-center justify-center py-12">
+                              <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                              <span>加载中...</span>
+                            </div>
+                          ) : isEditingPaper ? (
+                            <textarea
+                              value={editedPaperContent}
+                              onChange={(e) => setEditedPaperContent(e.target.value)}
+                              className="w-full h-[550px] p-4 border rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="编辑论文内容..."
+                            />
+                          ) : paperContent?.content ? (
+                            <div className="whitespace-pre-wrap">
+                              {paperContent.content}
+                            </div>
+                          ) : (
+                            <div className="text-center py-12 text-gray-500">
+                              <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                              <p>论文内容加载中...</p>
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      </ScrollArea>
                     </div>
                   ) : (
                     <div className="text-center py-12 text-red-500">
