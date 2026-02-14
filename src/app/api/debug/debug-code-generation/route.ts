@@ -65,6 +65,12 @@ export async function GET(request: NextRequest) {
       take: 10,
     });
 
+    // 查询讨论记录是否存在
+    const hasDiscussion = await prisma.groupDiscussion.findUnique({
+      where: { id: task.discussionId || '' },
+      select: { id: true },
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -76,6 +82,7 @@ export async function GET(request: NextRequest) {
           discussionStatus: task.discussionStatus,
           validationStatus: task.validationStatus,
           codeGenerationId: task.codeGenerationId,
+          discussionId: task.discussionId,
           progress: task.progress,
         },
         codeGenerations: {
@@ -112,6 +119,7 @@ export async function GET(request: NextRequest) {
             createdAt: v.createdAt,
           })),
         },
+        hasDiscussion: !!hasDiscussion,
       },
     });
   } catch (error) {
