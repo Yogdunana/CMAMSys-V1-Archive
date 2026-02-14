@@ -73,27 +73,44 @@ export async function POST(
       );
     }
 
-    // 删除旧的代码生成记录
-    if (task.codeGeneration) {
-      await prisma.codeGeneration.delete({
-        where: { id: task.codeGeneration.id },
+    // 使用事务删除旧代码并生成新代码
+    const result = await prisma.$transaction(async (tx) => {
+      // 删除旧的代码生成记录
+      if (task.codeGeneration) {
+        await tx.codeGeneration.delete({
+          where: { id: task.codeGeneration.id },
+        });
+      }
+
+      // 更新任务状态为 CODING
+      await tx.autoModelingTask.update({
+        where: { id: taskId },
+        data: {
+          overallStatus: 'CODING',
+          discussionStatus: 'COMPLETED',
+          progress: 50,
+        },
       });
-    }
 
-    // 重新生成代码
-    const newCodeGeneration = await generateCode(
-      taskId,
-      task.discussionId,
-      discussion.summary || {},
-      language || 'PYTHON',
-      decoded.userId
-    );
+      // 重新生成代码
+      console.log(`[RegenerateCode] 开始重新生成代码，任务 ID: ${taskId}`);
+      const newCodeGeneration = await generateCode(
+        taskId,
+        task.discussionId,
+        discussion.summary || {},
+        language || 'PYTHON',
+        decoded.userId
+      );
+      console.log(`[RegenerateCode] 代码重新生成完成，代码生成 ID: ${newCodeGeneration.id}`);
 
-    // 更新任务的代码生成 ID
+      return newCodeGeneration;
+    });
+
+    // 更新任务的代码生成 ID 和进度
     await prisma.autoModelingTask.update({
       where: { id: taskId },
       data: {
-        codeGenerationId: newCodeGeneration.id,
+        codeGenerationId: result.id,
         progress: 60,
       },
     });

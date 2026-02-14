@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
 import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
 import CodeExecutionLogViewer from '@/components/code-execution-log-viewer';
+import CodeGenerationProgress from '@/components/code-generation-progress';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from 'sonner';
 import { useFetchWithAuth } from '@/lib/fetch-with-auth';
@@ -1056,6 +1057,15 @@ class VisualizationReport:
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* 代码生成进度 */}
+                  <CodeGenerationProgress
+                    taskId={taskId}
+                    isGenerating={isRegenerating}
+                    onComplete={() => {
+                      loadCodeGeneration();
+                    }}
+                  />
 
                   {/* 代码执行结果 */}
                   {codeGeneration && (
