@@ -35,9 +35,6 @@ export async function GET(request: NextRequest) {
     try {
       // 获取最近创建的自动化建模任务
       const tasks = await prisma.autoModelingTask.findMany({
-        where: {
-          deletedAt: null,
-        },
         orderBy: {
           createdAt: 'desc',
         },
