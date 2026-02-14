@@ -3,13 +3,14 @@
  * 实现全自动化流程：讨论 → 代码生成 → 校验 → 回溯 → 论文生成
  */
 
-import { OverallStatus, ValidationStatus } from '@prisma/client';
+import { OverallStatus, ValidationStatus, CodeLanguage } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { executeFullDiscussion } from './group-discussion';
 import { generateCode, executeCode } from './code-generation';
 import { executeFullValidation } from './auto-validation';
 import { generatePaper } from './paper-generation';
 import { selectOptimalProvider, TaskType } from './auto-provider-selector';
+import { callAI } from '@/services/ai-provider';
 
 const MAX_RETRY_ROUNDS = 3;
 
@@ -85,7 +86,9 @@ export async function executeFullAutoProcess(
     const codeGeneration = await generateCode(
       autoTask.id,
       discussionResult.discussion.id,
-      discussionResult.summary
+      discussionResult.summary,
+      CodeLanguage.PYTHON,
+      userId
     );
 
     await prisma.autoModelingTask.update({
@@ -184,7 +187,9 @@ export async function executeFullAutoProcess(
             const newCodeGeneration = await generateCode(
               autoTask.id,
               newDiscussionResult.discussion.id,
-              newDiscussionResult.summary
+              newDiscussionResult.summary,
+              CodeLanguage.PYTHON,
+              userId
             );
 
             console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 执行代码...`);
@@ -204,7 +209,8 @@ export async function executeFullAutoProcess(
             );
 
             // 判断结果讨论的结论
-            const conclusion = resultDiscussion.summary?.consensus?.conclusion || 'UNKNOWN';
+            const summary = resultDiscussion.summary as any;
+            const conclusion = summary?.consensus?.conclusion || 'UNKNOWN';
             console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 结果讨论结论: ${conclusion}`);
 
             if (conclusion === 'PASS') {
@@ -244,7 +250,8 @@ export async function executeFullAutoProcess(
             // 更新代码生成引用，用于下一轮校验
             codeGeneration.id = newCodeGeneration.id;
             codeGeneration.codeContent = newCodeGeneration.codeContent;
-            codeGeneration.executionStatus = newExecutionResult;
+            // executionStatus 是 ExecutionStatus 类型，不能直接赋值
+            // 使用 codeExecutionResult 代替
 
             // 更新讨论总结，用于下一轮校验
             discussionResult.summary = newDiscussionResult.summary;
@@ -296,7 +303,8 @@ export async function executeFullAutoProcess(
         discussionResult.summary,
         executionResult,
         paperFormat as any,
-        paperLanguage as any
+        paperLanguage as any,
+        userId
       );
 
       await prisma.autoModelingTask.update({
@@ -547,11 +555,44 @@ ${executionResult.error ? `错误信息：${executionResult.error}` : ''}
       },
     });
 
-    // TODO: 实际调用 AI 进行讨论
-    // 这里应该调用 executeFullDiscussion 的简化版本
-    // 或者创建一个新的专门用于结果讨论的函数
-
-    // 模拟讨论结果
+    // 选择合适的 AI Provider 进行结果讨论
+    const provider = await selectOptimalProvider(competitionType as any, problemType as any, TaskType.VALIDATION, userId);
+    
+    if (!provider) {
+      throw new Error('No active AI provider found for result discussion');
+    }
+    
+    // 调用 AI 进行讨论
+    const { response: aiResponse } = await callAI(
+      provider.id,
+      provider.supportedModels[0] || 'default',
+      '请分析代码执行结果并给出结论。\n\n' + discussionPrompt,
+      {
+        modelType: 'DISCUSSION' as any,
+        taskId: autoTaskId,
+        context: 'modeling',
+      },
+      userId
+    );
+    
+    // 解析 AI 回复
+    let conclusion = 'UNKNOWN';
+    let reason = '';
+    
+    if (aiResponse) {
+      // 尝试从回复中提取结论
+      if (aiResponse.includes('PASS') || aiResponse.includes('通过')) {
+        conclusion = 'PASS';
+      } else if (aiResponse.includes('FIX_CODE') || aiResponse.includes('修改代码')) {
+        conclusion = 'FIX_CODE';
+      } else if (aiResponse.includes('CHANGE_ALGORITHM') || aiResponse.includes('换思路')) {
+        conclusion = 'CHANGE_ALGORITHM';
+      }
+      
+      reason = aiResponse.substring(0, 500); // 保存前500字符作为理由
+    }
+    
+    // 更新讨论状态
     await prisma.groupDiscussion.update({
       where: { id: resultDiscussion.id },
       data: {
@@ -560,13 +601,15 @@ ${executionResult.error ? `错误信息：${executionResult.error}` : ''}
           type: 'RESULT_DISCUSSION',
           discussionPrompt,
           consensus: {
-            conclusion: 'PASS',
-            reason: '代码完全按照思路实现，执行结果合理',
+            conclusion,
+            reason,
           },
         },
       },
     });
 
+    console.log(`[结果讨论] 结论: ${conclusion}, 理由: ${reason}`);
+    
     return resultDiscussion;
   } catch (error) {
     console.error('Error discussing execution result:', error);
