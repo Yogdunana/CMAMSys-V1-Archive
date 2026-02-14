@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
 import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
+import CodeExecutionLogViewer from '@/components/code-execution-log-viewer';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from 'sonner';
 import { useFetchWithAuth } from '@/lib/fetch-with-auth';
@@ -939,6 +940,10 @@ class VisualizationReport:
                 <Code2 className="h-4 w-4" />
                 代码生成
               </TabsTrigger>
+              <TabsTrigger value="execution" className="flex items-center gap-2">
+                <Terminal className="h-4 w-4" />
+                代码执行
+              </TabsTrigger>
               <TabsTrigger value="optimization" className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 优化状态
@@ -1194,6 +1199,11 @@ class VisualizationReport:
                   </Card>
                 </div>
               </div>
+            </TabsContent>
+
+            {/* 代码执行标签页 */}
+            <TabsContent value="execution" className="space-y-6">
+              <CodeExecutionLogViewer taskId={taskId} autoScroll={true} />
             </TabsContent>
 
             {/* 优化状态标签页 */}
