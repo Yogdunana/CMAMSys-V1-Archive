@@ -6,6 +6,7 @@
 import { AIProvider, DiscussionStatus, MessageType } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { selectDiscussionProviders, TaskType, selectOptimalProvider } from './auto-provider-selector';
+import { callAI } from '@/services/ai-provider';
 
 // 讨论规则
 const DISCUSSION_RULES = `
@@ -90,7 +91,8 @@ export async function executeDiscussionRound(
   round: number,
   problemContent: string,
   providers: AIProvider[],
-  previousMessages?: any[]
+  previousMessages?: any[],
+  userId?: string
 ) {
   try {
     const messages = [];
@@ -136,7 +138,7 @@ ${previousRoundsMessages}
       }
 
       // 调用 AI API 生成回复
-      const response = await callAIProvider(provider, prompt);
+      const response = await callAIProvider(provider, prompt, userId);
 
       // 创建消息记录
       const message = await prisma.discussionMessage.create({
@@ -265,7 +267,9 @@ export async function executeFullDiscussion(
       discussion.id,
       1,
       problemContent,
-      providers
+      providers,
+      undefined,
+      userId
     );
     allMessages = [...allMessages, ...round1Messages];
 
@@ -275,7 +279,8 @@ export async function executeFullDiscussion(
       2,
       problemContent,
       providers,
-      allMessages
+      allMessages,
+      userId
     );
     allMessages = [...allMessages, ...round2Messages];
 
@@ -299,27 +304,92 @@ export async function executeFullDiscussion(
 /**
  * 调用 AI Provider 生成回复
  */
-async function callAIProvider(provider: AIProvider, prompt: string) {
-  // TODO: 实现实际的 AI API 调用
-  // 这里需要根据 provider.type 调用不同的 AI 服务
-  // 暂时返回模拟数据
+async function callAIProvider(provider: AIProvider, prompt: string, userId?: string) {
+  try {
+    console.log(`[callAIProvider] 调用 ${provider.name} (${provider.type})`);
+    console.log(`[callAIProvider] Prompt 长度: ${prompt.length}`);
 
-  console.log(`[callAIProvider] 调用 ${provider.name} (${provider.type})`);
-  console.log(`[callAIProvider] Prompt 长度: ${prompt.length}`);
+    // 如果没有 userId，返回模拟数据
+    if (!userId) {
+      console.warn('[callAIProvider] No userId provided, using fallback response');
+      return {
+        content: `模拟回复：${provider.name} 的解题思路。\n\n针对城市共享单车投放优化问题，我建议采用以下方法：\n\n1. 核心算法：遗传算法 + 模拟退火混合算法\n2. 创新点：基于区域需求预测的自适应投放策略\n3. 可行性分析：时间复杂度 O(n²)，能够满足实时调度需求`,
+        coreAlgorithms: '遗传算法、蚁群算法',
+        innovations: '混合算法设计、自适应参数调整',
+        feasibility: '时间复杂度 O(n²)，数据需求适中',
+        disagreements: '',
+        tokenCount: 500,
+      };
+    }
 
-  const response = {
-    content: `模拟回复：${provider.name} 的解题思路。\n\n针对城市共享单车投放优化问题，我建议采用以下方法：\n\n1. 核心算法：遗传算法 + 模拟退火混合算法\n2. 创新点：基于区域需求预测的自适应投放策略\n3. 可行性分析：时间复杂度 O(n²)，能够满足实时调度需求`,
-    coreAlgorithms: '遗传算法、蚁群算法',
-    innovations: '混合算法设计、自适应参数调整',
-    feasibility: '时间复杂度 O(n²)，数据需求适中',
-    disagreements: '',
-    tokenCount: 500,
-  };
+    // 调用真正的 AI API
+    const { response: content } = await callAI(
+      provider.id,
+      provider.supportedModels[0] || 'default',
+      prompt,
+      {
+        modelType: 'DISCUSSION' as any,
+        taskId: '',
+        context: 'modeling',
+      },
+      userId
+    );
 
-  console.log(`[callAIProvider] 返回 content 长度: ${response.content.length}`);
-  console.log(`[callAIProvider] 返回 content 预览: ${response.content.substring(0, 100)}...`);
+    // 解析 AI 回复，提取核心算法、创新点等
+    // 简单的解析逻辑，可以根据实际需求优化
+    let coreAlgorithms = '';
+    let innovations = '';
+    let feasibility = '';
+    const lines = content.split('\n');
+    let currentSection = '';
 
-  return response;
+    for (const line of lines) {
+      if (line.includes('核心算法') || line.includes('Core Algorithm')) {
+        currentSection = 'algorithms';
+      } else if (line.includes('创新点') || line.includes('Innovation')) {
+        currentSection = 'innovations';
+      } else if (line.includes('可行性') || line.includes('Feasibility')) {
+        currentSection = 'feasibility';
+      } else if (line.trim()) {
+        switch (currentSection) {
+          case 'algorithms':
+            coreAlgorithms += line + '\n';
+            break;
+          case 'innovations':
+            innovations += line + '\n';
+            break;
+          case 'feasibility':
+            feasibility += line + '\n';
+            break;
+        }
+      }
+    }
+
+    const response = {
+      content,
+      coreAlgorithms: coreAlgorithms.trim() || '未明确说明',
+      innovations: innovations.trim() || '未明确说明',
+      feasibility: feasibility.trim() || '未明确说明',
+      disagreements: '',
+      tokenCount: content.length,
+    };
+
+    console.log(`[callAIProvider] 返回 content 长度: ${response.content.length}`);
+    console.log(`[callAIProvider] 返回 content 预览: ${response.content.substring(0, 100)}...`);
+
+    return response;
+  } catch (error) {
+    console.error('[callAIProvider] Error:', error);
+    // 返回模拟数据作为兜底
+    return {
+      content: `错误：${error instanceof Error ? error.message : 'Unknown error'}`,
+      coreAlgorithms: '错误',
+      innovations: '错误',
+      feasibility: '错误',
+      disagreements: '',
+      tokenCount: 0,
+    };
+  }
 }
 
 /**

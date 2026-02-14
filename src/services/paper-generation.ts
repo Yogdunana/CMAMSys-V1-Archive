@@ -5,6 +5,7 @@
 
 import { PaperFormat, PaperLanguage, PaperStatus } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { callAI } from '@/services/ai-provider';
 
 /**
  * 生成论文
@@ -15,7 +16,8 @@ export async function generatePaper(
   discussionSummary: any,
   codeExecutionResult: any,
   format: PaperFormat = PaperFormat.MCM,
-  language: PaperLanguage = PaperLanguage.ENGLISH
+  language: PaperLanguage = PaperLanguage.ENGLISH,
+  userId?: string
 ) {
   try {
     // 构建论文生成 Prompt
@@ -27,8 +29,7 @@ export async function generatePaper(
     );
 
     // 调用 AI 生成论文
-    // TODO: 实现实际的 AI API 调用
-    const paperContent = await generatePaperContentWithAI(prompt, format, language);
+    const paperContent = await generatePaperContentWithAI(prompt, format, language, userId);
 
     // 创建论文记录
     const paper = await prisma.generatedPaper.create({
@@ -124,11 +125,59 @@ ${codeExecutionResult.output || '执行成功'}
 async function generatePaperContentWithAI(
   prompt: string,
   format: PaperFormat,
-  language: PaperLanguage
+  language: PaperLanguage,
+  userId?: string
 ) {
-  // TODO: 实现实际的 AI API 调用
-  // 这里需要调用写作能力强的 AI Provider
+  if (!userId) {
+    console.warn('No userId provided, using fallback paper template');
+    return getFallbackPaperContent(format, language);
+  }
 
+  try {
+    // 获取用户的默认 AI Provider
+    const providers = await prisma.aIProvider.findMany({
+      where: {
+        createdById: userId,
+        status: 'ACTIVE',
+      },
+    });
+
+    if (providers.length === 0) {
+      console.warn('No active AI providers found, using fallback paper template');
+      return getFallbackPaperContent(format, language);
+    }
+
+    // 选择优先级最高的 Provider
+    const provider = providers.sort((a, b) => b.priority - a.priority)[0];
+
+    // 调用 AI 生成论文
+    const { response: content } = await callAI(
+      provider.id,
+      provider.supportedModels[0] || 'default',
+      prompt,
+      {
+        modelType: 'WRITING' as any,
+        taskId: '',
+        context: 'modeling',
+      },
+      userId
+    );
+
+    return {
+      content,
+      sections: extractSections(content, language),
+      wordCount: content.length,
+    };
+  } catch (error) {
+    console.error('Error generating paper content with AI:', error);
+    return getFallbackPaperContent(format, language);
+  }
+}
+
+/**
+ * 获取备用论文内容
+ */
+function getFallbackPaperContent(format: PaperFormat, language: PaperLanguage) {
   const title = getPaperTitle(null, format, language);
 
   return {
@@ -207,22 +256,48 @@ ${language === PaperLanguage.ENGLISH ? 'Appendix' : '附录'}
 Appendix A: ${language === PaperLanguage.ENGLISH ? 'Complete Code' : '完整代码'}
 Appendix B: ${language === PaperLanguage.ENGLISH ? 'Additional Results' : '额外结果'}
 `.trim(),
-    sections: [
-      'Abstract',
-      'Problem Restatement',
-      'Problem Analysis',
-      'Model Assumptions',
-      'Notation',
-      'Model Establishment',
-      'Model Solution',
-      'Result Analysis',
-      'Sensitivity Analysis',
-      'Model Evaluation',
-      'References',
-      'Appendix',
-    ],
-    wordCount: 1000,
-  };
+      sections: [
+        'Abstract',
+        'Problem Restatement',
+        'Problem Analysis',
+        'Model Assumptions',
+        'Notation',
+        'Model Establishment',
+        'Model Solution',
+        'Result Analysis',
+        'Sensitivity Analysis',
+        'Model Evaluation',
+        'References',
+        'Appendix',
+      ],
+      wordCount: 1000,
+    };
+  }
+
+/**
+ * 提取论文各个部分
+ */
+function extractSections(content: string, language: PaperLanguage) {
+  const sections: string[] = [];
+  const lines = content.split('\n');
+  let currentSection = '';
+
+  for (const line of lines) {
+    if (line.includes('========================')) {
+      if (currentSection) {
+        sections.push(currentSection.trim());
+      }
+      currentSection = '';
+    } else if (line.trim()) {
+      currentSection += line + '\n';
+    }
+  }
+
+  if (currentSection) {
+    sections.push(currentSection.trim());
+  }
+
+  return sections;
 }
 
 /**

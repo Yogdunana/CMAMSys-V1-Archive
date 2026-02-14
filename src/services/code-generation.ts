@@ -5,6 +5,8 @@
 
 import { CodeLanguage, ExecutionStatus } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { executeCode as runCodeSafe } from './code-executor';
+import { callAI } from '@/services/ai-provider';
 
 /**
  * 生成代码
@@ -13,7 +15,8 @@ export async function generateCode(
   autoTaskId: string,
   discussionId: string,
   discussionSummary: any,
-  language: CodeLanguage = CodeLanguage.PYTHON
+  language: CodeLanguage = CodeLanguage.PYTHON,
+  userId?: string
 ) {
   try {
     // 提取核心算法和创新点
@@ -90,9 +93,56 @@ export async function generateCode(
 /**
  * 调用 AI 生成代码
  */
-async function generateCodeWithAI(prompt: string, language: CodeLanguage) {
-  // TODO: 实现实际的 AI API 调用
-  // 这里需要调用代码生成能力强的 AI Provider
+async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId?: string) {
+  if (!userId) {
+    console.warn('No userId provided, using fallback code template');
+    return getFallbackCode(language);
+  }
+
+  try {
+    // 获取用户的默认 AI Provider
+    const providers = await prisma.aIProvider.findMany({
+      where: {
+        createdById: userId,
+        status: 'ACTIVE',
+      },
+    });
+
+    if (providers.length === 0) {
+      console.warn('No active AI providers found, using fallback code template');
+      return getFallbackCode(language);
+    }
+
+    // 选择优先级最高的 Provider
+    const provider = providers.sort((a, b) => b.priority - a.priority)[0];
+
+    // 调用 AI 生成代码
+    const { response: generatedCode } = await callAI(
+      provider.id,
+      provider.supportedModels[0] || 'default',
+      prompt,
+      {
+        modelType: 'CODING' as any,
+        taskId: '',
+        context: 'coding',
+      },
+      userId
+    );
+
+    return {
+      content: generatedCode,
+      description: `${language} 代码，基于 ${provider.name} AI 生成`,
+    };
+  } catch (error) {
+    console.error('Error generating code with AI:', error);
+    return getFallbackCode(language);
+  }
+}
+
+/**
+ * 获取备用代码模板
+ */
+function getFallbackCode(language: CodeLanguage) {
 
   if (language === CodeLanguage.PYTHON) {
     return {
@@ -265,16 +315,9 @@ export async function executeCode(codeGenerationId: string) {
  */
 async function runCode(code: string, language: CodeLanguage) {
   try {
-    // TODO: 实现实际的代码执行
-    // 这里需要创建临时文件并运行
-
-    // 模拟执行结果
-    return {
-      success: true,
-      output: '代码执行成功',
-      runtime: 2.5,
-      memory: 1024 * 1024, // 1MB
-    };
+    // 调用真正的代码执行器
+    const result = await runCodeSafe(code, language);
+    return result;
   } catch (error) {
     return {
       success: false,
