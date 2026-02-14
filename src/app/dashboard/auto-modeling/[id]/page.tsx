@@ -26,7 +26,6 @@ import {
   ListTodo,
   Play,
   RefreshCw,
-  ChevronRight,
   Terminal,
   ArrowLeft,
   Clock,
@@ -57,12 +56,6 @@ interface TodoItem {
   estimatedTime: string;
 }
 
-interface LogEntry {
-  timestamp: string;
-  level: string;
-  message: string;
-}
-
 interface TaskStatus {
   id: string;
   problemTitle: string;
@@ -86,11 +79,8 @@ export default function AutoModelingTaskDetailPage() {
   const [taskStatus, setTaskStatus] = useState<TaskStatus | null>(null);
   const [codeGeneration, setCodeGeneration] = useState<CodeGeneration | null>(null);
   const [todos, setTodos] = useState<TodoItem[]>([]);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const logsEndRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // 加载任务状态
@@ -104,12 +94,6 @@ export default function AutoModelingTaskDetailPage() {
       stopPolling();
     };
   }, [taskId]);
-
-  useEffect(() => {
-    if (logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [logs]);
 
   const loadTaskStatus = async () => {
     try {
@@ -802,42 +786,6 @@ class VisualizationReport:
     setIsDetailDialogOpen(true);
   };
 
-  const simulateCodeWriting = async () => {
-    setIsGenerating(true);
-    addLog('info', '开始生成代码...');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    addLog('info', '读取讨论记录摘要...');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    addLog('success', '提取核心算法: 遗传算法、蚁群算法');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    addLog('info', '设计数据结构...');
-    await new Promise(resolve => setTimeout(resolve, 300));
-    addLog('success', '数据结构设计完成');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    addLog('info', '实现遗传算法...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    addLog('success', '遗传算法实现完成');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    addLog('info', '实现蚁群算法...');
-    await new Promise(resolve => setTimeout(resolve, 800));
-    addLog('success', '蚁群算法实现完成');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    addLog('info', '实现混合优化器...');
-    await new Promise(resolve => setTimeout(resolve, 600));
-    addLog('success', '混合优化器实现完成');
-    addLog('success', '代码生成完成！');
-    setIsGenerating(false);
-    toast.success('代码生成完成');
-  };
-
-  const addLog = (level: string, message: string) => {
-    setLogs(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-    }]);
-  };
-
   const getTodoIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -846,19 +794,6 @@ class VisualizationReport:
         return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
       default:
         return <XCircle className="h-5 w-5 text-gray-300" />;
-    }
-  };
-
-  const getLogLevelColor = (level: string) => {
-    switch (level) {
-      case 'success':
-        return 'text-green-500';
-      case 'error':
-        return 'text-red-500';
-      case 'warning':
-        return 'text-yellow-500';
-      default:
-        return 'text-blue-500';
     }
   };
 
@@ -1092,7 +1027,7 @@ class VisualizationReport:
                           代码执行结果
                         </CardTitle>
                         <CardDescription>
-                          代码运行的输出和性能指标
+                          请在"代码执行"标签页中执行代码并查看实时输出
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -1112,30 +1047,13 @@ class VisualizationReport:
                               <CheckCircle2 className="h-5 w-5" />
                               <span className="font-medium">执行成功</span>
                             </div>
-                            <div className="bg-gray-900 rounded-lg p-4">
-                              <pre className="text-sm font-mono text-gray-100 whitespace-pre-wrap">
-                                {/* 模拟执行结果 */}
-                                {`优化结果：
-  最佳解值: 142.50
-  收敛迭代次数: 156
-  总运行时间: 2.35s
-  内存使用: 1.2 MB
-
-站点布局：
-  区域 01: 25 辆
-  区域 02: 32 辆
-  区域 03: 18 辆
-  区域 04: 45 辆
-  区域 05: 28 辆
-  ... (共 20 个区域)
-
-性能指标：
-  总覆盖率: 94.5%
-  平均响应时间: 5.2 分钟
-  运营成本: ¥18,500/月
-  单车利用率: 72.3%`}
-                              </pre>
-                            </div>
+                            {codeGeneration.executionOutput && (
+                              <div className="bg-gray-900 rounded-lg p-4">
+                                <pre className="text-sm font-mono text-gray-100 whitespace-pre-wrap">
+                                  {codeGeneration.executionOutput}
+                                </pre>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="space-y-4">
@@ -1156,47 +1074,6 @@ class VisualizationReport:
                       </CardContent>
                     </Card>
                   )}
-
-                  {/* 实时日志 */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Terminal className="h-5 w-5" />
-                        生成日志
-                      </CardTitle>
-                      <CardDescription>实时代码生成日志</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-[200px] bg-gray-900 rounded-lg p-4">
-                        <div className="space-y-2">
-                          {logs.length === 0 && (
-                            <div className="text-gray-500 text-sm">暂无日志</div>
-                          )}
-                          {logs.map((log, index) => (
-                            <div key={index} className="flex items-start gap-2 text-sm">
-                              <span className="text-gray-500 font-mono text-xs">
-                                {new Date(log.timestamp).toLocaleTimeString()}
-                              </span>
-                              <span className={getLogLevelColor(log.level)}>
-                                <ChevronRight className="h-4 w-4 inline" />
-                                {log.message}
-                              </span>
-                            </div>
-                          ))}
-                          <div ref={logsEndRef} />
-                        </div>
-                      </ScrollArea>
-                      <div className="mt-4 flex justify-end">
-                        <Button
-                          onClick={simulateCodeWriting}
-                          disabled={isGenerating}
-                        >
-                          <Play className="h-4 w-4 mr-2" />
-                          {isGenerating ? '生成中...' : '模拟代码生成'}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
                 </div>
               </div>
             </TabsContent>
