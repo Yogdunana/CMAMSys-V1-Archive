@@ -116,6 +116,49 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (fixType === 'advance-to-coding') {
+      console.log('[ManualFixTask] 执行 advance-to-coding');
+
+      // 检查是否有讨论记录
+      if (!task.discussionId) {
+        return NextResponse.json(
+          { success: false, error: '任务没有讨论记录，无法推进到编码阶段' },
+          { status: 400 }
+        );
+      }
+
+      // 更新任务状态
+      const updatedTask = await prisma.autoModelingTask.update({
+        where: { id: taskId },
+        data: {
+          overallStatus: 'CODING',
+          discussionStatus: 'COMPLETED',
+          validationStatus: 'SKIPPED',
+          paperStatus: 'DRAFT',
+          codeGenerationId: null,
+          progress: 50,
+          errorLog: null,
+          updatedAt: new Date(),
+        },
+      });
+
+      console.log('[ManualFixTask] 修复完成:', {
+        newStatus: updatedTask.overallStatus,
+        newProgress: updatedTask.progress,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: '已推进到编码阶段，可以开始生成代码',
+        data: {
+          taskId: updatedTask.id,
+          overallStatus: updatedTask.overallStatus,
+          progress: updatedTask.progress,
+          updatedAt: updatedTask.updatedAt,
+        },
+      });
+    }
+
     return NextResponse.json(
       { success: false, error: '无效的修复类型' },
       { status: 400 }
