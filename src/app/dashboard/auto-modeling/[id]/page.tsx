@@ -84,6 +84,7 @@ export default function AutoModelingTaskDetailPage() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [errorLog, setErrorLog] = useState<string | null>(null);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // 加载任务状态
@@ -214,6 +215,36 @@ export default function AutoModelingTaskDetailPage() {
       }
     } catch (error) {
       console.error('加载代码生成失败:', error);
+    }
+  };
+
+  const handleRegenerateCode = async () => {
+    if (isRegenerating) return;
+
+    setIsRegenerating(true);
+    try {
+      const response = await fetchWithAuth(`/api/auto-modeling/${taskId}/regenerate-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          language: codeGeneration?.codeLanguage || 'PYTHON',
+        }),
+      });
+
+      if (response.success) {
+        toast.success('代码重新生成成功');
+        // 重新加载代码生成数据
+        await loadCodeGeneration();
+      } else {
+        toast.error(response.error || '重新生成代码失败');
+      }
+    } catch (error) {
+      console.error('重新生成代码失败:', error);
+      toast.error('重新生成代码失败');
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -1073,6 +1104,24 @@ class VisualizationReport:
                                 </AlertDescription>
                               </Alert>
                             )}
+                            <Button
+                              variant="outline"
+                              onClick={handleRegenerateCode}
+                              disabled={isRegenerating}
+                              className="w-full"
+                            >
+                              {isRegenerating ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  重新生成中...
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  重新生成代码
+                                </>
+                              )}
+                            </Button>
                           </div>
                         )}
                       </CardContent>
