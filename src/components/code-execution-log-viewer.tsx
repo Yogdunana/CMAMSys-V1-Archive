@@ -41,43 +41,93 @@ export default function CodeExecutionLogViewer({ taskId, autoScroll = true }: Co
       setLogs([]);
       setExecutionTime(0);
 
-      // 启动实时日志流
-      const eventSource = new EventSource(`/api/auto-modeling/${taskId}/execution-logs`);
+      // 获取 Token
+      const token = localStorage.getItem('accessToken');
 
-      eventSourceRef.current = eventSource;
+      // 使用 fetch + ReadableStream 替代 EventSource，以支持自定义请求头
+      const response = await fetch(`/api/auto-modeling/${taskId}/execution-logs`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
-        if (data.type === 'log') {
-          setLogs((prev) => [...prev, data.log]);
-        } else if (data.type === 'complete') {
-          setStatus(data.success ? 'success' : 'error');
-          setIsExecuting(false);
-          eventSource.close();
-        }
-      };
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-      eventSource.onerror = (error) => {
-        console.error('SSE error:', error);
-        setStatus('error');
-        setIsExecuting(false);
-        eventSource.close();
-      };
+      if (!reader) {
+        throw new Error('无法获取响应流');
+      }
 
       // 计时器
       const timer = setInterval(() => {
         setExecutionTime((prev) => prev + 1);
       }, 1000);
 
-      eventSource.addEventListener('close', () => {
+      let buffer = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            clearInterval(timer);
+            break;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // 处理 SSE 数据行（以 data: 开头，以 \n\n 结尾）
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const match = line.match(/^data: (.+)$/);
+            if (match) {
+              try {
+                const data = JSON.parse(match[1]);
+
+                if (data.type === 'log') {
+                  setLogs((prev) => [...prev, data.log]);
+                } else if (data.type === 'complete') {
+                  setStatus(data.success ? 'success' : 'error');
+                  setIsExecuting(false);
+                  clearInterval(timer);
+                  return;
+                } else if (data.type === 'error') {
+                  setStatus('error');
+                  setIsExecuting(false);
+                  clearInterval(timer);
+                  return;
+                }
+              } catch (e) {
+                console.error('Failed to parse SSE data:', e);
+              }
+            } else if (line.includes(': heartbeat')) {
+              // 心跳包，忽略
+              continue;
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
         clearInterval(timer);
-      });
+      }
 
     } catch (error) {
       console.error('Failed to start execution:', error);
       setStatus('error');
       setIsExecuting(false);
+
+      // 添加错误日志
+      setLogs((prev) => [...prev, {
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: `执行失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      }]);
     }
   };
 
