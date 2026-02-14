@@ -1,8 +1,9 @@
 /**
  * 带有 Token 验证的 fetch 函数
- * 自动处理 Token 过期情况，显示弹窗提示
+ * 自动处理 Token 过期情况，尝试刷新 Token
  */
 
+import { verifyAccessToken } from '@/lib/jwt';
 import { useTokenExpired } from '@/contexts/token-expired-context';
 
 interface FetchOptions extends RequestInit {
@@ -14,6 +15,75 @@ export interface FetchResponse<T = any> {
   data?: T;
   error?: string;
   details?: string;
+}
+
+// 全局刷新锁，防止并发刷新
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+function subscribeTokenRefresh(callback: (token: string) => void) {
+  refreshSubscribers.push(callback);
+}
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach(callback => callback(token));
+  refreshSubscribers = [];
+}
+
+/**
+ * 尝试刷新 Token
+ */
+async function attemptTokenRefresh(): Promise<string | null> {
+  // 如果已经在刷新，等待刷新完成
+  if (isRefreshing) {
+    return new Promise((resolve) => {
+      subscribeTokenRefresh((token) => {
+        resolve(token);
+      });
+    });
+  }
+
+  isRefreshing = true;
+
+  try {
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    if (!refreshToken) {
+      return null;
+    }
+
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.data) {
+      // 保存新的 tokens
+      localStorage.setItem('accessToken', data.data.accessToken);
+      localStorage.setItem('refreshToken', data.data.refreshToken);
+
+      // 通知所有等待的请求
+      onRefreshed(data.data.accessToken);
+
+      return data.data.accessToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[attemptTokenRefresh] Failed to refresh token:', error);
+    return null;
+  } finally {
+    isRefreshing = false;
+  }
 }
 
 // 创建全局实例，不依赖 React Context
@@ -30,7 +100,7 @@ export async function fetchWithAuth<T = any>(
   const { skipAuth = false, ...fetchOptions } = options;
 
   // 获取 Token
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  let token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
   // 设置请求头
   const headers: HeadersInit = {
@@ -44,20 +114,52 @@ export async function fetchWithAuth<T = any>(
   }
 
   try {
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       ...fetchOptions,
       headers,
     });
 
+    // 如果收到 401 错误，尝试刷新 Token
+    if (response.status === 401 && !skipAuth) {
+      console.log('[fetchWithAuth] Received 401, attempting token refresh...');
+
+      const newToken = await attemptTokenRefresh();
+
+      if (newToken) {
+        console.log('[fetchWithAuth] Token refreshed, retrying request...');
+
+        // 使用新的 token 重试请求
+        headers['Authorization'] = `Bearer ${newToken}`;
+        response = await fetch(url, {
+          ...fetchOptions,
+          headers,
+        });
+      } else {
+        console.log('[fetchWithAuth] Token refresh failed, showing expired dialog');
+
+        // 刷新失败，显示过期弹窗
+        if (showTokenExpiredCallback) {
+          showTokenExpiredCallback('expired');
+        }
+
+        return {
+          success: false,
+          error: 'Unauthorized',
+          details: '请重新登录',
+        };
+      }
+    }
+
     const data = await response.json();
 
-    // 检查是否是 401 错误
+    // 如果重试后还是 401，显示过期弹窗
     if (response.status === 401) {
-      console.log('[fetchWithAuth] Unauthorized, showing token expired dialog');
-      // 调用全局回调函数显示 Token 过期弹窗
+      console.log('[fetchWithAuth] Retry failed, showing expired dialog');
+
       if (showTokenExpiredCallback) {
         showTokenExpiredCallback('unauthorized');
       }
+
       return {
         success: false,
         error: 'Unauthorized',
@@ -93,7 +195,7 @@ export function useFetchWithAuth() {
       const { skipAuth = false, ...fetchOptions } = options;
 
       // 获取 Token
-      const token = localStorage.getItem('accessToken');
+      let token = localStorage.getItem('accessToken');
 
       // 设置请求头
       const headers: HeadersInit = {
@@ -107,17 +209,48 @@ export function useFetchWithAuth() {
       }
 
       try {
-        const response = await fetch(url, {
+        let response = await fetch(url, {
           ...fetchOptions,
           headers,
         });
 
+        // 如果收到 401 错误，尝试刷新 Token
+        if (response.status === 401 && !skipAuth) {
+          console.log('[useFetchWithAuth] Received 401, attempting token refresh...');
+
+          const newToken = await attemptTokenRefresh();
+
+          if (newToken) {
+            console.log('[useFetchWithAuth] Token refreshed, retrying request...');
+
+            // 使用新的 token 重试请求
+            headers['Authorization'] = `Bearer ${newToken}`;
+            response = await fetch(url, {
+              ...fetchOptions,
+              headers,
+            });
+          } else {
+            console.log('[useFetchWithAuth] Token refresh failed, showing expired dialog');
+
+            // 刷新失败，显示过期弹窗
+            showTokenExpired('expired');
+
+            return {
+              success: false,
+              error: 'Unauthorized',
+              details: '请重新登录',
+            };
+          }
+        }
+
         const data = await response.json();
 
-        // 检查是否是 401 错误
+        // 如果重试后还是 401，显示过期弹窗
         if (response.status === 401) {
-          console.log('[useFetchWithAuth] Unauthorized, showing token expired dialog');
+          console.log('[useFetchWithAuth] Retry failed, showing expired dialog');
+
           showTokenExpired('unauthorized');
+
           return {
             success: false,
             error: 'Unauthorized',
