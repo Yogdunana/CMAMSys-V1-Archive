@@ -73,7 +73,7 @@ export async function POST(
       );
     }
 
-    // 使用事务删除旧代码并生成新代码
+    // 使用事务删除旧代码
     const result = await prisma.$transaction(async (tx) => {
       // 删除旧的代码生成记录
       if (task.codeGeneration) {
@@ -92,33 +92,19 @@ export async function POST(
         },
       });
 
-      // 重新生成代码
-      console.log(`[RegenerateCode] 开始重新生成代码，任务 ID: ${taskId}`);
-      const newCodeGeneration = await generateCode(
-        taskId,
-        task.discussionId,
-        discussion.summary || {},
-        language || 'PYTHON',
-        decoded.userId
-      );
-      console.log(`[RegenerateCode] 代码重新生成完成，代码生成 ID: ${newCodeGeneration.id}`);
-
-      return newCodeGeneration;
+      return { success: true };
     });
 
-    // 更新任务的代码生成 ID 和进度
-    await prisma.autoModelingTask.update({
-      where: { id: taskId },
-      data: {
-        codeGenerationId: result.id,
-        progress: 60,
-      },
-    });
+    // 异步生成代码（不阻塞响应）
+    generateCodeAsync(taskId, task.discussionId, discussion.summary || {}, language || 'PYTHON', decoded.userId)
+      .catch(error => {
+        console.error('[RegenerateCode] 异步代码生成失败:', error);
+      });
 
+    // 立即返回，不等待代码生成完成
     return NextResponse.json({
       success: true,
-      codeGeneration: newCodeGeneration,
-      message: '代码重新生成成功',
+      message: '代码生成已开始，请在进度中查看',
     });
   } catch (error) {
     console.error('Regenerate code error:', error);
@@ -129,5 +115,54 @@ export async function POST(
       },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * 异步生成代码
+ */
+async function generateCodeAsync(
+  taskId: string,
+  discussionId: string,
+  discussionSummary: any,
+  language: string,
+  userId: string
+) {
+  try {
+    console.log(`[GenerateCodeAsync] 开始生成代码，任务 ID: ${taskId}`);
+
+    // 导入 generateCode 函数
+    const { generateCode } = await import('@/services/code-generation');
+
+    // 生成代码（这会阻塞，但不影响 API 响应）
+    const codeGeneration = await generateCode(
+      taskId,
+      discussionId,
+      discussionSummary,
+      language as any,
+      userId
+    );
+
+    console.log(`[GenerateCodeAsync] 代码生成完成，代码生成 ID: ${codeGeneration.id}`);
+
+    // 更新任务进度
+    await prisma.autoModelingTask.update({
+      where: { id: taskId },
+      data: {
+        codeGenerationId: codeGeneration.id,
+        progress: 60,
+      },
+    });
+  } catch (error) {
+    console.error('[GenerateCodeAsync] 代码生成失败:', error);
+
+    // 更新任务状态为失败
+    await prisma.autoModelingTask.update({
+      where: { id: taskId },
+      data: {
+        overallStatus: 'FAILED',
+        errorLog: error instanceof Error ? error.message : '代码生成失败',
+      },
+    });
   }
 }
