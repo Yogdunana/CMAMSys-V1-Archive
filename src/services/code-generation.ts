@@ -107,14 +107,17 @@ export async function generateCode(
 }
 
 /**
- * 调用 AI 生成代码（带自动验证）
+ * 调用 AI 生成代码（带自动验证和超时保护）
  */
 async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId?: string) {
   const maxRetries = 3; // 最多重试 3 次
   let retryCount = 0;
+  const timeoutMs = 3 * 60 * 1000; // 3 分钟超时
 
   while (retryCount < maxRetries) {
     try {
+      console.log(`[CodeGeneration] 第 ${retryCount + 1} 次尝试生成代码...`);
+
       // 获取用户的默认 AI Provider
       const providers = await prisma.aIProvider.findMany({
         where: {
@@ -131,8 +134,16 @@ async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId
       // 选择优先级最高的 Provider
       const provider = providers.sort((a, b) => b.priority - a.priority)[0];
 
-      // 调用 AI 生成代码
-      const { response: generatedCode } = await callAI(
+      console.log(`[CodeGeneration] 使用 Provider: ${provider.name}`);
+
+      // 调用 AI 生成代码，带超时保护
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`AI 调用超时（${timeoutMs / 1000}秒）`));
+        }, timeoutMs);
+      });
+
+      const aiCallPromise = callAI(
         provider.id,
         provider.supportedModels[0] || 'default',
         prompt,
@@ -143,6 +154,13 @@ async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId
         },
         userId
       );
+
+      const { response: generatedCode } = await Promise.race([
+        aiCallPromise,
+        timeoutPromise,
+      ]);
+
+      console.log(`[CodeGeneration] AI 生成成功，代码长度: ${generatedCode?.length || 0} 字符`);
 
       // 验证代码质量
       console.log(`[CodeValidation] 验证第 ${retryCount + 1} 次生成的代码...`);
