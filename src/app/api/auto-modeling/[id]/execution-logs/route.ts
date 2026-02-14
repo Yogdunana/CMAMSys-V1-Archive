@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 验证 Token
@@ -37,7 +37,7 @@ export async function GET(
       );
     }
 
-    const taskId = params.id;
+    const { id: taskId } = await params;
 
     // 查询任务
     const task = await prisma.autoModelingTask.findUnique({

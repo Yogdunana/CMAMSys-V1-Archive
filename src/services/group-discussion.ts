@@ -309,17 +309,11 @@ async function callAIProvider(provider: AIProvider, prompt: string, userId?: str
     console.log(`[callAIProvider] 调用 ${provider.name} (${provider.type})`);
     console.log(`[callAIProvider] Prompt 长度: ${prompt.length}`);
 
-    // 如果没有 userId，返回模拟数据
+    // 如果没有 userId，抛出错误
     if (!userId) {
-      console.warn('[callAIProvider] No userId provided, using fallback response');
-      return {
-        content: `模拟回复：${provider.name} 的解题思路。\n\n针对城市共享单车投放优化问题，我建议采用以下方法：\n\n1. 核心算法：遗传算法 + 模拟退火混合算法\n2. 创新点：基于区域需求预测的自适应投放策略\n3. 可行性分析：时间复杂度 O(n²)，能够满足实时调度需求`,
-        coreAlgorithms: '遗传算法、蚁群算法',
-        innovations: '混合算法设计、自适应参数调整',
-        feasibility: '时间复杂度 O(n²)，数据需求适中',
-        disagreements: '',
-        tokenCount: 500,
-      };
+      const error = new Error('用户 ID 不能为空，无法调用 AI Provider');
+      console.error('[callAIProvider]', error.message);
+      throw error;
     }
 
     // 调用真正的 AI API
@@ -380,15 +374,8 @@ async function callAIProvider(provider: AIProvider, prompt: string, userId?: str
     return response;
   } catch (error) {
     console.error('[callAIProvider] Error:', error);
-    // 返回模拟数据作为兜底
-    return {
-      content: `错误：${error instanceof Error ? error.message : 'Unknown error'}`,
-      coreAlgorithms: '错误',
-      innovations: '错误',
-      feasibility: '错误',
-      disagreements: '',
-      tokenCount: 0,
-    };
+    // 抛出错误，不返回兜底数据
+    throw error;
   }
 }
 

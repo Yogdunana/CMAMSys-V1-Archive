@@ -222,64 +222,9 @@ export async function extractVideoKnowledge(videoId: string, aiProviderId: strin
     }
 
     // TODO: 调用 AI 服务分析视频内容
-    // 这里暂时返回模拟数据
-    const knowledgePoints = [
-      {
-        title: `${video.title} - 核心概念`,
-        content: `这是从视频 ${video.title} 中提取的核心概念内容。`,
-        summary: '核心概念介绍',
-        category: '概念',
-        tags: ['概念', '理论'],
-        importance: 'high',
-        timestamp: '0',
-        relevanceScore: 0.9,
-      },
-      {
-        title: `${video.title} - 实践方法`,
-        content: `这是从视频 ${video.title} 中提取的实践方法内容。`,
-        summary: '实践方法介绍',
-        category: '方法',
-        tags: ['实践', '方法'],
-        importance: 'medium',
-        timestamp: '300',
-        relevanceScore: 0.8,
-      },
-    ];
-
-    // 保存知识点
-    const savedKnowledge = [];
-    for (const point of knowledgePoints) {
-      const knowledge = await prisma.videoKnowledge.create({
-        data: {
-          videoId,
-          ...point,
-        },
-      });
-
-      // 同时保存到知识库
-      await prisma.knowledgeBaseEntry.create({
-        data: {
-          title: point.title,
-          content: point.content,
-          summary: point.summary,
-          category: point.category,
-          tags: point.tags,
-          sourceType: 'video',
-          sourceId: video.bvid,
-          videoKnowledgeId: knowledge.id,
-          qualityScore: point.relevanceScore,
-          status: 'active',
-        },
-      });
-
-      savedKnowledge.push(knowledge);
-    }
-
-    logger.info(`Extracted ${savedKnowledge.length} knowledge points from video ${video.bvid}`);
-
-    return savedKnowledge;
+    throw new Error('视频知识点提取功能正在开发中，需要集成 AI 视频分析服务');
   } catch (error) {
-    logger.error(`Failed to extract video knowledge: ${error}`, error);
+    logger.error('Extract video knowledge error:', error);
     throw error;
   }
 }

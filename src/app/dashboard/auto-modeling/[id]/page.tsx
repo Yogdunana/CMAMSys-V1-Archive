@@ -63,6 +63,7 @@ interface TaskStatus {
   discussionStatus: string;
   progress: number;
   discussionId: string | null;
+  errorLog: string | null;
   discussion?: {
     id: string;
     messages: any[];
@@ -81,6 +82,8 @@ export default function AutoModelingTaskDetailPage() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [errorLog, setErrorLog] = useState<string | null>(null);
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // 加载任务状态
@@ -113,6 +116,17 @@ export default function AutoModelingTaskDetailPage() {
 
         // 加载 TODO 列表（基于任务状态和进度）
         loadTodos(response.data);
+
+        // 如果任务失败且有错误日志，显示错误弹窗
+        if (
+          response.data.overallStatus === 'FAILED' &&
+          response.data.errorLog &&
+          !isErrorDialogOpen
+        ) {
+          setErrorLog(response.data.errorLog);
+          setIsErrorDialogOpen(true);
+          toast.error('任务执行失败，请查看错误日志');
+        }
 
         // 如果任务已完成或失败，停止轮询
         if (
@@ -1174,6 +1188,38 @@ class VisualizationReport:
             </TabsContent>
           </Tabs>
         </main>
+        
+        {/* 错误日志对话框 */}
+        <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh]">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <XCircle className="h-6 w-6 text-red-500" />
+                <DialogTitle className="text-xl text-red-600">任务执行失败</DialogTitle>
+              </div>
+              <DialogDescription>
+                请查看下面的错误日志，了解任务执行失败的具体原因
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+              <Card>
+                <CardContent className="pt-6">
+                  <pre className="whitespace-pre-wrap text-sm font-mono bg-red-50 text-red-900 p-4 rounded-lg overflow-x-auto border border-red-200">
+                    {errorLog || '无错误日志'}
+                  </pre>
+                </CardContent>
+              </Card>
+            </ScrollArea>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsErrorDialogOpen(false)}>
+                关闭
+              </Button>
+              <Button variant="default" onClick={() => router.push('/dashboard/auto-modeling')}>
+                返回任务列表
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
         
         {/* 任务详情对话框 */}
         <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>

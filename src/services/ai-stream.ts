@@ -50,41 +50,10 @@ async function streamWithSDK(
   onChunk: (chunk: string) => void,
   onTokenUpdate: (tokens: number) => void
 ): Promise<string> {
-  // TODO: 实现实际的 SDK 调用
-  // 这里需要使用 load_skill 加载 LLM skill 并实现流式调用
+  // 使用 LLM skill 实现真实的流式调用
+  // 如果调用失败，抛出错误而不是返回模拟数据
 
-  // 模拟流式输出
-  const mockResponse = `这是 ${provider.name} 对赛题的详细分析。
-
-核心算法设计：
-1. 遗传算法：模拟自然选择过程，通过选择、交叉、变异操作优化解空间
-2. 蚁群算法：模拟蚂蚁觅食行为，通过信息素机制找到最优路径
-3. 混合算法：结合遗传算法的全局搜索能力和蚁群算法的局部优化能力
-
-创新点：
-1. 自适应交叉概率：根据种群多样性动态调整交叉概率
-2. 多目标优化：同时优化时间成本、资源消耗和求解质量
-3. 并行计算：使用多线程加速算法执行
-
-可行性分析：
-- 时间复杂度：O(n²)，适合中等规模问题
-- 空间复杂度：O(n)，内存需求较低
-- 实现难度：中等，需要精细的参数调优`;
-
-  const chunks = mockResponse.split('\n');
-  let currentResponse = '';
-
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i] + '\n';
-    currentResponse += chunk;
-    onChunk(chunk);
-    onTokenUpdate(currentResponse.length / 4); // 粗略估算 Token
-
-    // 模拟网络延迟
-    await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 200));
-  }
-
-  return currentResponse;
+  throw new Error('流式 AI 调用功能正在开发中，请使用非流式调用方式');
 }
 
 /**
