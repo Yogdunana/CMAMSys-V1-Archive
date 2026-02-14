@@ -30,10 +30,37 @@ export function TokenExpiredDialog({
     // 清除本地存储的 token
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    
+
+    // 清除可能存在的其他认证信息
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+
     // 跳转到登录页面
     router.push('/auth/login');
-    
+
+    // 关闭弹窗
+    onOpenChange(false);
+  };
+
+  const handleClearAllTokens = () => {
+    // 清除所有可能的认证信息
+    const storageKeys = [
+      'accessToken',
+      'refreshToken',
+      'token',
+      'user',
+      'currentUser',
+      'auth',
+    ];
+
+    storageKeys.forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+
+    // 跳转到登录页面
+    router.push('/auth/login');
+
     // 关闭弹窗
     onOpenChange(false);
   };
@@ -58,11 +85,13 @@ export function TokenExpiredDialog({
       case 'invalid':
         return '您的登录状态无效，请重新登录以继续操作。';
       case 'invalid_signature':
-        return '您的登录凭据已失效，可能是由于系统更新导致的。请重新登录以继续操作。';
+        return '您的登录凭据已失效，可能是由于系统更新或Token版本不一致导致的。建议清除所有Token后重新登录。';
       default:
         return '您当前未登录，请先登录以访问此功能。';
     }
   };
+
+  const showClearAllButton = reason === 'invalid_signature';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -76,9 +105,18 @@ export function TokenExpiredDialog({
             {getDescription()}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2">
+          {showClearAllButton && (
+            <Button
+              onClick={handleClearAllTokens}
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              清除所有Token并重新登录
+            </Button>
+          )}
           <Button onClick={handleGoToLogin} className="w-full sm:w-auto">
-            前往登录
+            {showClearAllButton ? '仅重新登录' : '前往登录'}
           </Button>
         </DialogFooter>
       </DialogContent>

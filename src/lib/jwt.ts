@@ -141,3 +141,33 @@ export function decodeToken(token: string): any {
     return null;
   }
 }
+
+/**
+ * 检查错误是否是 JWT 签名验证失败
+ */
+export function isJWTSignatureError(error: any): boolean {
+  return error?.name === 'JWSSignatureVerificationFailed' ||
+         error?.message?.includes('signature verification failed');
+}
+
+/**
+ * 检查错误是否是 JWT 过期
+ */
+export function isJWTExpiredError(error: any): boolean {
+  return error?.name === 'JWTExpired' ||
+         error?.message?.includes('expired');
+}
+
+/**
+ * 获取 JWT 错误类型
+ */
+export function getJWTErrorType(error: any): 'signature' | 'expired' | 'invalid' | 'unknown' {
+  if (isJWTSignatureError(error)) {
+    return 'signature';
+  }
+  if (isJWTExpiredError(error)) {
+    return 'expired';
+  }
+  return 'unknown';
+}
+

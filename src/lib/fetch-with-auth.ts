@@ -187,6 +187,26 @@ export async function fetchWithAuth<T = any>(
       };
     }
 
+    // 检查是否是 JWT 签名验证失败
+    if (response.status === 401 || response.status === 403) {
+      if (data.details && typeof data.details === 'string') {
+        if (data.details.includes('JWSSignatureVerificationFailed') ||
+            data.details.includes('signature verification failed')) {
+          console.log('[fetchWithAuth] JWT signature verification failed');
+
+          if (showTokenExpiredCallback) {
+            showTokenExpiredCallback('invalid_signature');
+          }
+
+          return {
+            success: false,
+            error: 'Invalid token signature',
+            details: 'Token签名验证失败，请清除所有Token并重新登录',
+          };
+        }
+      }
+    }
+
     return data as FetchResponse<T>;
   } catch (error) {
     console.error('[fetchWithAuth] Request failed:', error);
