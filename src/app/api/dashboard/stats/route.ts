@@ -42,11 +42,11 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      // 统计建模任务（非完成状态）
-      const modelingTasks = await prisma.modelingTask.count({
+      // 统计自动化建模任务（非完成状态）
+      const modelingTasks = await prisma.autoModelingTask.count({
         where: {
-          status: {
-            in: ['PENDING', 'PREPROCESSING', 'MODELING', 'EVALUATING', 'REPORTING'],
+          overallStatus: {
+            in: ['PENDING', 'DISCUSSING', 'CODING', 'VALIDATING', 'RETRYING', 'PAPER_GENERATING'],
           },
         },
       });
@@ -58,14 +58,8 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      // 统计 AI 请求（从 AI 请求表统计）
-      const aiRequests = await prisma.aIRequest.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 最近30天
-          },
-        },
-      });
+      // 统计 AI 请求总数
+      const aiRequests = await prisma.aIRequest.count({});
 
       return NextResponse.json<ApiResponse>(
         {
@@ -74,27 +68,26 @@ export async function GET(request: NextRequest) {
             activeCompetitions,
             modelingTasks,
             teamMembers,
-            aiRequests: aiRequests + 1234, // 基础数量
+            aiRequests,
           },
           timestamp: new Date().toISOString(),
         },
         { status: 200 }
       );
     } catch (dbError) {
-      // 数据库不可用时返回 mock 数据
+      // 数据库不可用时返回错误
       console.error('Database error:', dbError);
       return NextResponse.json<ApiResponse>(
         {
-          success: true,
-          data: {
-            activeCompetitions: 3,
-            modelingTasks: 12,
-            teamMembers: 8,
-            aiRequests: 1234,
+          success: false,
+          error: {
+            code: 'DATABASE_ERROR',
+            message: 'Failed to fetch dashboard stats from database',
+            details: isDev ? String(dbError) : undefined,
           },
           timestamp: new Date().toISOString(),
         },
-        { status: 200 }
+        { status: 500 }
       );
     }
   } catch (error) {
