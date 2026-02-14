@@ -72,8 +72,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function verifyToken(token: string): Promise<boolean> {
     try {
-      // 注意：/api/v1/auth/verify 端点需要创建
-      // 这里暂时使用备用方法验证 token
+      // 先本地验证 token 是否过期
+      const { verifyAccessToken } = await import('@/lib/jwt');
+      const payload = verifyAccessToken(token);
+
+      if (!payload) {
+        // Token 无效或过期，尝试刷新
+        console.log('[AuthContext] Token invalid, attempting refresh...');
+        await refreshAuth();
+        return false;
+      }
+
+      // Token 本地有效，再验证服务器端
       const response = await fetch('/api/auth/verify', {
         method: 'GET',
         headers: {
@@ -82,13 +92,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
+        // 服务器端验证失败，尝试刷新
+        console.log('[AuthContext] Server verification failed, attempting refresh...');
         await refreshAuth();
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Token verification failed:', error);
+      console.error('[AuthContext] Token verification failed:', error);
       await refreshAuth();
       return false;
     }
