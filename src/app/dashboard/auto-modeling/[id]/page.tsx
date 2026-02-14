@@ -235,9 +235,9 @@ export default function AutoModelingTaskDetailPage() {
       });
 
       if (response.success) {
-        toast.success('代码重新生成成功');
-        // 重新加载代码生成数据
-        await loadCodeGeneration();
+        toast.success('代码生成已开始，请稍后...');
+        // 开始轮询任务状态，等待代码生成完成
+        startPolling();
       } else {
         toast.error(response.error || '重新生成代码失败');
       }
