@@ -33,13 +33,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 查询任务
+    console.log(`[FixTaskStatus] 开始修复任务 ${taskId}，类型: ${fixType}`);
+
+    // 查询任务（不包含关联，避免查询错误）
     const task = await prisma.autoModelingTask.findUnique({
       where: { id: taskId },
-      include: {
-        codeGeneration: true,
-        validations: true,
-        discussion: true,
+      select: {
+        id: true,
+        taskId: true,
+        problemTitle: true,
+        overallStatus: true,
+        discussionStatus: true,
+        validationStatus: true,
+        paperStatus: true,
+        codeGenerationId: true,
+        discussionId: true,
+        progress: true,
+        errorLog: true,
       },
     });
 
@@ -50,40 +60,75 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 查询所有相关记录
+    const codeGenerations = await prisma.codeGeneration.findMany({
+      where: { autoTaskId: taskId },
+    });
+
+    const validations = await prisma.codeValidation.findMany({
+      where: { autoTaskId: taskId },
+    });
+
+    const discussion = task.discussionId
+      ? await prisma.groupDiscussion.findUnique({
+          where: { id: task.discussionId },
+          select: { id: true },
+        })
+      : null;
+
+    console.log(`[FixTaskStatus] 当前状态:`, {
+      overallStatus: task.overallStatus,
+      discussionStatus: task.discussionStatus,
+      validationStatus: task.validationStatus,
+      codeGenerationId: task.codeGenerationId,
+      hasDiscussion: !!discussion,
+      codeGenCount: codeGenerations.length,
+      validationCount: validations.length,
+    });
+
     let updates: any = {
       updatedAt: new Date(),
     };
 
     let message = '';
+    let deletedCodeGens = 0;
+    let deletedValidations = 0;
 
     // 根据修复类型执行不同的修复策略
     switch (fixType) {
       case 'sync-to-actual': {
         // 根据实际记录同步状态
-        if (!task.codeGeneration && task.codeGenerationId) {
+        console.log('[FixTaskStatus] 执行 sync-to-actual 修复');
+
+        if (task.codeGenerationId && codeGenerations.length === 0) {
           updates.codeGenerationId = null;
           message = '清除了无效的 codeGenerationId';
+          console.log('[FixTaskStatus] 清除无效的 codeGenerationId');
         }
 
-        if (task.codeGeneration && !task.codeGenerationId) {
-          updates.codeGenerationId = task.codeGeneration.id;
+        if (!task.codeGenerationId && codeGenerations.length > 0) {
+          updates.codeGenerationId = codeGenerations[0].id;
           message = '更新了 codeGenerationId';
+          console.log('[FixTaskStatus] 更新 codeGenerationId');
         }
 
-        if (task.validations.length === 0 && task.validationStatus === 'PASSED') {
-          updates.validationStatus = 'NOT_STARTED';
-          message += ', 重置了 validationStatus';
+        if (task.validationStatus === 'PASSED' && validations.length === 0) {
+          updates.validationStatus = 'SKIPPED';
+          message += (message ? ', ' : '') + '重置了 validationStatus';
+          console.log('[FixTaskStatus] 重置 validationStatus');
         }
 
-        if (!task.codeGeneration && task.overallStatus === 'CODING') {
+        if (task.overallStatus === 'CODING' && codeGenerations.length === 0) {
           updates.overallStatus = 'DISCUSSING';
-          updates.progress = 40;
-          message += ', 重置了 overallStatus 到 DISCUSSING';
+          updates.progress = 20;
+          message += (message ? ', ' : '') + '重置了 overallStatus 到 DISCUSSING';
+          console.log('[FixTaskStatus] 重置 overallStatus');
         }
 
-        if (!task.discussion && task.discussionStatus === 'COMPLETED') {
-          updates.discussionStatus = 'NOT_STARTED';
-          message += ', 重置了 discussionStatus';
+        if (task.discussionStatus === 'COMPLETED' && !discussion) {
+          updates.discussionStatus = 'IN_PROGRESS';
+          message += (message ? ', ' : '') + '重置了 discussionStatus';
+          console.log('[FixTaskStatus] 重置 discussionStatus');
         }
 
         if (!message) {
@@ -94,27 +139,43 @@ export async function POST(request: NextRequest) {
 
       case 'reset-to-discussion': {
         // 重置到讨论阶段
+        console.log('[FixTaskStatus] 执行 reset-to-discussion 修复');
+
         updates.overallStatus = 'DISCUSSING';
         updates.discussionStatus = 'IN_PROGRESS';
-        updates.validationStatus = 'NOT_STARTED';
-        updates.paperStatus = 'NOT_STARTED';
+        updates.validationStatus = 'SKIPPED';
+        updates.paperStatus = 'DRAFT';
         updates.codeGenerationId = null;
         updates.progress = 20;
         updates.errorLog = null;
         message = '已重置到讨论阶段';
 
-        // 删除代码生成记录
-        if (task.codeGenerationId) {
-          await prisma.codeGeneration.delete({
-            where: { id: task.codeGenerationId },
+        // 删除所有代码生成记录
+        if (codeGenerations.length > 0) {
+          const deleteResult = await prisma.codeGeneration.deleteMany({
+            where: { autoTaskId: taskId },
           });
+          deletedCodeGens = deleteResult.count;
+          console.log(`[FixTaskStatus] 删除了 ${deletedCodeGens} 个代码生成记录`);
         }
+
+        // 删除所有验证记录
+        if (validations.length > 0) {
+          const deleteResult = await prisma.codeValidation.deleteMany({
+            where: { autoTaskId: taskId },
+          });
+          deletedValidations = deleteResult.count;
+          console.log(`[FixTaskStatus] 删除了 ${deletedValidations} 个验证记录`);
+        }
+
         break;
       }
 
       case 'reset-to-coding': {
         // 重置到编码阶段
-        if (!task.discussion) {
+        console.log('[FixTaskStatus] 执行 reset-to-coding 修复');
+
+        if (!discussion) {
           return NextResponse.json(
             {
               success: false,
@@ -126,27 +187,39 @@ export async function POST(request: NextRequest) {
 
         updates.overallStatus = 'CODING';
         updates.discussionStatus = 'COMPLETED';
-        updates.validationStatus = 'NOT_STARTED';
-        updates.paperStatus = 'NOT_STARTED';
+        updates.validationStatus = 'SKIPPED';
+        updates.paperStatus = 'DRAFT';
+        updates.codeGenerationId = null;
         updates.progress = 50;
         updates.errorLog = null;
         message = '已重置到编码阶段，请手动重新生成代码';
 
-        // 删除代码生成和验证记录
-        await prisma.$transaction([
-          prisma.codeGeneration.deleteMany({
+        // 删除所有代码生成记录
+        if (codeGenerations.length > 0) {
+          const deleteResult = await prisma.codeGeneration.deleteMany({
             where: { autoTaskId: taskId },
-          }),
-          prisma.codeValidation.deleteMany({
+          });
+          deletedCodeGens = deleteResult.count;
+          console.log(`[FixTaskStatus] 删除了 ${deletedCodeGens} 个代码生成记录`);
+        }
+
+        // 删除所有验证记录
+        if (validations.length > 0) {
+          const deleteResult = await prisma.codeValidation.deleteMany({
             where: { autoTaskId: taskId },
-          }),
-        ]);
+          });
+          deletedValidations = deleteResult.count;
+          console.log(`[FixTaskStatus] 删除了 ${deletedValidations} 个验证记录`);
+        }
+
         break;
       }
 
       case 'reset-to-validation': {
         // 重置到验证阶段
-        if (!task.codeGeneration) {
+        console.log('[FixTaskStatus] 执行 reset-to-validation 修复');
+
+        if (codeGenerations.length === 0) {
           return NextResponse.json(
             {
               success: false,
@@ -163,10 +236,15 @@ export async function POST(request: NextRequest) {
         updates.errorLog = null;
         message = '已重置到验证阶段';
 
-        // 删除验证记录
-        await prisma.codeValidation.deleteMany({
-          where: { autoTaskId: taskId },
-        });
+        // 删除所有验证记录
+        if (validations.length > 0) {
+          const deleteResult = await prisma.codeValidation.deleteMany({
+            where: { autoTaskId: taskId },
+          });
+          deletedValidations = deleteResult.count;
+          console.log(`[FixTaskStatus] 删除了 ${deletedValidations} 个验证记录`);
+        }
+
         break;
       }
 
@@ -178,9 +256,18 @@ export async function POST(request: NextRequest) {
     }
 
     // 更新任务
+    console.log('[FixTaskStatus] 更新任务状态:', updates);
     const updatedTask = await prisma.autoModelingTask.update({
       where: { id: taskId },
       data: updates,
+    });
+
+    console.log('[FixTaskStatus] 修复完成:', {
+      message,
+      deletedCodeGens,
+      deletedValidations,
+      newStatus: updatedTask.overallStatus,
+      newProgress: updatedTask.progress,
     });
 
     return NextResponse.json({
@@ -194,6 +281,8 @@ export async function POST(request: NextRequest) {
         codeGenerationId: updatedTask.codeGenerationId,
         progress: updatedTask.progress,
         updatedAt: updatedTask.updatedAt,
+        deletedCodeGens,
+        deletedValidations,
       },
     });
   } catch (error) {
