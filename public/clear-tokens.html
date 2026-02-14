@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>清除Token - CMAMSys</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .info {
+      background: #f0f7ff;
+      border-left: 4px solid #4a90e2;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .info strong {
+      color: #4a90e2;
+    }
+    .info p {
+      margin: 5px 0;
+      color: #666;
+    }
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    button {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+    .message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .step-list {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .step-list ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .step-list li {
+      margin: 8px 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 清除认证Token</h1>
+
+    <div class="info">
+      <p><strong>问题原因：</strong></p>
+      <p>服务器重启后 JWT_SECRET 发生变化，导致之前生成的 Token 无法验证。需要清除所有 Token 并重新登录。</p>
+    </div>
+
+    <div class="step-list">
+      <strong>清除步骤：</strong>
+      <ol>
+        <li>点击下方"清除所有Token"按钮</li>
+        <li>页面将自动清除本地存储的所有认证信息</li>
+        <li>点击"前往登录页面"按钮</li>
+        <li>使用以下账户重新登录：</li>
+      </ol>
+      <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 4px;">
+        <p style="margin: 5px 0;"><strong>邮箱：</strong>yogdunana@yogdunana.com</p>
+        <p style="margin: 5px 0;"><strong>密码：</strong>Admin@123</p>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" onclick="clearTokens()">清除所有Token</button>
+      <button class="btn-secondary" onclick="goToLogin()">前往登录页面</button>
+    </div>
+
+    <div id="message" class="message"></div>
+  </div>
+
+  <script>
+    function clearTokens() {
+      try {
+        // 清除 localStorage
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('currentUser');
+
+        // 清除 sessionStorage
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('currentUser');
+
+        // 清除 cookies
+        document.cookie.split(";").forEach(function(c) {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        showMessage('Token已成功清除！请点击"前往登录页面"按钮重新登录。', 'success');
+      } catch (error) {
+        showMessage('清除Token失败：' + error.message, 'error');
+      }
+    }
+
+    function goToLogin() {
+      // 清除所有Token
+      clearTokens();
+
+      // 等待一秒后跳转
+      setTimeout(function() {
+        window.location.href = '/auth/login';
+      }, 1000);
+    }
+
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = 'message ' + type;
+      messageDiv.style.display = 'block';
+
+      // 5秒后自动隐藏
+      setTimeout(function() {
+        messageDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    // 页面加载时检查Token
+    window.onload = function() {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        showMessage('检测到本地存储中还有Token，建议先清除再重新登录。', 'error');
+      }
+    };
+  </script>
+</body>
+</html>
