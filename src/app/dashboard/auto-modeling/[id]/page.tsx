@@ -982,16 +982,10 @@ class VisualizationReport:
                         </CardTitle>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{codeGeneration?.codeLanguage || 'PYTHON'}</Badge>
-                          {isGenerating && (
-                            <Badge variant="secondary" className="animate-pulse">
-                              生成中...
-                            </Badge>
-                          )}
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={loadCodeGeneration}
-                            disabled={isGenerating}
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
                             刷新
