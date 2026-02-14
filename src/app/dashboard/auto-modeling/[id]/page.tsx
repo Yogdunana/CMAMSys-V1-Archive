@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
 import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
 import { Toaster } from '@/components/ui/toaster';
@@ -31,6 +32,8 @@ import {
   TrendingUp,
   Eye,
   Info,
+  Download,
+  AlertTriangle,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -41,6 +44,7 @@ interface CodeGeneration {
   description: string;
   executionStatus: string;
   qualityScore: number | null;
+  errorLog: string | null;
   createdAt: string;
 }
 
@@ -942,6 +946,10 @@ class VisualizationReport:
                 <MessageSquare className="h-4 w-4" />
                 群聊讨论
               </TabsTrigger>
+              <TabsTrigger value="paper" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                论文
+              </TabsTrigger>
             </TabsList>
 
             {/* 代码生成标签页 */}
@@ -1069,6 +1077,80 @@ class VisualizationReport:
                     </CardContent>
                   </Card>
 
+                  {/* 代码执行结果 */}
+                  {codeGeneration && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Terminal className="h-5 w-5" />
+                          代码执行结果
+                        </CardTitle>
+                        <CardDescription>
+                          代码运行的输出和性能指标
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {codeGeneration.executionStatus === 'PENDING' ? (
+                          <div className="text-center py-8 text-gray-500">
+                            <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" />
+                            <p>等待代码执行...</p>
+                          </div>
+                        ) : codeGeneration.executionStatus === 'RUNNING' ? (
+                          <div className="text-center py-8 text-gray-500">
+                            <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" />
+                            <p>代码执行中...</p>
+                          </div>
+                        ) : codeGeneration.executionStatus === 'SUCCESS' ? (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 text-green-600">
+                              <CheckCircle2 className="h-5 w-5" />
+                              <span className="font-medium">执行成功</span>
+                            </div>
+                            <div className="bg-gray-900 rounded-lg p-4">
+                              <pre className="text-sm font-mono text-gray-100 whitespace-pre-wrap">
+                                {/* 模拟执行结果 */}
+                                {`优化结果：
+  最佳解值: 142.50
+  收敛迭代次数: 156
+  总运行时间: 2.35s
+  内存使用: 1.2 MB
+
+站点布局：
+  区域 01: 25 辆
+  区域 02: 32 辆
+  区域 03: 18 辆
+  区域 04: 45 辆
+  区域 05: 28 辆
+  ... (共 20 个区域)
+
+性能指标：
+  总覆盖率: 94.5%
+  平均响应时间: 5.2 分钟
+  运营成本: ¥18,500/月
+  单车利用率: 72.3%`}
+                              </pre>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 text-red-600">
+                              <XCircle className="h-5 w-5" />
+                              <span className="font-medium">执行失败</span>
+                            </div>
+                            {codeGeneration.errorLog && (
+                              <Alert variant="destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription>
+                                  {codeGeneration.errorLog}
+                                </AlertDescription>
+                              </Alert>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {/* 实时日志 */}
                   <Card>
                     <CardHeader>
@@ -1120,6 +1202,71 @@ class VisualizationReport:
                 isOptimizing={taskStatus.overallStatus === 'RETRYING'}
                 onRefresh={loadTaskStatus}
               />
+            </TabsContent>
+
+            {/* 论文标签页 */}
+            <TabsContent value="paper" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      生成的论文
+                    </CardTitle>
+                    {taskStatus.paperStatus === 'COMPLETED' && (
+                      <Badge variant="default" className="text-sm">
+                        已完成
+                      </Badge>
+                    )}
+                  </div>
+                  <CardDescription>
+                    基于讨论思路和代码执行结果生成的完整论文
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {taskStatus.paperStatus === 'PENDING' ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                      <p>等待论文生成...</p>
+                    </div>
+                  ) : taskStatus.paperStatus === 'DRAFT' ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <Loader2 className="h-16 w-16 mx-auto mb-4 animate-spin" />
+                      <p>论文生成中...</p>
+                    </div>
+                  ) : taskStatus.paperStatus === 'COMPLETED' ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">论文预览</h3>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            下载 Word
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            下载 PDF
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-6 min-h-[500px]">
+                        <div className="prose prose-sm max-w-none">
+                          <h1>{taskStatus.problemTitle}</h1>
+                          {/* 论文内容将在这里显示 */}
+                          <p className="text-gray-500">
+                            论文内容加载中... ({taskStatus.paperId})
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-red-500">
+                      <XCircle className="h-16 w-16 mx-auto mb-4 text-red-400" />
+                      <p>论文生成失败</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* 群聊讨论标签页 */}

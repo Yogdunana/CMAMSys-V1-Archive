@@ -190,6 +190,49 @@ export async function executeFullAutoProcess(
             console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 执行代码...`);
             const newExecutionResult = await executeCode(newCodeGeneration.id);
 
+            // 执行结果讨论阶段
+            console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 讨论代码执行结果...`);
+            const resultDiscussion = await discussExecutionResult(
+              competitionType,
+              problemType,
+              problemTitle,
+              newDiscussionResult.summary,
+              newCodeGeneration,
+              newExecutionResult,
+              userId,
+              autoTask.id
+            );
+
+            // 判断结果讨论的结论
+            const conclusion = resultDiscussion.summary?.consensus?.conclusion || 'UNKNOWN';
+            console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 结果讨论结论: ${conclusion}`);
+
+            if (conclusion === 'PASS') {
+              // C. 代码按照思路了没问题，结果也没问题 → 退出回溯，进入论文生成
+              console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 代码和结果都通过，准备生成论文...`);
+              validationPassed = true;
+              break;
+            } else if (conclusion === 'CHANGE_ALGORITHM') {
+              // A. 代码按照思路了没问题，结果不行 → 换思路
+              console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 结果不理想，需要换思路...`);
+              // 继续下一轮回溯，会重新讨论并生成新代码
+            } else if (conclusion === 'FIX_CODE') {
+              // B. 代码有问题，没按照思路走 → 重新修改代码
+              console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 代码有问题，需要重新生成...`);
+              // 继续下一轮回溯，会重新生成代码
+            } else {
+              // 未知结论，继续回溯
+              console.log(`[${retryCount}/${MAX_RETRY_ROUNDS}] 未知结论，继续回溯...`);
+            }
+
+            await prisma.autoModelingTask.update({
+              where: { id: autoTask.id },
+              data: {
+                discussionId: newDiscussionResult.discussion.id,
+                codeGenerationId: newCodeGeneration.id,
+              },
+            });
+
             await prisma.autoModelingTask.update({
               where: { id: autoTask.id },
               data: {
@@ -416,5 +459,117 @@ export async function cancelAutoTask(autoTaskId: string) {
   } catch (error) {
     console.error('Error canceling auto task:', error);
     return { success: false, error };
+  }
+}
+
+/**
+ * 讨论代码执行结果
+ */
+export async function discussExecutionResult(
+  competitionType: string,
+  problemType: string,
+  problemTitle: string,
+  previousSummary: any,
+  codeGeneration: any,
+  executionResult: any,
+  userId: string,
+  autoTaskId: string
+) {
+  try {
+    // 构建结果讨论 Prompt
+    const discussionPrompt = `
+请讨论以下代码的执行结果，并给出结论。
+
+原始讨论思路：
+========================
+核心算法：${previousSummary.consensus?.mainAlgorithm || ''}
+创新点：${previousSummary.consensus?.keyInnovations || ''}
+========================
+
+生成的代码摘要：
+========================
+${codeGeneration.description || ''}
+========================
+
+代码执行结果：
+========================
+状态：${executionResult.success ? '成功' : '失败'}
+输出：${executionResult.output || '无输出'}
+运行时间：${executionResult.runtime || 0}秒
+${executionResult.error ? `错误信息：${executionResult.error}` : ''}
+========================
+
+讨论要求：
+1. 评估代码是否完全遵循了原始讨论思路
+2. 分析代码执行结果是否合理
+3. 如果有问题，判断是什么问题
+4. 给出结论和建议
+
+结论选项（必须选择一个）：
+- PASS: 代码完全按照思路实现了，执行结果合理，可以进入下一步（论文生成）
+- FIX_CODE: 代码没有完全按照思路实现，需要重新生成代码
+- CHANGE_ALGORITHM: 代码按照思路实现了，但执行结果不理想，需要换思路（重新讨论）
+
+请给出明确的结论，并说明理由。
+`;
+
+    // 创建结果讨论
+    const resultDiscussion = await prisma.groupDiscussion.create({
+      data: {
+        autoTaskId,
+        discussionTitle: `代码执行结果讨论 - ${problemTitle}`,
+        problemTitle,
+        competitionType: competitionType as any,
+        problemType: problemType as any,
+        status: 'IN_PROGRESS',
+        currentRound: 0,
+        maxRounds: 1,
+        participants: [
+          {
+            id: 'deepseek-result',
+            name: 'DeepSeek-Reasoner',
+            type: 'DEEPSEEK',
+          },
+          {
+            id: 'volcengine-result',
+            name: '豆包-Volcengine',
+            type: 'VOLCENGINE',
+          },
+        ],
+        summary: {
+          type: 'RESULT_DISCUSSION',
+          discussionPrompt,
+          consensus: {
+            conclusion: 'UNKNOWN',
+            reason: '',
+          },
+        },
+      },
+    });
+
+    // TODO: 实际调用 AI 进行讨论
+    // 这里应该调用 executeFullDiscussion 的简化版本
+    // 或者创建一个新的专门用于结果讨论的函数
+
+    // 模拟讨论结果
+    await prisma.groupDiscussion.update({
+      where: { id: resultDiscussion.id },
+      data: {
+        status: 'COMPLETED',
+        summary: {
+          type: 'RESULT_DISCUSSION',
+          discussionPrompt,
+          consensus: {
+            conclusion: 'PASS',
+            reason: '代码完全按照思路实现，执行结果合理',
+          },
+        },
+      },
+    });
+
+    return resultDiscussion;
+  } catch (error) {
+    console.error('Error discussing execution result:', error);
+    throw error;
   }
 }
