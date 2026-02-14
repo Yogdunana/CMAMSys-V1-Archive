@@ -128,22 +128,34 @@ async function generateCodeAsync(
   language: string,
   userId: string
 ) {
-  try {
-    console.log(`[GenerateCodeAsync] 开始生成代码，任务 ID: ${taskId}`);
+  console.log(`[GenerateCodeAsync] 开始生成代码，任务 ID: ${taskId}`);
+  const startTime = Date.now();
 
+  try {
     // 导入 generateCode 函数
     const { generateCode } = await import('@/services/code-generation');
 
-    // 生成代码（这会阻塞，但不影响 API 响应）
-    const codeGeneration = await generateCode(
-      taskId,
-      discussionId,
-      discussionSummary,
-      language as any,
-      userId
-    );
+    // 添加超时保护（5分钟）
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`代码生成超时（5分钟）`));
+      }, 5 * 60 * 1000);
+    });
 
-    console.log(`[GenerateCodeAsync] 代码生成完成，代码生成 ID: ${codeGeneration.id}`);
+    // 生成代码（这会阻塞，但不影响 API 响应）
+    const codeGeneration = await Promise.race([
+      generateCode(
+        taskId,
+        discussionId,
+        discussionSummary,
+        language as any,
+        userId
+      ),
+      timeoutPromise,
+    ]);
+
+    const duration = Date.now() - startTime;
+    console.log(`[GenerateCodeAsync] 代码生成完成，代码生成 ID: ${codeGeneration.id}，耗时: ${duration}ms`);
 
     // 更新任务进度
     await prisma.autoModelingTask.update({
@@ -154,15 +166,21 @@ async function generateCodeAsync(
       },
     });
   } catch (error) {
-    console.error('[GenerateCodeAsync] 代码生成失败:', error);
+    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : '未知错误';
+
+    console.error(`[GenerateCodeAsync] 代码生成失败，耗时: ${duration}ms，错误:`, error);
 
     // 更新任务状态为失败
     await prisma.autoModelingTask.update({
       where: { id: taskId },
       data: {
         overallStatus: 'FAILED',
-        errorLog: error instanceof Error ? error.message : '代码生成失败',
+        errorLog: `代码生成失败: ${errorMessage}（耗时: ${duration}ms）`,
       },
     });
+
+    // 发送错误通知（如果实现了通知系统）
+    // await sendErrorNotification(userId, taskId, errorMessage);
   }
 }
