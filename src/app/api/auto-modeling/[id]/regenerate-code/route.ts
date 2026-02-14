@@ -12,32 +12,40 @@ const prisma = new PrismaClient();
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('[RegenerateCode] API 被调用');
   try {
     // 验证 Token
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
+      console.log('[RegenerateCode] 未提供 Token');
       return NextResponse.json(
         { success: false, error: '未授权访问' },
         { status: 401 }
       );
     }
 
+    console.log('[RegenerateCode] Token 已提供');
     const decoded = verifyAccessToken(token);
     if (!decoded) {
+      console.log('[RegenerateCode] Token 验证失败');
       return NextResponse.json(
         { success: false, error: 'Token 无效或已过期' },
         { status: 401 }
       );
     }
 
+    console.log('[RegenerateCode] Token 验证成功');
     const { id: taskId } = await params;
     const body = await request.json();
     const { language } = body;
+
+    console.log(`[RegenerateCode] 任务 ID: ${taskId}, 语言: ${language}`);
 
     // 查询任务
     const task = await prisma.autoModelingTask.findUnique({
@@ -96,10 +104,16 @@ export async function POST(
     });
 
     // 异步生成代码（不阻塞响应）
+    console.log('[RegenerateCode] 准备启动异步代码生成...');
     generateCodeAsync(taskId, task.discussionId, discussion.summary || {}, language || 'PYTHON', decoded.userId)
+      .then(() => {
+        console.log('[RegenerateCode] 异步代码生成成功完成');
+      })
       .catch(error => {
         console.error('[RegenerateCode] 异步代码生成失败:', error);
       });
+
+    console.log('[RegenerateCode] API 响应已发送，异步代码生成在后台执行');
 
     // 立即返回，不等待代码生成完成
     return NextResponse.json({
