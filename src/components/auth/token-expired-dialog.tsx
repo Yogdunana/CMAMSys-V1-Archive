@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 interface TokenExpiredDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  reason?: 'unauthorized' | 'expired' | 'invalid';
+  reason?: 'unauthorized' | 'expired' | 'invalid' | 'invalid_signature';
 }
 
 export function TokenExpiredDialog({
@@ -44,6 +44,8 @@ export function TokenExpiredDialog({
         return '登录已过期';
       case 'invalid':
         return '登录无效';
+      case 'invalid_signature':
+        return '登录凭据已失效';
       default:
         return '未登录';
     }
@@ -55,6 +57,8 @@ export function TokenExpiredDialog({
         return '您的登录已过期，请重新登录以继续操作。';
       case 'invalid':
         return '您的登录状态无效，请重新登录以继续操作。';
+      case 'invalid_signature':
+        return '您的登录凭据已失效，可能是由于系统更新导致的。请重新登录以继续操作。';
       default:
         return '您当前未登录，请先登录以访问此功能。';
     }

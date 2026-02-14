@@ -49,8 +49,11 @@ async function attemptTokenRefresh(): Promise<string | null> {
     const refreshToken = localStorage.getItem('refreshToken');
 
     if (!refreshToken) {
+      console.log('[attemptTokenRefresh] No refresh token found');
       return null;
     }
+
+    console.log('[attemptTokenRefresh] Attempting to refresh token...');
 
     const response = await fetch('/api/auth/refresh', {
       method: 'POST',
@@ -61,6 +64,7 @@ async function attemptTokenRefresh(): Promise<string | null> {
     });
 
     if (!response.ok) {
+      console.log('[attemptTokenRefresh] Refresh failed with status:', response.status);
       return null;
     }
 
@@ -70,6 +74,8 @@ async function attemptTokenRefresh(): Promise<string | null> {
       // 保存新的 tokens
       localStorage.setItem('accessToken', data.data.accessToken);
       localStorage.setItem('refreshToken', data.data.refreshToken);
+
+      console.log('[attemptTokenRefresh] Token refreshed successfully');
 
       // 通知所有等待的请求
       onRefreshed(data.data.accessToken);
@@ -86,8 +92,22 @@ async function attemptTokenRefresh(): Promise<string | null> {
   }
 }
 
+/**
+ * 清除所有认证 token 并重定向到登录页
+ */
+export function clearAuthAndRedirect() {
+  if (typeof window !== 'undefined') {
+    console.log('[clearAuthAndRedirect] 清除所有认证信息');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+
+    // 重定向到登录页
+    window.location.href = '/auth/login';
+  }
+}
+
 // 创建全局实例，不依赖 React Context
-let showTokenExpiredCallback: ((reason?: 'unauthorized' | 'expired' | 'invalid') => void) | null = null;
+let showTokenExpiredCallback: ((reason?: 'unauthorized' | 'expired' | 'invalid' | 'invalid_signature') => void) | null = null;
 
 export function setShowTokenExpiredCallback(callback: typeof showTokenExpiredCallback) {
   showTokenExpiredCallback = callback;

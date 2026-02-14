@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { TokenExpiredDialog } from '@/components/auth/token-expired-dialog';
 
-type TokenExpiredReason = 'unauthorized' | 'expired' | 'invalid';
+type TokenExpiredReason = 'unauthorized' | 'expired' | 'invalid' | 'invalid_signature';
 
 interface TokenExpiredContextType {
   showTokenExpired: (reason?: TokenExpiredReason) => void;
