@@ -1073,18 +1073,17 @@ class VisualizationReport:
                         <Badge variant="secondary">
                           {todos.filter(t => t.status === 'completed').length}/{todos.length}
                         </Badge>
-                        {taskStatus?.overallStatus === 'COMPLETED' && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setEditingTaskList(todos.map(t => t.text));
-                              setIsEditingTaskList(true);
-                            }}
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditingTaskList(todos.map(t => t.text));
+                            setIsEditingTaskList(true);
+                          }}
+                          title="编辑任务列表"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                     <CardDescription>AI 正在按顺序完成这些任务（点击查看详情）</CardDescription>
