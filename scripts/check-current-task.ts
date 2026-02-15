@@ -20,7 +20,7 @@ async function main() {
 
   tasks.forEach((task, index) => {
     const isLatest = index === 0;
-    console.log(`${isLatest ? '🟢' : '  '} Task ${index + 1}: ${task.taskTitle}`);
+    console.log(`${isLatest ? '🟢' : '  '} Task ${index + 1}: ${task.problemTitle}`);
     console.log(`   ID: ${task.id}`);
     console.log(`   Task ID: ${task.taskId}`);
     console.log(`   Overall Status: ${task.overallStatus}`);
@@ -43,7 +43,7 @@ async function main() {
   const runningTasks = await prisma.autoModelingTask.findMany({
     where: {
       overallStatus: {
-        in: ['IN_PROGRESS', 'PENDING', 'DISCUSSION', 'CODE_GENERATION', 'VALIDATION', 'PAPER_GENERATION'],
+        in: ['DISCUSSING', 'CODING', 'VALIDATING', 'PAPER_GENERATING', 'RETRYING'],
       },
     },
   });
@@ -52,7 +52,7 @@ async function main() {
 
   if (runningTasks.length > 0) {
     runningTasks.forEach((task) => {
-      console.log(`   - ${task.taskTitle} (${task.id}): ${task.overallStatus} - ${task.progress}%`);
+      console.log(`   - ${task.problemTitle} (${task.id}): ${task.overallStatus} - ${task.progress}%`);
     });
   }
 }

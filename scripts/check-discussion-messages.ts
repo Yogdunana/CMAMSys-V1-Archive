@@ -24,15 +24,15 @@ async function main() {
 
   messages.forEach((msg, index) => {
     console.log(`\n${index + 1}. Message ID: ${msg.id}`);
-    console.log(`   Role: ${msg.role || 'undefined'}`);
-    console.log(`   Content: ${msg.content || 'undefined'}`);
+    console.log(`   Sender: ${msg.senderName}`);
+    console.log(`   Content: ${msg.messageContent || 'undefined'}`);
     console.log(`   Created At: ${msg.createdAt}`);
     console.log(`   Discussion ID: ${msg.discussionId}`);
-    console.log(`   Content Length: ${msg.content?.length || 0} chars`);
+    console.log(`   Content Length: ${msg.messageContent?.length || 0} chars`);
 
     // 打印前 200 个字符
-    if (msg.content && msg.content.length > 0) {
-      console.log(`   Preview: ${msg.content.substring(0, 200)}${msg.content.length > 200 ? '...' : ''}`);
+    if (msg.messageContent && msg.messageContent.length > 0) {
+      console.log(`   Preview: ${msg.messageContent.substring(0, 200)}${msg.messageContent.length > 200 ? '...' : ''}`);
     }
   });
 
@@ -51,16 +51,16 @@ async function main() {
     console.log(`   Updated At: ${discussion.updatedAt}`);
   }
 
-  // 检查是否有其他角色的消息
-  console.log('\n\n👥 Role Distribution:');
-  const roleCount: Record<string, number> = {};
+  // 检查是否有不同发送者的消息
+  console.log('\n\n👥 Sender Distribution:');
+  const senderCount: Record<string, number> = {};
   messages.forEach(msg => {
-    const role = msg.role || 'undefined';
-    roleCount[role] = (roleCount[role] || 0) + 1;
+    const sender = msg.senderName || 'undefined';
+    senderCount[sender] = (senderCount[sender] || 0) + 1;
   });
 
-  Object.entries(roleCount).forEach(([role, count]) => {
-    console.log(`   ${role}: ${count} messages`);
+  Object.entries(senderCount).forEach(([sender, count]) => {
+    console.log(`   ${sender}: ${count} messages`);
   });
 }
 

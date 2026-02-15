@@ -17,7 +17,7 @@ async function main() {
     console.log(`[${index + 1}] ${msg.senderName} - 回合 ${msg.round}`);
     console.log(`   讨论ID: ${msg.discussionId}`);
     console.log(`   Provider ID: ${msg.senderProviderId}`);
-    console.log(`   角色: ${msg.role}`);
+    console.log(`   消息类型: ${msg.messageType}`);
     console.log(`   有内容: ${hasContent ? '是' : '否'}`);
     if (hasContent) {
       console.log(`   内容长度: ${msg.messageContent.length} 字符`);

@@ -1,4 +1,4 @@
-import prisma from '../src/lib/prisma.ts';
+import prisma from '../src/lib/prisma';
 
 async function checkCompletedTasks() {
   const completedTasks = await prisma.autoModelingTask.findMany({

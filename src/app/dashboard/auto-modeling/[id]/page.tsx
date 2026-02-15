@@ -17,6 +17,7 @@ import CodeExecutionLogViewer from '@/components/code-execution-log-viewer';
 import CodeGenerationProgress from '@/components/code-generation-progress';
 import LatexRenderer, { renderLatexText } from '@/components/latex-renderer';
 import ChartGenerator, { extractChartsFromPaper } from '@/components/chart-generator';
+import { TaskListEditor } from '@/components/task-list-editor';
 import { exportToWord, exportToPDF } from '@/lib/document-export';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from 'sonner';
@@ -101,6 +102,13 @@ export default function AutoModelingTaskDetailPage() {
   const [isPaperLoading, setIsPaperLoading] = useState(false);
   const [isEditingPaper, setIsEditingPaper] = useState(false);
   const [editedPaperContent, setEditedPaperContent] = useState('');
+
+  // 任务列表编辑状态
+  const [isEditingTaskList, setIsEditingTaskList] = useState(false);
+  const [editingTaskList, setEditingTaskList] = useState<string[]>([]);
+  const [isSavingTaskList, setIsSavingTaskList] = useState(false);
+  const [taskListQualityReport, setTaskListQualityReport] = useState<any>(null);
+
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // 加载任务状态
@@ -1061,9 +1069,23 @@ class VisualizationReport:
                         <ListTodo className="h-5 w-5" />
                         任务列表
                       </CardTitle>
-                      <Badge variant="secondary">
-                        {todos.filter(t => t.status === 'completed').length}/{todos.length}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">
+                          {todos.filter(t => t.status === 'completed').length}/{todos.length}
+                        </Badge>
+                        {taskStatus?.overallStatus === 'COMPLETED' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setEditingTaskList(todos.map(t => t.text));
+                              setIsEditingTaskList(true);
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     <CardDescription>AI 正在按顺序完成这些任务（点击查看详情）</CardDescription>
                   </CardHeader>
@@ -1471,7 +1493,26 @@ class VisualizationReport:
             )}
           </DialogContent>
         </Dialog>
-        
+
+        {/* 任务列表编辑器 */}
+        <TaskListEditor
+          isOpen={isEditingTaskList}
+          onClose={() => setIsEditingTaskList(false)}
+          taskId={taskId}
+          initialTaskList={todos.map(t => t.text)}
+          onSave={(newTaskList) => {
+            // 更新任务列表
+            const updatedTodos = newTaskList.map((task, index) => ({
+              id: index + 1,
+              text: task,
+              status: 'pending' as const,
+              estimatedTime: '30s',
+            }));
+            setTodos(updatedTodos);
+            toast.success('任务列表已更新');
+          }}
+        />
+
         <Toaster />
       </div>
     </ProtectedRoute>

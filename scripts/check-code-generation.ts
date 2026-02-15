@@ -22,7 +22,7 @@ async function main() {
     console.log(`   Status: ${gen.executionStatus}`);
     console.log(`   Created At: ${gen.createdAt}`);
     console.log(`   Code Length: ${gen.codeContent?.length || 0} chars`);
-    console.log(`   Error: ${gen.errorMessage || 'None'}`);
+    console.log(`   Error: ${gen.errorLog || 'None'}`);
   });
 
   if (codeGenerations.length === 0) {
