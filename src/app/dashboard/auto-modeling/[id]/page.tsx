@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHistoryViewer';
-import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
+import OptimizationVisualizer from '@/components/optimization/OptimizationVisualizer';
 import CodeExecutionLogViewer from '@/components/code-execution-log-viewer';
 import CodeGenerationProgress from '@/components/code-generation-progress';
 import LatexRenderer, { renderLatexText } from '@/components/latex-renderer';
