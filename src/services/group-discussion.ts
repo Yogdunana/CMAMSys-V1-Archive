@@ -32,6 +32,22 @@ const DISCUSSION_RULES = `
    - 第一轮：输出初始思路
    - 第二轮：点评其他观点并补充
    - 第三轮（如有）：总结和达成共识
+
+5. 任务列表生成（第二轮开始）：
+   - 在第二轮输出中，必须包含「任务列表」部分
+   - 任务列表应遵循数学建模的标准流程，但根据具体问题调整
+   - 格式：
+     【任务列表】
+     1. [任务名称] - [简短描述]
+     2. [任务名称] - [简短描述]
+     ...
+   - 任务列表应包含 5-8 个主要任务
+   - 顺序应体现建模的逻辑流程：
+     * 数据预处理和分析
+     * 核心算法/模型构建
+     * 求解/优化
+     * 结果验证
+     * 可视化和报告
 `;
 
 /**
@@ -134,6 +150,10 @@ ${previousRoundsMessages}
 2. 明确指出分歧点，并提供数学依据
 3. 不重复已有观点
 4. 控制在 2000 Token 以内
+
+【重要】第二轮讨论必须包含以下内容：
+1. 核心思路的点评和补充
+2. 【任务列表】部分，列出 5-8 个系统化的建模任务，顺序应体现建模的逻辑流程
 `;
       }
 
@@ -189,6 +209,7 @@ export async function completeDiscussion(discussionId: string) {
   const coreAlgorithms: any[] = [];
   const innovations: any[] = [];
   const disagreements: any[] = [];
+  const taskLists: string[] = [];
 
   messages.forEach((message) => {
     if (message.coreAlgorithms) {
@@ -209,13 +230,35 @@ export async function completeDiscussion(discussionId: string) {
         content: message.disagreements,
       });
     }
+    // 提取任务列表
+    if (message.round === 2 && message.messageContent.includes('【任务列表】')) {
+      const taskListMatch = message.messageContent.match(/【任务列表】([\s\S]*?)(?=\n\n|$)/);
+      if (taskListMatch) {
+        taskLists.push(taskListMatch[1].trim());
+      }
+    }
   });
+
+    // 合并所有任务列表，提取共同的任务
+    let mergedTaskList: string[] = [];
+    if (taskLists.length > 0) {
+      // 解析第一个任务列表
+      const firstTaskList = taskLists[0];
+      const taskItems = firstTaskList.match(/\d+\.\s*([^\n]+)/g);
+      if (taskItems) {
+        mergedTaskList = taskItems.map((item) => {
+          // 移除序号和多余空格
+          return item.replace(/^\d+\.\s*/, '').trim();
+        });
+      }
+    }
 
     // 生成观点对比总结
     const summary = {
       coreAlgorithms,
       innovations,
       disagreements,
+      taskList: mergedTaskList,
       consensus: {
         mainAlgorithm: '', // TODO: 提取共识算法
         keyInnovations: innovations.map((i) => i.content).join('\n'),
