@@ -1,5 +1,5 @@
 /**
- * Forgot Password API
+ * Forgot Password API with Rate Limit and CAPTCHA
  * POST /api/auth/forgot-password
  */
 
@@ -8,15 +8,58 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { generateToken } from '@/lib/crypto';
 import { sendResetPasswordEmail } from '@/lib/email-service';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { verifyCaptcha } from '@/lib/captcha-service';
 import { ApiResponse } from '@/lib/types';
 
 // Validation schema
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
+  captchaId: z.string().min(1, 'CAPTCHA ID is required'),
+  captchaCode: z.string().min(1, 'CAPTCHA code is required'),
 });
 
 export async function POST(request: NextRequest) {
   try {
+    // Get client IP for rate limiting
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+               request.headers.get('x-real-ip') || 
+               'unknown';
+
+    // Check rate limit
+    const maxAttempts = parseInt(process.env.PASSWORD_RESET_MAX_ATTEMPTS || '3');
+    const rateLimitWindow = 60 * 60 * 1000; // 1 hour
+    const rateLimitResult = checkRateLimit(
+      `password-reset:${ip}`,
+      maxAttempts,
+      rateLimitWindow
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Too many password reset requests. Please try again later.`,
+            details: {
+              retryAfter: rateLimitResult.retryAfter,
+            },
+          },
+          timestamp: new Date().toISOString(),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': maxAttempts.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
+            'Retry-After': rateLimitResult.retryAfter?.toString(),
+          },
+        }
+      );
+    }
+
     // Parse and validate request body
     const body = await request.json();
     const validationResult = forgotPasswordSchema.safeParse(body);
@@ -36,7 +79,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email } = validationResult.data;
+    const { email, captchaId, captchaCode } = validationResult.data;
+
+    // Verify CAPTCHA
+    const captchaResult = verifyCaptcha(captchaId, captchaCode);
+    if (!captchaResult.valid) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_CAPTCHA',
+            message: captchaResult.error || 'Invalid CAPTCHA code',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
 
     // Find user by email
     const user = await prisma.user.findUnique({
@@ -96,7 +155,14 @@ export async function POST(request: NextRequest) {
         },
         timestamp: new Date().toISOString(),
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          'X-RateLimit-Limit': maxAttempts.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
+        },
+      }
     );
   } catch (error) {
     console.error('Forgot password error:', error);

@@ -1,67 +1,41 @@
 /**
  * Application Initialization API
- * 用于初始化应用和启动定时任务
+ * 应用程序初始化 API - 启动后台任务
  */
 
 import { NextResponse } from 'next/server';
-import { startLearningCron, getCronStatus } from '@/services/learning-cron';
+import { scheduleCleanupTasks } from '@/services/cleanup-service';
+import { verifyEmailConfiguration } from '@/lib/email-service';
 
-let isInitialized = false;
-
-/**
- * POST: 初始化应用
- */
 export async function POST() {
   try {
-    if (isInitialized) {
-      return NextResponse.json(
-        {
-          success: true,
-          message: 'Application already initialized',
-          cronRunning: getCronStatus(),
-        },
-        { status: 200 }
-      );
-    }
+    // Verify email configuration
+    const emailConfigured = await verifyEmailConfiguration();
 
-    // 启动定时学习服务
-    startLearningCron();
+    // Schedule cleanup tasks
+    const cleanupInterval = parseInt(process.env.CLEANUP_EXPIRED_TOKENS_INTERVAL_HOURS || '24');
+    scheduleCleanupTasks(cleanupInterval);
 
-    isInitialized = true;
+    console.log('✅ Application initialization completed');
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Application initialized successfully',
-        cronRunning: getCronStatus(),
+    return NextResponse.json({
+      success: true,
+      message: 'Application initialized successfully',
+      data: {
+        emailConfigured,
+        cleanupScheduled: true,
+        cleanupIntervalHours: cleanupInterval,
       },
-      { status: 200 }
-    );
+    });
   } catch (error) {
+    console.error('❌ Application initialization failed:', error);
     return NextResponse.json(
       {
         success: false,
-        error: {
-          code: 'INIT_ERROR',
-          message: 'Failed to initialize application',
-          details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
-        },
+        error: 'Application initialization failed',
+        details: String(error),
       },
       { status: 500 }
     );
   }
-}
-
-/**
- * GET: 获取初始化状态
- */
-export async function GET() {
-  return NextResponse.json(
-    {
-      success: true,
-      isInitialized,
-      cronRunning: getCronStatus(),
-    },
-    { status: 200 }
-  );
 }

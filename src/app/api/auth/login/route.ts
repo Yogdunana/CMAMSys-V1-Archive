@@ -11,6 +11,7 @@ import { generateToken, verifyTOTP } from '@/lib/crypto';
 import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { ApiResponse, LoginRequest, AuthResponse, UserDTO, UserRole } from '@/lib/types';
 import { createLoginLog, extractIpAddress, extractUserAgent } from '@/services/login-logger';
+import { detectBruteForceAttack, detectAccountLockout } from '@/services/login-anomaly-service';
 
 // Validation schema
 const loginSchema = z.object({
@@ -138,7 +139,20 @@ export async function POST(request: NextRequest) {
         failureReason: shouldLockAccount ? 'ACCOUNT_LOCKED_TOO_MANY_ATTEMPTS' : 'INVALID_PASSWORD',
       });
 
+      // Detect brute force attack
+      const bruteForceAlert = await detectBruteForceAttack(email);
+      if (bruteForceAlert) {
+        console.error('[SECURITY ALERT] Brute force attack detected:', bruteForceAlert.details);
+        // In production, send alert to security team
+      }
+
       if (shouldLockAccount) {
+        // Detect account lockout anomaly
+        const lockoutAlert = await detectAccountLockout(email);
+        if (lockoutAlert) {
+          console.error('[SECURITY ALERT] Account lockout:', lockoutAlert.details);
+        }
+
         return NextResponse.json<ApiResponse>(
           {
             success: false,
