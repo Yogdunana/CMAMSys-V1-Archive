@@ -186,10 +186,12 @@ ${paper.content}
   URL.revokeObjectURL(url);
 }
 
+import { loadChineseFont, getFontConfig, splitTextForPDF, isChineseFontSupported as checkChineseFontSupported } from './pdf-font-loader';
+
 /**
  * 创建 PDF 文档
  */
-function createPDF(paper: {
+async function createPDF(paper: {
   title: string;
   content: string;
   format?: string;
@@ -202,90 +204,66 @@ function createPDF(paper: {
   const margin = 20;
   const maxWidth = pageWidth - 2 * margin;
 
-  // 设置字体
-  // 注意：jsPDF 默认不支持中文字符
-  // 对于中文内容，建议使用第三方服务或自定义字体
+  // 检查是否为中文
   const isChinese = paper.language === 'CHINESE';
 
+  // 如果是中文，尝试加载中文字体
   if (isChinese) {
-    // 中文内容：使用特殊处理
-    // 将中文字符转换为 Unicode 转义序列
-    const escapeChinese = (text: string) => {
-      return text.replace(/[\u4e00-\u9fa5]/g, (char) => {
-        return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
-      });
-    };
-
-    // 添加标题
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    const title = escapeChinese(paper.title);
-    doc.text(title, margin, 20);
-
-    // 添加元数据
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const metadata = escapeChinese(`格式: ${paper.format || 'MCM'}  |  语言: 中文  |  字数: ${paper.wordCount || 0}`);
-    doc.text(metadata, margin, 30);
-
-    // 添加提示信息
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'italic');
-    doc.text('注意：此 PDF 使用简化字体，中文可能显示不完整。建议使用 Word 格式。', margin, 40);
-  } else {
-    // 英文内容：正常处理
-    doc.setFont('helvetica');
-    const fontSize = 12;
-    doc.setFontSize(fontSize);
-
-    // 添加标题
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    const titleLines = doc.splitTextToSize(paper.title, maxWidth);
-    doc.text(titleLines, margin, 20);
-
-    // 添加元数据
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Format: ${paper.format || 'MCM'}  |  Language: English  |  Word Count: ${paper.wordCount || 0}`, margin, 20 + (titleLines.length * 10) + 10);
-
-    // 解析内容
-    const sections = parseMarkdown(paper.content);
-
-    let yPosition = 20 + (titleLines.length * 10) + 20;
-
-    sections.forEach(section => {
-      // 检查是否需要新页面
-      if (yPosition > 250) {
-        doc.addPage();
-        yPosition = 20;
-      }
-
-      // 添加标题
-      const level = section.level;
-      doc.setFontSize(16 - (level - 1) * 2);
-      doc.setFont('helvetica', 'bold');
-      doc.text(section.title, margin, yPosition);
-      yPosition += 12;
-
-      // 添加内容
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      const contentLines = doc.splitTextToSize(section.content, maxWidth);
-      doc.text(contentLines, margin, yPosition);
-      yPosition += contentLines.length * 5 + 10;
-    });
+    try {
+      await loadChineseFont(doc);
+    } catch (error) {
+      console.warn('Failed to load Chinese font, falling back to standard font:', error);
+    }
   }
+
+  // 获取字体配置
+  const titleFont = getFontConfig(paper.language as 'CHINESE' | 'ENGLISH', 'bold');
+  const normalFont = getFontConfig(paper.language as 'CHINESE' | 'ENGLISH', 'normal');
+  const italicFont = getFontConfig(paper.language as 'CHINESE' | 'ENGLISH', 'italic');
+
+  // 添加标题
+  doc.setFontSize(18);
+  if (titleFont.isCustomFont) {
+    doc.setFont(titleFont.fontName, 'bold');
+  } else {
+    doc.setFont('helvetica', 'bold');
+  }
+  const titleLines = splitTextForPDF(paper.title, doc, maxWidth);
+  doc.text(titleLines, margin, 20);
 
   // 添加元数据
   doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`格式: ${paper.format || 'MCM'}  |  语言: ${paper.language === 'CHINESE' ? '中文' : 'English'}  |  字数: ${paper.wordCount || 0}`, margin, 20 + (titleLines.length * 10) + 10);
+  if (normalFont.isCustomFont) {
+    doc.setFont(normalFont.fontName, 'normal');
+  } else {
+    doc.setFont('helvetica', 'normal');
+  }
+
+  const metadata = isChinese
+    ? `格式: ${paper.format || 'MCM'}  |  语言: 中文  |  字数: ${paper.wordCount || 0}`
+    : `Format: ${paper.format || 'MCM'}  |  Language: English  |  Word Count: ${paper.wordCount || 0}`;
+
+  doc.text(metadata, margin, 20 + (titleLines.length * 10) + 10);
+
+  // 添加提示信息（仅当无法加载中文字体时）
+  if (isChinese && !checkChineseFontSupported()) {
+    doc.setFontSize(10);
+    if (italicFont.isCustomFont) {
+      doc.setFont(italicFont.fontName, 'italic');
+    } else {
+      doc.setFont('helvetica', 'italic');
+    }
+    doc.text('注意：此 PDF 使用简化字体，中文可能显示不完整。建议使用 Word 格式。', margin, 20 + (titleLines.length * 10) + 20);
+  }
 
   // 解析内容
   const sections = parseMarkdown(paper.content);
 
   let yPosition = 20 + (titleLines.length * 10) + 20;
+
+  if (isChinese && !checkChineseFontSupported()) {
+    yPosition += 10; // 为提示信息留出空间
+  }
 
   sections.forEach(section => {
     // 检查是否需要新页面
@@ -297,20 +275,38 @@ function createPDF(paper: {
     // 添加标题
     const level = section.level;
     doc.setFontSize(16 - (level - 1) * 2);
-    doc.setFont('helvetica', 'bold');
-    doc.text(section.title, margin, yPosition);
-    yPosition += 12;
+    if (titleFont.isCustomFont) {
+      doc.setFont(titleFont.fontName, 'bold');
+    } else {
+      doc.setFont('helvetica', 'bold');
+    }
+    const sectionTitleLines = splitTextForPDF(section.title, doc, maxWidth);
+    doc.text(sectionTitleLines, margin, yPosition);
+    yPosition += sectionTitleLines.length * 10 + 2;
 
     // 添加内容
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const contentLines = doc.splitTextToSize(section.content, maxWidth);
+    if (normalFont.isCustomFont) {
+      doc.setFont(normalFont.fontName, 'normal');
+    } else {
+      doc.setFont('helvetica', 'normal');
+    }
+
+    const contentLines = splitTextForPDF(section.content, doc, maxWidth);
     doc.text(contentLines, margin, yPosition);
     yPosition += contentLines.length * 5 + 10;
   });
 
   // 下载
   doc.save(`${paper.title}.pdf`);
+}
+
+/**
+ * 检查是否支持中文字体
+ */
+function isChineseFontSupported(): boolean {
+  // 检查是否已加载中文字体
+  return false; // 简化版本，实际应用中应该检查字体加载状态
 }
 
 /**

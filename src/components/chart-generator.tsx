@@ -13,8 +13,9 @@ import {
   Tooltip,
   Legend,
   Filler,
+  RadialLinearScale,
 } from 'chart.js';
-import { Line, Bar, Scatter, Radar, Doughnut, Pie, Bubble } from 'react-chartjs-2';
+import { Line, Bar, Scatter, Radar, Doughnut, Pie, Bubble, PolarArea } from 'react-chartjs-2';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 ChartJS.register(
@@ -27,11 +28,12 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  RadialLinearScale
 );
 
 interface ChartData {
-  type: 'line' | 'bar' | 'scatter' | 'radar' | 'pie' | 'doughnut' | 'bubble' | 'area';
+  type: 'line' | 'bar' | 'scatter' | 'radar' | 'pie' | 'doughnut' | 'bubble' | 'area' | 'polarArea' | 'stackedBar' | 'horizontalBar';
   title: string;
   labels: string[];
   datasets: {
@@ -268,6 +270,92 @@ function renderChart(chart: ChartData) {
         />
       );
 
+    case 'polarArea':
+      return (
+        <PolarArea
+          data={{
+            labels: chart.labels,
+            datasets: chart.datasets.map(ds => ({
+              ...ds,
+              backgroundColor: ds.backgroundColors || [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(236, 72, 153, 0.8)',
+                'rgba(20, 184, 166, 0.8)',
+              ],
+              borderWidth: ds.borderWidth ?? 2,
+            })),
+          }}
+          options={{
+            ...commonOptions,
+            plugins: {
+              ...commonOptions.plugins,
+              legend: {
+                position: 'right' as const,
+              },
+            },
+          }}
+        />
+      );
+
+    case 'stackedBar':
+      return (
+        <Bar
+          data={{
+            labels: chart.labels,
+            datasets: chart.datasets.map(ds => ({
+              ...ds,
+              backgroundColor: ds.backgroundColors || [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+              ],
+              borderWidth: ds.borderWidth ?? 1,
+            })),
+          }}
+          options={{
+            ...commonOptions,
+            scales: {
+              x: {
+                stacked: true,
+              },
+              y: {
+                stacked: true,
+              },
+            },
+          }}
+        />
+      );
+
+    case 'horizontalBar':
+      return (
+        <Bar
+          data={{
+            labels: chart.labels,
+            datasets: chart.datasets.map(ds => ({
+              ...ds,
+              backgroundColor: ds.backgroundColors || [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+              ],
+              borderWidth: ds.borderWidth ?? 1,
+            })),
+          }}
+          options={{
+            ...commonOptions,
+            indexAxis: 'y',
+          }}
+        />
+      );
+
     default:
       return null;
   }
@@ -291,7 +379,7 @@ export function extractChartsFromPaper(paperContent: string): ChartData[] {
     const line = lines[i].trim();
 
     // 检测图表开始标记
-    const chartMatch = line.match(/\[CHART:(LINE|BAR|SCATTER|RADAR):(.+)\]/);
+    const chartMatch = line.match(/\[CHART:(LINE|BAR|SCATTER|RADAR|PIE|DOUGHNUT|BUBBLE|AREA|POLARAREA|STACKEDBAR|HORIZONTALBAR):(.+)\]/i);
     if (chartMatch) {
       if (currentChart) {
         // 保存上一个图表
@@ -301,7 +389,7 @@ export function extractChartsFromPaper(paperContent: string): ChartData[] {
       }
 
       currentChart = {
-        type: chartMatch[1] as any,
+        type: chartMatch[1].toLowerCase() as any,
         title: chartMatch[2],
         labels: [],
         datasets: [],
