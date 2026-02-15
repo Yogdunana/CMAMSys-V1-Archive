@@ -709,71 +709,83 @@ async function makeProviderRequest(
   // Decrypt API key
   const decryptedApiKey = decrypt(provider.apiKey);
 
-  // Use coze-coding-dev-sdk for Aliyun and VolcEngine providers
-  if (provider.type === AIProviderType.VOLCENGINE) {
+  // Use optimized HTTP call for all providers (including VolcEngine)
+  // Skip SDK call to avoid timeout issues
+  const maxRetries = 3;
+  const baseTimeout = 120000; // 2 minutes base timeout
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const config = new Config({
-        apiKey: decryptedApiKey,
-        baseUrl: endpoint,
-      });
-
-      const client = new LLMClient(config);
-      const messages = [{ role: 'user' as const, content: prompt }];
-
       // For VolcEngine, use endpoint name directly
       let actualModel = model;
-      if (provider.config && (provider.config as any).endpointMapping) {
+      if (provider.type === AIProviderType.VOLCENGINE && provider.config && (provider.config as any).endpointMapping) {
         const endpointMapping = (provider.config as any).endpointMapping;
         if (endpointMapping[model]) {
           actualModel = endpointMapping[model];
+          logger.info(`Using VolcEngine endpoint: ${model} -> ${actualModel}`);
         }
       }
 
-      const forwardHeaders = requestHeaders
-        ? HeaderUtils.extractForwardHeaders(requestHeaders)
-        : undefined;
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), baseTimeout * attempt); // Increase timeout with retries
 
-      const response = await client.invoke(messages, { model: actualModel }, undefined, forwardHeaders);
+      try {
+        const response = await fetch(`${endpoint}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${decryptedApiKey}`,
+            'User-Agent': 'CMAMSys/1.0',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            model: actualModel,
+            messages: [{ role: 'user', content: prompt }],
+            stream: false,
+          }),
+          signal: controller.signal,
+        });
 
-      return {
-        content: response.content,
-        tokensUsed: 0,
-      };
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices[0]?.message?.content || '';
+        const tokensUsed = data.usage?.total_tokens || 0;
+
+        logger.info(`${provider.type} HTTP request successful (attempt ${attempt}/${maxRetries}), tokens: ${tokensUsed}`);
+        return { content, tokensUsed };
+
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error(`HTTP request timeout (${baseTimeout * attempt}ms) on attempt ${attempt}`);
+        }
+        throw error;
+      }
+
     } catch (error) {
-      logger.error(`${provider.type} SDK API request failed, falling back to HTTP`, error);
-      // Fall through to HTTP call
+      lastError = error instanceof Error ? error : new Error(String(error));
+      logger.warn(`${provider.type} HTTP request failed (attempt ${attempt}/${maxRetries}):`, lastError.message);
+
+      if (attempt < maxRetries) {
+        // Wait before retry (exponential backoff)
+        const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        logger.info(`Retrying in ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
     }
   }
 
-  // Generic API call for other providers (including ALIYUN and fallback for VOLCENGINE)
-  try {
-    const response = await fetch(`${endpoint}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${decryptedApiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`API request failed: ${error}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content || '';
-    const tokensUsed = data.usage?.total_tokens || 0;
-
-    return { content, tokensUsed };
-  } catch (error) {
-    logger.error('Provider API request failed', error);
-    throw error;
-  }
+  // All retries failed
+  logger.error(`${provider.type} HTTP request failed after ${maxRetries} attempts`);
+  throw lastError || new Error(`${provider.type} HTTP request failed`);
 }
 
 /**
