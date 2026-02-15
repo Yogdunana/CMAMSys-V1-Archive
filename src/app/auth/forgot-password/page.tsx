@@ -44,11 +44,6 @@ export default function ForgotPasswordPage() {
       }
 
       setSuccess(true);
-
-      // In development mode, show the reset link for testing
-      if (process.env.NODE_ENV === 'development' && data.data.resetLink) {
-        setResetLink(data.data.resetLink);
-      }
     } catch (err) {
       setError('An error occurred. Please try again.');
     } finally {
@@ -77,20 +72,6 @@ export default function ForgotPasswordPage() {
                 If you don't receive the email within a few minutes, please check your spam folder.
               </AlertDescription>
             </Alert>
-
-            {resetLink && (
-              <Alert>
-                <AlertDescription className="space-y-2">
-                  <p className="font-semibold">Development Mode - Reset Link:</p>
-                  <a
-                    href={resetLink}
-                    className="text-primary hover:underline break-all text-sm"
-                  >
-                    {resetLink}
-                  </a>
-                </AlertDescription>
-              </Alert>
-            )}
 
             <div className="space-y-3">
               <Button variant="outline" className="w-full" asChild>
