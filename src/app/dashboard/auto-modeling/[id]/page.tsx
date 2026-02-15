@@ -351,7 +351,7 @@ export default function AutoModelingTaskDetailPage() {
     }
   };
 
-  const handleDownloadPaper = async (format: 'word' | 'pdf') => {
+  const handleDownloadPaper = async (format: 'pdf') => {
     if (!paperContent?.content) {
       toast.error('没有可下载的论文内容');
       return;
@@ -360,25 +360,14 @@ export default function AutoModelingTaskDetailPage() {
     try {
       console.log(`[handleDownloadPaper] 下载论文，格式: ${format}`);
 
-      if (format === 'word') {
-        await exportToWord({
-          title: paperContent.title || taskStatus.problemTitle,
-          content: paperContent.content,
-          format: paperContent.format,
-          language: paperContent.language,
-          wordCount: paperContent.wordCount,
-        });
-        toast.success('Word 文档下载成功');
-      } else if (format === 'pdf') {
-        exportToPDF({
-          title: paperContent.title || taskStatus.problemTitle,
-          content: paperContent.content,
-          format: paperContent.format,
-          language: paperContent.language,
-          wordCount: paperContent.wordCount,
-        });
-        toast.success('PDF 文档下载成功');
-      }
+      exportToPDF({
+        title: paperContent.title || taskStatus.problemTitle,
+        content: paperContent.content,
+        format: paperContent.format,
+        language: paperContent.language,
+        wordCount: paperContent.wordCount,
+      });
+      toast.success('PDF 文档下载成功');
     } catch (error) {
       console.error('[handleDownloadPaper] 下载失败:', error);
       toast.error('下载失败');
@@ -1333,14 +1322,6 @@ class VisualizationReport:
                               >
                                 <RefreshCw className="h-4 w-4 mr-2" />
                                 编辑
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownloadPaper('word')}
-                              >
-                                <Download className="h-4 w-4 mr-2" />
-                                下载 Word
                               </Button>
                               <Button
                                 variant="outline"
