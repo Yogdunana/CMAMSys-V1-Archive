@@ -47,7 +47,16 @@ export async function POST(
     const { id: taskId } = await params;
 
     // 获取请求参数
-    const { format, language } = await request.json();
+    let format, language;
+    try {
+      const body = await request.json();
+      format = body.format;
+      language = body.language;
+    } catch {
+      // 如果没有body，使用默认值
+      format = undefined;
+      language = undefined;
+    }
 
     console.log(`[RegeneratePaper] 任务 ID: ${taskId}`);
     console.log(`[RegeneratePaper] 论文格式: ${format || 'MCM'}`);

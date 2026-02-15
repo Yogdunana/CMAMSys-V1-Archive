@@ -612,11 +612,17 @@ export async function callAI(
   context: {
     modelType: AIModelType;
     taskId?: string;
-    context?: 'modeling' | 'learning' | 'coding';
+    context?: 'modeling' | 'learning' | 'coding' | 'paper-generation';
   },
-  userId: string
+  userId?: string
 ): Promise<{ response: string; tokensUsed: number; latencyMs: number }> {
-  const provider = await getProviderById(providerId, userId);
+  // 对于论文生成等场景，允许使用所有激活的 Provider（不限制 createdById）
+  const provider = context.context === 'paper-generation'
+    ? await prisma.aIProvider.findUnique({
+        where: { id: providerId },
+      })
+    : await getProviderById(providerId, userId || '');
+
   if (!provider) {
     throw new Error('Provider not found');
   }

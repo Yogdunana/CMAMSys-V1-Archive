@@ -65,6 +65,8 @@ interface TaskStatus {
   progress: number;
   discussionId: string | null;
   errorLog: string | null;
+  paperId: string | null;
+  paperStatus: string | null;
   discussion?: {
     id: string;
     messages: any[];
