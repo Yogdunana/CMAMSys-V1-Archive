@@ -399,3 +399,40 @@ function parseSection(section: { level: number; title: string; content: string }
 
   return paragraphs;
 }
+
+/**
+ * 导出为支持中文的 PDF（服务器端生成）
+ * 使用 Puppeteer 渲染，完全支持中文字体
+ */
+export async function exportToPDFChinese(paperId: string, paperTitle: string) {
+  try {
+    // 调用服务器端 API
+    const response = await fetch(`/api/papers/${paperId}/pdf-chinese`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paperId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate PDF');
+    }
+
+    // 获取 PDF Blob
+    const blob = await response.blob();
+
+    // 下载
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${paperTitle}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    return true;
+  } catch (error) {
+    console.error('Error exporting to PDF (Chinese):', error);
+    throw error;
+  }
+}
