@@ -41,6 +41,20 @@ async function main() {
     console.log(`🗑️  Deleted ${deletedTokens.count} password reset tokens`);
   }
 
+  // 4. 重置用户的失败登录次数和锁定状态
+  const updatedUser = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+    },
+  });
+
+  console.log('🔓 Reset user login state:', {
+    failedLoginAttempts: updatedUser.failedLoginAttempts,
+    lockedUntil: updatedUser.lockedUntil,
+  });
+
   console.log('✅ Account unlocked successfully!');
   console.log('');
   console.log('📝 You can now login with:');
