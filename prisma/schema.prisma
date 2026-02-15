@@ -611,6 +611,54 @@ model CostControl {
   @@map("cost_control")
 }
 
+// 优化历史数据
+model OptimizationHistory {
+  id                   String   @id @default(cuid())
+  taskId               String
+  iteration            Int
+  fitness              Float
+  bestSolution         Float
+  populationDiversity  Float
+  convergenceRate      Float
+  parameters           Json?
+  timestamp            DateTime @default(now())
+  
+  @@index([taskId])
+  @@index([iteration])
+  @@map("optimization_history")
+}
+
+// 性能指标
+model PerformanceMetrics {
+  id           String   @id @default(cuid())
+  taskId       String
+  cpuUsage     Float
+  memoryUsage  Float
+  gpuUsage     Float?
+  networkUsage Float?
+  diskUsage    Float?
+  timestamp    DateTime @default(now())
+  
+  @@index([taskId])
+  @@index([timestamp])
+  @@map("performance_metrics")
+}
+
+// 优化日志
+model OptimizationLog {
+  id        String   @id @default(cuid())
+  taskId    String
+  level     String   @default("INFO") // INFO, WARN, ERROR, DEBUG
+  message   String
+  source    String
+  timestamp DateTime @default(now())
+  
+  @@index([taskId])
+  @@index([level])
+  @@index([timestamp])
+  @@map("optimization_logs")
+}
+
 model DiscussionCache {
   id               String   @id @default(cuid())
   cacheKey         String   @unique

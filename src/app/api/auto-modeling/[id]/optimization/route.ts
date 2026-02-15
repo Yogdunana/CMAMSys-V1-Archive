@@ -4,8 +4,8 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 /**
+ * 获取优化状态数据
  * GET /api/auto-modeling/[id]/optimization
- * 获取优化过程的详细数据
  */
 export async function GET(
   request: NextRequest,
@@ -14,257 +14,191 @@ export async function GET(
   try {
     const { id: taskId } = await params;
 
-    // 获取任务详情
-    const task = await prisma.autoModelingTask.findUnique({
-      where: { id: taskId },
-      include: {
-        codeGeneration: {
-          include: {
-            validations: true,
-          },
+    // 获取查询参数
+    const searchParams = request.nextUrl.searchParams;
+    const logLevel = searchParams.get('logLevel');
+    const logSource = searchParams.get('logSource');
+    const logSearch = searchParams.get('logSearch');
+    const logLimit = parseInt(searchParams.get('logLimit') || '50');
+
+    // 并行获取所有数据
+    const [
+      optimizationHistory,
+      performanceMetrics,
+      logs,
+      task,
+      discussion,
+      codeGeneration,
+      generatedPaper,
+    ] = await Promise.all([
+      // 获取优化历史数据
+      prisma.optimizationHistory.findMany({
+        where: { taskId },
+        orderBy: { iteration: 'asc' },
+      }),
+      // 获取性能指标数据
+      prisma.performanceMetrics.findMany({
+        where: { taskId },
+        orderBy: { timestamp: 'asc' },
+      }),
+      // 获取优化日志（带筛选）
+      prisma.optimizationLog.findMany({
+        where: {
+          taskId,
+          ...(logLevel && { level: logLevel }),
+          ...(logSource && { source: logSource }),
+          ...(logSearch && {
+            message: {
+              contains: logSearch,
+              mode: 'insensitive',
+            },
+          }),
         },
-        discussion: {
-          include: {
-            messages: true,
+        orderBy: { timestamp: 'desc' },
+        take: logLimit,
+      }),
+      // 获取任务信息
+      prisma.autoModelingTask.findUnique({
+        where: { id: taskId },
+        include: {
+          discussion: {
+            include: {
+              messages: true,
+            },
           },
+          codeGeneration: true,
         },
-      },
-    });
+      }),
+      // 获取讨论（通过 autoTaskId）
+      prisma.groupDiscussion.findFirst({
+        where: { autoTaskId: taskId },
+        include: {
+          messages: true,
+        },
+      }),
+      // 获取代码生成（通过 autoTaskId）
+      prisma.codeGeneration.findFirst({
+        where: { autoTaskId: taskId },
+      }),
+      // 获取生成的论文（使用 autoTaskId）
+      prisma.generatedPaper.findFirst({
+        where: { autoTaskId: taskId },
+        orderBy: { id: 'desc' },
+      }),
+    ]);
 
-    if (!task) {
-      return NextResponse.json(
-        { success: false, error: '任务不存在' },
-        { status: 404 }
-      );
-    }
+    // 处理数据格式
+    const processedHistory = optimizationHistory.map((h) => ({
+      iteration: h.iteration,
+      fitness: h.fitness,
+      bestSolution: h.bestSolution,
+      populationDiversity: h.populationDiversity,
+      convergenceRate: h.convergenceRate,
+      parameters: h.parameters,
+      timestamp: h.timestamp,
+    }));
 
-    // 构建优化数据
-    const optimizationData = {
-      taskId: task.id,
-      title: task.problemTitle,
-      overallStatus: task.overallStatus,
-      progress: task.progress,
-      timestamp: new Date().toISOString(),
+    const processedMetrics = performanceMetrics.map((m) => ({
+      cpuUsage: m.cpuUsage,
+      memoryUsage: m.memoryUsage,
+      gpuUsage: m.gpuUsage,
+      networkUsage: m.networkUsage,
+      diskUsage: m.diskUsage,
+      timestamp: m.timestamp,
+    }));
 
-      // 讨论阶段数据
-      discussion: {
-        id: task.discussionId,
-        status: task.discussionStatus,
-        messageCount: task.discussion?.messages.length || 0,
-        consensus: task.discussion?.summary && typeof task.discussion.summary === 'object'
-          ? (task.discussion.summary as any).consensus || null
-          : null,
-        // 模拟优化历史数据（实际应从数据库获取）
-        optimizationHistory: generateOptimizationHistory(),
-      },
+    const processedLogs = logs.map((log) => ({
+      id: log.id,
+      level: log.level,
+      source: log.source,
+      message: log.message,
+      timestamp: log.timestamp,
+    }));
 
-      // 代码生成数据
-      codeGeneration: task.codeGeneration ? {
-        id: task.codeGeneration.id,
-        language: task.codeGeneration.codeLanguage,
-        status: task.codeGeneration.executionStatus,
-        codeLength: task.codeGeneration.codeContent.length,
-        qualityScore: task.codeGeneration.qualityScore,
-        validations: task.codeGeneration.validations.map(v => ({
-          id: v.id,
-          type: v.validationType,
-          status: v.status,
-          result: v.result,
-          errorMessage: v.errorMessage,
-        })),
-      } : null,
+    // 计算收敛曲线数据
+    const convergenceData = processedHistory.map((h) => ({
+      iteration: h.iteration,
+      fitness: h.fitness,
+      bestSolution: h.bestSolution,
+    }));
 
-      // 收敛曲线数据（模拟）
-      convergence: generateConvergenceData(),
-
-      // 实时日志（模拟）
-      logs: generateRealTimeLogs(task.overallStatus, task.progress),
-
-      // 性能指标
-      metrics: {
-        executionTime: calculateExecutionTime(task),
-        memoryUsage: generateMemoryUsageData(),
-        cpuUsage: generateCpuUsageData(),
-      },
+    // 计算性能统计数据
+    const performanceStats = {
+      avgCpuUsage: performanceMetrics.length > 0
+        ? performanceMetrics.reduce((sum, m) => sum + m.cpuUsage, 0) / performanceMetrics.length
+        : 0,
+      avgMemoryUsage: performanceMetrics.length > 0
+        ? performanceMetrics.reduce((sum, m) => sum + m.memoryUsage, 0) / performanceMetrics.length
+        : 0,
+      maxCpuUsage: performanceMetrics.length > 0
+        ? Math.max(...performanceMetrics.map(m => m.cpuUsage))
+        : 0,
+      maxMemoryUsage: performanceMetrics.length > 0
+        ? Math.max(...performanceMetrics.map(m => m.memoryUsage))
+        : 0,
+      hasGpuData: performanceMetrics.some(m => m.gpuUsage !== null),
+      avgGpuUsage: performanceMetrics.filter(m => m.gpuUsage !== null).length > 0
+        ? performanceMetrics.filter(m => m.gpuUsage !== null).reduce((sum, m) => sum + m.gpuUsage!, 0) / performanceMetrics.filter(m => m.gpuUsage !== null).length
+        : 0,
     };
+
+    // 获取讨论数据（用于回放）
+    const discussions = discussion ? [{
+      id: discussion.id,
+      timestamp: discussion.timestamp,
+      participant: discussion.participants ? (typeof discussion.participants === 'string' ? discussion.participants : JSON.stringify(discussion.participants)) : 'Unknown',
+      message: discussion.summary ? (typeof discussion.summary === 'string' ? discussion.summary : JSON.stringify(discussion.summary)) : '',
+    }] : [];
+
+    // 获取代码生成数据（用于回放）
+    const codeGenerations = codeGeneration ? [{
+      id: codeGeneration.id,
+      timestamp: codeGeneration.createdAt,
+      language: codeGeneration.codeLanguage,
+      codeLength: codeGeneration.codeContent?.length || 0,
+      isValid: true, // CodeGeneration 模型没有 validationStatus 字段
+      errorMessage: codeGeneration.errorLog,
+    }] : [];
 
     return NextResponse.json({
       success: true,
-      data: optimizationData,
+      data: {
+        taskId,
+        status: task?.overallStatus || 'UNKNOWN',
+        convergence: {
+          data: convergenceData,
+          isConverged: processedHistory.length > 0
+            ? processedHistory[processedHistory.length - 1].convergenceRate > 0.8
+            : false,
+          finalFitness: processedHistory.length > 0
+            ? processedHistory[processedHistory.length - 1].bestSolution
+            : null,
+        },
+        performance: {
+          metrics: processedMetrics,
+          stats: performanceStats,
+        },
+        logs: processedLogs,
+        discussions,
+        codeGenerations,
+        paper: generatedPaper ? {
+          id: generatedPaper.id,
+          title: generatedPaper.title,
+          version: 1, // PaperVersion 模型需要单独查询
+          contentLength: generatedPaper.content?.length || 0,
+          wordCount: generatedPaper.wordCount || 0,
+        } : null,
+      },
     });
   } catch (error) {
-    console.error('[Optimization API] Error:', error);
+    console.error('获取优化状态数据失败:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : '获取优化数据失败',
+        error: '获取优化状态数据失败',
+        details: error instanceof Error ? error.message : '未知错误',
       },
       { status: 500 }
     );
   }
-}
-
-/**
- * 生成优化历史数据（模拟）
- */
-function generateOptimizationHistory() {
-  const history = [];
-  for (let i = 1; i <= 10; i++) {
-    history.push({
-      iteration: i,
-      fitness: Math.random() * 100,
-      bestSolution: Math.random() * 100,
-      populationDiversity: Math.random(),
-      convergenceRate: Math.random(),
-      timestamp: new Date(Date.now() - (10 - i) * 1000).toISOString(),
-    });
-  }
-  return history;
-}
-
-/**
- * 生成收敛曲线数据（模拟）
- */
-function generateConvergenceData() {
-  const data = {
-    labels: [] as string[],
-    datasets: [
-      {
-        label: '最优解',
-        data: [] as number[],
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      },
-      {
-        label: '平均解',
-        data: [] as number[],
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-      },
-    ],
-  };
-
-  let best = 100;
-  let avg = 80;
-  for (let i = 0; i < 20; i++) {
-    best *= 0.95 + Math.random() * 0.05;
-    avg *= 0.93 + Math.random() * 0.07;
-
-    data.labels.push(`Iter ${i + 1}`);
-    data.datasets[0].data.push(best);
-    data.datasets[1].data.push(avg);
-  }
-
-  return data;
-}
-
-/**
- * 生成实时日志（模拟）
- */
-function generateRealTimeLogs(status: string, progress: number) {
-  const logs = [];
-
-  // 根据状态生成不同的日志
-  if (status === 'CODING' || status === 'CODE_GENERATION') {
-    logs.push({
-      timestamp: new Date(Date.now() - 5000).toISOString(),
-      level: 'INFO',
-      message: '开始代码生成阶段...',
-      source: 'CodeGenerator',
-    });
-    logs.push({
-      timestamp: new Date(Date.now() - 3000).toISOString(),
-      level: 'INFO',
-      message: `进度: ${progress}%`,
-      source: 'ProgressMonitor',
-    });
-  }
-
-  if (status === 'VALIDATING') {
-    logs.push({
-      timestamp: new Date(Date.now() - 5000).toISOString(),
-      level: 'INFO',
-      message: '验证代码语法...',
-      source: 'CodeValidator',
-    });
-    logs.push({
-      timestamp: new Date(Date.now() - 2000).toISOString(),
-      level: 'INFO',
-      message: '验证代码逻辑...',
-      source: 'CodeValidator',
-    });
-  }
-
-  if (status === 'PAPER_GENERATION') {
-    logs.push({
-      timestamp: new Date(Date.now() - 5000).toISOString(),
-      level: 'INFO',
-      message: '开始论文生成...',
-      source: 'PaperGenerator',
-    });
-    logs.push({
-      timestamp: new Date(Date.now() - 3000).toISOString(),
-      level: 'INFO',
-      message: '生成摘要部分...',
-      source: 'PaperGenerator',
-    });
-  }
-
-  // 添加通用日志
-  logs.push({
-    timestamp: new Date().toISOString(),
-    level: 'INFO',
-    message: `当前状态: ${status}, 进度: ${progress}%`,
-    source: 'TaskMonitor',
-  });
-
-  return logs;
-}
-
-/**
- * 计算执行时间
- */
-function calculateExecutionTime(task: any) {
-  const now = new Date();
-  const created = new Date(task.createdAt);
-  const diff = now.getTime() - created.getTime();
-
-  const minutes = Math.floor(diff / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
-
-  return `${minutes}m ${seconds}s`;
-}
-
-/**
- * 生成内存使用数据（模拟）
- */
-function generateMemoryUsageData() {
-  return {
-    labels: [] as string[],
-    datasets: [
-      {
-        label: '内存使用 (MB)',
-        data: [] as number[],
-        borderColor: 'rgb(54, 162, 235)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-      },
-    ],
-  };
-}
-
-/**
- * 生成 CPU 使用数据（模拟）
- */
-function generateCpuUsageData() {
-  return {
-    labels: [] as string[],
-    datasets: [
-      {
-        label: 'CPU 使用率 (%)',
-        data: [] as number[],
-        borderColor: 'rgb(255, 206, 86)',
-        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-      },
-    ],
-  };
 }
