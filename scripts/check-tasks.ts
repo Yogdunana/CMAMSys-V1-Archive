@@ -1,59 +1,67 @@
-/**
- * 查询任务详情
- */
-
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function checkTasks() {
-  try {
-    const task1 = await prisma.autoModelingTask.findUnique({
-      where: { id: 'cmlmg9cq00001hqry34db2zmy' },
-      include: {
-        discussion: true,
-        codeGeneration: true,
-        validations: true,
-        paper: true,
-      },
-    });
+async function main() {
+  console.log('🔍 Checking all data in database...\n');
 
-    const task2 = await prisma.autoModelingTask.findUnique({
-      where: { id: 'cmlhkso4d0000cf20hil05nfg' },
-      include: {
-        discussion: true,
-        codeGeneration: true,
-        validations: true,
-        paper: true,
-      },
-    });
+  // 1. 检查用户
+  const users = await prisma.user.findMany();
+  console.log(`👤 Users: ${users.length}`);
+  users.forEach(u => {
+    console.log(`   - ${u.email} (${u.role})`);
+  });
 
-    console.log('Task 1 (cmlmg9cq00001hqry34db2zmy):');
-    console.log(JSON.stringify(task1, null, 2));
+  // 2. 检查竞赛
+  const competitions = await prisma.competition.findMany();
+  console.log(`\n🏆 Competitions: ${competitions.length}`);
+  competitions.forEach(c => {
+    console.log(`   - ${c.name} (${c.id})`);
+  });
 
-    console.log('\nTask 2 (cmlhkso4d0000cf20hil05nfg):');
-    console.log(JSON.stringify(task2, null, 2));
+  // 3. 检查建模任务
+  const modelingTasks = await prisma.autoModelingTask.findMany();
+  console.log(`\n🤖 Auto Modeling Tasks: ${modelingTasks.length}`);
+  modelingTasks.forEach(t => {
+    console.log(`   - ${t.taskTitle} (${t.id}) - Status: ${t.status}`);
+  });
 
-    // 查询所有任务
-    const allTasks = await prisma.autoModelingTask.findMany({
-      include: {
-        discussion: true,
-        codeGeneration: true,
-        validations: true,
-        paper: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  // 4. 检查群组讨论
+  const discussions = await prisma.groupDiscussion.findMany();
+  console.log(`\n💬 Group Discussions: ${discussions.length}`);
+  discussions.forEach(d => {
+    console.log(`   - ${d.discussionTitle} (${d.id})`);
+  });
 
-    console.log(`\n总共有 ${allTasks.length} 个任务:`);
-    allTasks.forEach((task, index) => {
-      console.log(`${index + 1}. ${task.id} - ${task.title} - Status: ${task.status} - Progress: ${task.progress}%`);
-    });
-  } catch (error) {
-    console.error('Error:', error);
-  } finally {
-    await prisma.$disconnect();
-  }
+  // 5. 检查论文
+  const papers = await prisma.generatedPaper.findMany();
+  console.log(`\n📄 Generated Papers: ${papers.length}`);
+  papers.forEach(p => {
+    console.log(`   - ${p.paperTitle} (${p.id})`);
+  });
+
+  // 6. 检查代码生成
+  const codeGenerations = await prisma.codeGeneration.findMany();
+  console.log(`\n💻 Code Generations: ${codeGenerations.length}`);
+
+  // 7. 检查登录日志
+  const loginLogs = await prisma.loginLog.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+  });
+  console.log(`\n📋 Recent Login Logs (latest 5): ${loginLogs.length}`);
+  loginLogs.forEach(l => {
+    console.log(`   - ${l.email} - Success: ${l.success} - ${l.createdAt}`);
+  });
+
+  console.log('\n✅ Data check completed!');
 }
 
-checkTasks();
+main()
+  .catch((e) => {
+    console.error('❌ Error:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
