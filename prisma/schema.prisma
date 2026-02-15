@@ -82,32 +82,31 @@ model TeamMember {
 }
 
 model AIProvider {
-  id               String           @id @default(cuid())
-  name             String
-  type             AIProviderType
-  apiKey           String
-  endpoint         String?
-  region           String?
-  priority         Int              @default(0)
-  isDefault        Boolean          @default(false)
-  status           AIProviderStatus @default(ACTIVE)
-  supportedModels  String[]
-  capabilities     String[]
-  config           Json?
-  totalRequests    Int              @default(0)
-  totalTokensUsed  Int              @default(0)
-  lastUsedAt       DateTime?
-  // 全自动化扩展字段
-  capabilityTags   String[]         @default([]) // 能力标签：数学建模算法、代码生成、数据预处理、优化算法、统计分析
-  scenarioTags     String[]         @default([]) // 场景标签：美赛优化题、国赛预测题、数据分析、可视化设计
-  dailyTokenLimit  Int?             // 每日 Token 上限
-  dailyCallLimit   Int?             // 每日调用次数上限
-  createdById      String
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  deletedAt        DateTime?
-  createdBy        User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  requests         AIRequest[]
+  id              String           @id @default(cuid())
+  name            String
+  type            AIProviderType
+  apiKey          String
+  endpoint        String?
+  region          String?
+  priority        Int              @default(0)
+  isDefault       Boolean          @default(false)
+  status          AIProviderStatus @default(ACTIVE)
+  supportedModels String[]
+  capabilities    String[]
+  config          Json?
+  totalRequests   Int              @default(0)
+  totalTokensUsed Int              @default(0)
+  lastUsedAt      DateTime?
+  capabilityTags  String[]         @default([])
+  scenarioTags    String[]         @default([])
+  dailyTokenLimit Int?
+  dailyCallLimit  Int?
+  createdById     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  createdBy       User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  requests        AIRequest[]
 
   @@index([createdById])
   @@index([type])
@@ -163,24 +162,23 @@ model Competition {
 }
 
 model Problem {
-  id                String   @id @default(cuid())
+  id                String               @id @default(cuid())
   competitionId     String
-  problemNumber     String   // A, B, C, D 等
-  title             String   // 题目标题
-  originalContent   String?  @db.Text // 题目原文
-  translatedContent String?  @db.Text // 翻译内容
-  type              String?  // 题目类型
-  difficulty        String?  // 难度：简单/中等/困难
-  keywords          String[] // 关键词
-  originalFileUrl   String?  // 原文文件URL
-  translatedFileUrl String?  // 翻译文件URL
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  problemNumber     String
+  title             String
+  originalContent   String?
+  translatedContent String?
+  type              String?
+  difficulty        String?
+  keywords          String[]
+  originalFileUrl   String?
+  translatedFileUrl String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   deletedAt         DateTime?
-
-  competition       Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  solutions         Solution[]
   aiContents        AIGeneratedContent[]
+  competition       Competition          @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  solutions         Solution[]
 
   @@unique([competitionId, problemNumber])
   @@index([competitionId])
@@ -188,21 +186,20 @@ model Problem {
 }
 
 model Solution {
-  id              String   @id @default(cuid())
-  problemId       String
-  type            SolutionType // system, award, ai
-  title           String
-  description     String?  @db.Text
-  content         String?  @db.Text
-  author          String?
-  awardLevel      String?  // 获奖等级：特等奖/一等奖/二等奖/三等奖
-  files           Json?    // 相关文件列表
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  deletedAt       DateTime?
-
-  problem         Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  aiContents      AIGeneratedContent[]
+  id          String               @id @default(cuid())
+  problemId   String
+  type        SolutionType
+  title       String
+  description String?
+  content     String?
+  author      String?
+  awardLevel  String?
+  files       Json?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  deletedAt   DateTime?
+  aiContents  AIGeneratedContent[]
+  problem     Problem              @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@index([problemId])
   @@index([type])
@@ -210,21 +207,20 @@ model Solution {
 }
 
 model AIGeneratedContent {
-  id                String   @id @default(cuid())
-  problemId         String
-  solutionId        String?
-  type              AIGeneratedType // paper, data, chart
-  subProblemNumber  String?  // 子问题编号：1, 2, 3 等
-  content           String?  @db.Text
-  metadata          Json?    // 元数据：模型、参数、配置等
-  fileUrl           String?  // 文件URL
-  fileSize          Int?     // 文件大小
-  mimeType          String?  // MIME类型
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  problem           Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  solution          Solution? @relation(fields: [solutionId], references: [id])
+  id               String          @id @default(cuid())
+  problemId        String
+  solutionId       String?
+  type             AIGeneratedType
+  subProblemNumber String?
+  content          String?
+  metadata         Json?
+  fileUrl          String?
+  fileSize         Int?
+  mimeType         String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  problem          Problem         @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  solution         Solution?       @relation(fields: [solutionId], references: [id])
 
   @@index([problemId])
   @@index([solutionId])
@@ -414,6 +410,169 @@ model LearningLog {
   @@map("learning_logs")
 }
 
+model AutoModelingTask {
+  id               String           @id @default(cuid())
+  taskId           String?          @unique
+  competitionType  CompetitionType
+  problemType      ProblemType
+  problemTitle     String
+  problemContent   String
+  discussionId     String?          @unique
+  discussionStatus DiscussionStatus @default(PENDING)
+  codeGenerationId String?          @unique
+  validationStatus ValidationStatus @default(PENDING)
+  validationRounds Int              @default(0)
+  paperId          String?          @unique
+  paperStatus      PaperStatus      @default(DRAFT)
+  overallStatus    OverallStatus    @default(PENDING)
+  errorLog         String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  progress         Int              @default(0)
+  codeGeneration   CodeGeneration?  @relation(fields: [codeGenerationId], references: [id])
+  discussion       GroupDiscussion? @relation(fields: [discussionId], references: [id])
+  paper            GeneratedPaper?  @relation(fields: [paperId], references: [id])
+  validations      CodeValidation[]
+
+  @@index([overallStatus])
+  @@index([discussionStatus])
+  @@index([validationStatus])
+  @@map("auto_modeling_tasks")
+}
+
+model GroupDiscussion {
+  id              String              @id @default(cuid())
+  autoTaskId      String?             @unique
+  discussionTitle String
+  problemTitle    String
+  competitionType CompetitionType
+  problemType     ProblemType
+  status          DiscussionStatus    @default(PENDING)
+  currentRound    Int                 @default(0)
+  maxRounds       Int                 @default(2)
+  participants    Json
+  summary         Json?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  autoTask        AutoModelingTask?
+  messages        DiscussionMessage[]
+
+  @@index([status])
+  @@map("group_discussions")
+}
+
+model DiscussionMessage {
+  id               String          @id @default(cuid())
+  discussionId     String
+  round            Int
+  senderProviderId String
+  senderName       String
+  messageContent   String
+  messageType      MessageType
+  replyToMessageId String?
+  coreAlgorithms   String?
+  innovations      String?
+  feasibility      String?
+  disagreements    String?
+  tokenCount       Int             @default(0)
+  createdAt        DateTime        @default(now())
+  discussion       GroupDiscussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  @@index([discussionId])
+  @@index([senderProviderId])
+  @@map("discussion_messages")
+}
+
+model CodeGeneration {
+  id              String            @id @default(cuid())
+  autoTaskId      String?           @unique
+  discussionId    String?
+  codeLanguage    CodeLanguage
+  codeContent     String
+  description     String?
+  requirements    Json?
+  qualityScore    Float?
+  errorLog        String?
+  executionStatus ExecutionStatus   @default(PENDING)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  autoTask        AutoModelingTask?
+  validations     CodeValidation[]
+
+  @@index([executionStatus])
+  @@map("code_generations")
+}
+
+model CodeValidation {
+  id                String           @id @default(cuid())
+  autoTaskId        String
+  codeGenerationId  String
+  validationType    ValidationType
+  status            ValidationStatus
+  result            Json?
+  errorMessage      String?
+  validationDetails String?
+  retried           Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  autoTask          AutoModelingTask @relation(fields: [autoTaskId], references: [id], onDelete: Cascade)
+  codeGeneration    CodeGeneration   @relation(fields: [codeGenerationId], references: [id], onDelete: Cascade)
+
+  @@index([autoTaskId])
+  @@index([validationType])
+  @@index([status])
+  @@map("code_validations")
+}
+
+model GeneratedPaper {
+  id           String            @id @default(cuid())
+  autoTaskId   String?           @unique
+  discussionId String?
+  title        String
+  content      String
+  format       PaperFormat
+  language     PaperLanguage
+  sections     Json?
+  wordCount    Int?
+  status       PaperStatus       @default(DRAFT)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  autoTask     AutoModelingTask?
+
+  @@index([status])
+  @@map("generated_papers")
+}
+
+model CostControl {
+  id           String   @id @default(cuid())
+  providerId   String
+  date         DateTime @db.Date
+  tokensUsed   Int      @default(0)
+  callsCount   Int      @default(0)
+  costEstimate Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([providerId, date])
+  @@index([providerId])
+  @@index([date])
+  @@map("cost_control")
+}
+
+model DiscussionCache {
+  id               String   @id @default(cuid())
+  cacheKey         String   @unique
+  problemType      String
+  problemContent   String
+  discussionResult Json
+  codeResult       Json?
+  createdAt        DateTime @default(now())
+  expiresAt        DateTime
+
+  @@index([problemType])
+  @@index([expiresAt])
+  @@map("discussion_cache")
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -500,31 +659,29 @@ enum TeamRole {
 }
 
 enum SolutionType {
-  SYSTEM      // 建模系统解法
-  AWARD       // 获奖解法
-  AI          // AI 生成的解法
+  SYSTEM
+  AWARD
+  AI
 }
 
 enum AIGeneratedType {
-  PAPER       // AI 论文
-  DATA        // AI 生成的数据
-  CHART       // AI 生成的图表
+  PAPER
+  DATA
+  CHART
 }
 
-// ==================== 全自动化模块新增枚举类型 ====================
-
 enum DiscussionStatus {
-  PENDING       // 待开始
-  IN_PROGRESS   // 进行中
-  COMPLETED     // 已完成
-  FAILED        // 失败
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
 
 enum MessageType {
-  INITIAL_THOUGHT  // 初始思路
-  COMMENT         // 点评
-  SUPPLEMENT      // 补充
-  SUMMARY         // 总结
+  INITIAL_THOUGHT
+  COMMENT
+  SUPPLEMENT
+  SUMMARY
 }
 
 enum CodeLanguage {
@@ -533,29 +690,29 @@ enum CodeLanguage {
 }
 
 enum ExecutionStatus {
-  PENDING       // 待执行
-  RUNNING       // 执行中
-  SUCCESS       // 执行成功
-  FAILED        // 执行失败
-  TIMEOUT       // 超时
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  TIMEOUT
 }
 
 enum ValidationType {
-  BASIC          // 基础校验（语法、运行错误）
-  RESULT         // 结果合理性校验
-  VISUALIZATION  // 可视化质量校验
+  BASIC
+  RESULT
+  VISUALIZATION
 }
 
 enum ValidationStatus {
-  PENDING       // 待校验
-  PASSED        // 通过
-  FAILED        // 失败
-  SKIPPED       // 跳过
+  PENDING
+  PASSED
+  FAILED
+  SKIPPED
 }
 
 enum PaperFormat {
-  MCM    // 美赛格式
-  CUMCM  // 国赛格式
+  MCM
+  CUMCM
 }
 
 enum PaperLanguage {
@@ -564,232 +721,18 @@ enum PaperLanguage {
 }
 
 enum PaperStatus {
-  DRAFT      // 草稿
-  COMPLETED  // 已完成
-  FAILED     // 生成失败
+  DRAFT
+  COMPLETED
+  FAILED
 }
 
 enum OverallStatus {
-  PENDING         // 待开始
-  DISCUSSING      // 讨论中
-  CODING          // 代码生成中
-  VALIDATING      // 校验中
-  RETRYING        // 回溯中
-  PAPER_GENERATING // 论文生成中
-  COMPLETED       // 已完成
-  FAILED          // 失败
-}
-
-// ==================== 全自动化模块数据模型 ====================
-
-// 自动化建模任务（继承并扩展 ModelingTask）
-model AutoModelingTask {
-  id                String                @id @default(cuid())
-  taskId            String?               @unique // 关联到 ModelingTask
-  competitionType   CompetitionType
-  problemType       ProblemType
-  problemTitle      String
-  problemContent    String               @db.Text
-  discussionId      String?               @unique // 关联到讨论记录
-  discussionStatus  DiscussionStatus      @default(PENDING)
-  codeGenerationId  String?               @unique // 关联到代码生成记录
-  validationStatus  ValidationStatus      @default(PENDING)
-  validationRounds  Int                   @default(0) // 回溯次数
-  paperId           String?               @unique // 关联到论文
-  paperStatus       PaperStatus           @default(DRAFT)
-  overallStatus     OverallStatus         @default(PENDING)
-  errorLog          String?               @db.Text
-  progress          Int                   @default(0) // 任务进度 0-100
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-
-  discussion        GroupDiscussion?      @relation(fields: [discussionId], references: [id])
-  codeGeneration    CodeGeneration?       @relation(fields: [codeGenerationId], references: [id])
-  validations       CodeValidation[]
-  paper             GeneratedPaper?       @relation(fields: [paperId], references: [id])
-
-  @@index([overallStatus])
-  @@index([discussionStatus])
-  @@index([validationStatus])
-  @@index([paperStatus])
-  @@index([progress])
-  @@index([createdAt])
-  @@map("auto_modeling_tasks")
-}
-
-// 群聊讨论记录
-model GroupDiscussion {
-  id                String              @id @default(cuid())
-  autoTaskId        String?             @unique // 关联到自动化任务
-  discussionTitle   String
-  problemTitle      String
-  competitionType   CompetitionType
-  problemType       ProblemType
-  status            DiscussionStatus    @default(PENDING)
-  currentRound      Int                 @default(0) // 当前讨论轮数
-  maxRounds         Int                 @default(2) // 最大讨论轮数
-  participants      Json                // 参与的 AI Provider 列表
-  summary           Json?               // 观点对比总结（核心算法/创新点/分歧点）
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  autoTask          AutoModelingTask?   @relation
-  messages          DiscussionMessage[]
-
-  @@index([status])
-  @@index([autoTaskId])
-  @@index([createdAt])
-  @@map("group_discussions")
-}
-
-// 讨论消息
-model DiscussionMessage {
-  id                String              @id @default(cuid())
-  discussionId      String
-  round             Int                 // 讨论轮数
-  senderProviderId  String              // 发言的 AI Provider ID
-  senderName        String              // 发言者名称
-  messageContent    String              @db.Text
-  messageType       MessageType         // INITIAL_THOUGHT(初始思路)、COMMENT(点评)、SUPPLEMENT(补充)
-  replyToMessageId  String?             // 回复的消息 ID
-  coreAlgorithms    String?             @db.Text // 提取的核心算法
-  innovations       String?             @db.Text // 提取的创新点
-  feasibility       String?             @db.Text // 提取的可行性分析
-  disagreements     String?             @db.Text // 分歧点（如果有点评）
-  tokenCount        Int                 @default(0)
-  createdAt         DateTime            @default(now())
-
-  discussion        GroupDiscussion     @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-
-  @@index([discussionId])
-  @@index([round])
-  @@index([senderProviderId])
-  @@index([createdAt])
-  @@map("discussion_messages")
-}
-
-// 代码生成记录
-model CodeGeneration {
-  id                String              @id @default(cuid())
-  autoTaskId        String?             @unique // 关联到自动化任务
-  discussionId      String?             // 关联到讨论记录
-  codeLanguage      CodeLanguage        // PYTHON, MATLAB
-  codeContent       String              @db.Text
-  description       String?             @db.Text // 代码说明
-  requirements      Json?               // 思路要求（核心算法、创新点等）
-  qualityScore      Float?              // 代码质量评分 0-100
-  errorLog          String?             @db.Text
-  executionStatus   ExecutionStatus     @default(PENDING)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  autoTask          AutoModelingTask?   @relation
-  validations       CodeValidation[]
-
-  @@index([autoTaskId])
-  @@index([discussionId])
-  @@index([executionStatus])
-  @@index([createdAt])
-  @@map("code_generations")
-}
-
-// 代码校验记录
-model CodeValidation {
-  id                String              @id @default(cuid())
-  autoTaskId        String
-  codeGenerationId  String
-  validationType    ValidationType      // BASIC(基础校验)、RESULT(结果校验)、VISUALIZATION(可视化校验)
-  status            ValidationStatus    // PENDING, PASSED, FAILED
-  result            Json?               // 校验结果详情
-  errorMessage      String?             @db.Text
-  validationDetails String?             @db.Text // 详细校验报告
-  retried           Boolean             @default(false) // 是否已重试
-  createdAt         DateTime            @default(now())
-
-  autoTask          AutoModelingTask    @relation(fields: [autoTaskId], references: [id], onDelete: Cascade)
-  codeGeneration    CodeGeneration      @relation(fields: [codeGenerationId], references: [id], onDelete: Cascade)
-
-  @@index([autoTaskId])
-  @@index([validationType])
-  @@index([status])
-  @@map("code_validations")
-}
-
-// 生成的论文
-model GeneratedPaper {
-  id                String              @id @default(cuid())
-  autoTaskId        String?             @unique // 关联到自动化任务
-  discussionId      String?             // 关联到讨论记录
-  title             String
-  content           String              @db.Text // Markdown 格式
-  format            PaperFormat         // MCM(美赛), CUMCM(国赛)
-  language          PaperLanguage       // CHINESE, ENGLISH
-  sections          Json?               // 论文结构（赛题分析、模型假设等）
-  wordCount         Int?                // 字数统计
-  status            PaperStatus         @default(DRAFT)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  autoTask          AutoModelingTask?   @relation
-  versions          PaperVersion[]
-
-  @@index([autoTaskId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("generated_papers")
-}
-
-// 论文版本历史
-model PaperVersion {
-  id                String              @id @default(cuid())
-  paperId           String
-  versionNumber     Int                 // 版本号
-  title             String
-  content           String              @db.Text // Markdown 格式
-  sections          Json?               // 论文结构
-  wordCount         Int?
-  changeDescription String?             // 变更描述
-  isMajorVersion    Boolean             @default(false) // 是否为主要版本
-  createdAt         DateTime            @default(now())
-  createdBy         String?             // 创建者 ID
-
-  paper             GeneratedPaper      @relation(fields: [paperId], references: [id], onDelete: Cascade)
-
-  @@unique([paperId, versionNumber])
-  @@index([paperId])
-  @@index([createdAt])
-  @@map("paper_versions")
-}
-
-// 成本管控记录
-model CostControl {
-  id                String              @id @default(cuid())
-  providerId        String
-  date              DateTime            @db.Date
-  tokensUsed        Int                 @default(0)
-  callsCount        Int                 @default(0)
-  costEstimate      Float?              // 预估成本
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  @@unique([providerId, date])
-  @@index([providerId])
-  @@index([date])
-  @@map("cost_control")
-}
-
-// 缓存记录
-model DiscussionCache {
-  id                String              @id @default(cuid())
-  cacheKey          String              @unique
-  problemType       String
-  problemContent    String              @db.Text
-  discussionResult  Json                // 缓存的讨论结果
-  codeResult        Json?               // 缓存的代码生成结果
-  createdAt         DateTime            @default(now())
-  expiresAt         DateTime
-
-  @@index([problemType])
-  @@index([expiresAt])
-  @@map("discussion_cache")
+  PENDING
+  DISCUSSING
+  CODING
+  VALIDATING
+  RETRYING
+  PAPER_GENERATING
+  COMPLETED
+  FAILED
 }
