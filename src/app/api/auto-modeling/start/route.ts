@@ -55,24 +55,37 @@ export async function POST(request: NextRequest) {
     console.log(`自动化任务创建成功，ID: ${autoTask.id}`);
 
     // 后台执行全自动化流程
-    import('@/services/auto-process-coordinator').then(({ executeFullAutoProcess }) => {
-      executeFullAutoProcess(
-        payload.userId,
-        competitionType,
-        problemType,
-        problemTitle,
-        problemContent,
-        'CUMCM',
-        'CHINESE'
-      ).catch((error) => {
+    import('@/services/auto-process-coordinator').then(async ({ executeFullAutoProcess }) => {
+      try {
+        const result = await executeFullAutoProcess(
+          payload.userId,
+          competitionType,
+          problemType,
+          problemTitle,
+          problemContent,
+          'MCM',
+          'ENGLISH'
+        );
+
+        console.log('自动化流程完成:', result);
+      } catch (error) {
         console.error('自动化流程执行失败:', error);
-        prisma.autoModelingTask.update({
+        await prisma.autoModelingTask.update({
           where: { id: autoTask.id },
           data: {
             overallStatus: OverallStatus.FAILED,
             errorLog: error instanceof Error ? error.message : 'Unknown error',
           },
         });
+      }
+    }).catch((error) => {
+      console.error('导入自动化流程模块失败:', error);
+      prisma.autoModelingTask.update({
+        where: { id: autoTask.id },
+        data: {
+          overallStatus: OverallStatus.FAILED,
+          errorLog: `模块加载失败: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        },
       });
     });
 
