@@ -3,20 +3,47 @@
 import React from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { LatexStyleConfig, getLatexStyle, mergeLatexStyles, defaultLatexStyle } from '@/lib/latex-styles';
 
 interface LatexRendererProps {
   latex: string;
   displayMode?: boolean;
   className?: string;
+  style?: LatexStyleConfig;
+  stylePreset?: keyof typeof import('@/lib/latex-styles').latexStylePresets;
 }
 
 /**
  * LaTeX 公式渲染器
  * 使用 KaTeX 渲染数学公式
  */
-export default function LatexRenderer({ latex, displayMode = false, className = '' }: LatexRendererProps) {
+export default function LatexRenderer({
+  latex,
+  displayMode = false,
+  className = '',
+  style: customStyle,
+  stylePreset,
+}: LatexRendererProps) {
   const [html, setHtml] = React.useState('');
   const [error, setError] = React.useState(false);
+
+  // 获取样式配置
+  const styleConfig = React.useMemo(() => {
+    let config = defaultLatexStyle;
+
+    if (stylePreset) {
+      config = getLatexStyle(stylePreset);
+    }
+
+    if (customStyle) {
+      config = mergeLatexStyles(config, customStyle);
+    }
+
+    return config;
+  }, [stylePreset, customStyle]);
+
+  // 应用样式
+  const appliedStyle = displayMode ? styleConfig.blockStyle : styleConfig.inlineStyle;
 
   React.useEffect(() => {
     if (!latex) {
@@ -27,9 +54,11 @@ export default function LatexRenderer({ latex, displayMode = false, className = 
     try {
       const rendered = katex.renderToString(latex, {
         displayMode,
-        throwOnError: false,
+        throwOnError: styleConfig.katexConfig?.throwOnError ?? false,
         trust: true,
         strict: false,
+        errorColor: styleConfig.katexConfig?.errorColor ?? '#cc0000',
+        macros: styleConfig.katexConfig?.macros,
       });
       setHtml(rendered);
       setError(false);
@@ -38,15 +67,37 @@ export default function LatexRenderer({ latex, displayMode = false, className = 
       setError(true);
       setHtml(latex); // Fallback to plain text
     }
-  }, [latex, displayMode]);
+  }, [latex, displayMode, styleConfig]);
+
+  const computedClassName = displayMode
+    ? 'block text-center my-4'
+    : 'inline-block mx-1';
 
   if (error) {
-    return <span className={`text-red-500 bg-red-50 px-1 rounded ${className}`}>{latex}</span>;
+    return (
+      <span
+        className={`text-red-500 bg-red-50 px-1 rounded ${computedClassName} ${className}`}
+        style={{
+          fontSize: appliedStyle?.fontSize,
+          color: appliedStyle?.color,
+        }}
+      >
+        {latex}
+      </span>
+    );
   }
 
   return (
     <span
-      className={className}
+      className={`${computedClassName} ${className}`}
+      style={{
+        fontSize: appliedStyle?.fontSize,
+        color: appliedStyle?.color,
+        fontFamily: appliedStyle?.fontFamily,
+        padding: appliedStyle?.padding,
+        textAlign: displayMode ? appliedStyle?.textAlign : undefined,
+        margin: displayMode ? appliedStyle?.margin : undefined,
+      }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -56,7 +107,11 @@ export default function LatexRenderer({ latex, displayMode = false, className = 
  * 渲染包含 LaTeX 公式的文本
  * 自动识别并渲染 $...$ 和 $$...$$ 格式的公式
  */
-export function renderLatexText(text: string): React.ReactNode {
+export function renderLatexText(
+  text: string,
+  style?: LatexStyleConfig,
+  stylePreset?: keyof typeof import('@/lib/latex-styles').latexStylePresets,
+): React.ReactNode {
   if (!text) return text;
 
   // 替换行内公式 $...$ 为 KaTeX 渲染
@@ -92,7 +147,12 @@ export function renderLatexText(text: string): React.ReactNode {
       const latex = part.slice(13, -2); // 移除标记
       return (
         <div key={index} className="flex justify-center my-4">
-          <LatexRenderer latex={latex} displayMode={true} />
+          <LatexRenderer
+            latex={latex}
+            displayMode={true}
+            style={style}
+            stylePreset={stylePreset}
+          />
         </div>
       );
     }
@@ -129,6 +189,8 @@ export function renderLatexText(text: string): React.ReactNode {
                 latex={latex}
                 displayMode={false}
                 className="mx-1"
+                style={style}
+                stylePreset={stylePreset}
               />
             );
           }

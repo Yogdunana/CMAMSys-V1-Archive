@@ -731,11 +731,34 @@ model GeneratedPaper {
   updatedAt         DateTime            @updatedAt
 
   autoTask          AutoModelingTask?   @relation
+  versions          PaperVersion[]
 
   @@index([autoTaskId])
   @@index([status])
   @@index([createdAt])
   @@map("generated_papers")
+}
+
+// 论文版本历史
+model PaperVersion {
+  id                String              @id @default(cuid())
+  paperId           String
+  versionNumber     Int                 // 版本号
+  title             String
+  content           String              @db.Text // Markdown 格式
+  sections          Json?               // 论文结构
+  wordCount         Int?
+  changeDescription String?             // 变更描述
+  isMajorVersion    Boolean             @default(false) // 是否为主要版本
+  createdAt         DateTime            @default(now())
+  createdBy         String?             // 创建者 ID
+
+  paper             GeneratedPaper      @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@unique([paperId, versionNumber])
+  @@index([paperId])
+  @@index([createdAt])
+  @@map("paper_versions")
 }
 
 // 成本管控记录
