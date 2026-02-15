@@ -12,8 +12,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js';
-import { Line, Bar, Scatter, Radar } from 'react-chartjs-2';
+import { Line, Bar, Scatter, Radar, Doughnut, Pie, Bubble } from 'react-chartjs-2';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 ChartJS.register(
@@ -25,22 +26,25 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 interface ChartData {
-  type: 'line' | 'bar' | 'scatter' | 'radar';
+  type: 'line' | 'bar' | 'scatter' | 'radar' | 'pie' | 'doughnut' | 'bubble' | 'area';
   title: string;
   labels: string[];
   datasets: {
     label: string;
-    data: number[];
+    data: number[] | { x: number; y: number; r?: number }[];
     borderColor?: string;
     backgroundColor?: string;
     backgroundColors?: string[];
     borderWidth?: number;
     fill?: boolean;
     tension?: number;
+    pointRadius?: number;
+    pointHoverRadius?: number;
   }[];
 }
 
@@ -96,6 +100,7 @@ function renderChart(chart: ChartData) {
 
   switch (chart.type) {
     case 'line':
+    case 'area':
       return (
         <Line
           data={{
@@ -105,8 +110,10 @@ function renderChart(chart: ChartData) {
               borderColor: ds.borderColor || 'rgb(59, 130, 246)',
               backgroundColor: ds.backgroundColor || 'rgba(59, 130, 246, 0.1)',
               borderWidth: ds.borderWidth || 2,
-              fill: ds.fill ?? true,
+              fill: chart.type === 'area' ? true : (ds.fill ?? true),
               tension: ds.tension ?? 0.4,
+              pointRadius: ds.pointRadius ?? 3,
+              pointHoverRadius: ds.pointHoverRadius ?? 5,
             })),
           }}
           options={commonOptions}
@@ -142,11 +149,13 @@ function renderChart(chart: ChartData) {
               ...ds,
               data: ds.data.map((val, i) => ({
                 x: i,
-                y: val,
+                y: val as number,
               })),
               borderColor: ds.borderColor || 'rgb(59, 130, 246)',
               backgroundColor: ds.backgroundColor || 'rgba(59, 130, 246, 0.8)',
               borderWidth: ds.borderWidth || 2,
+              pointRadius: ds.pointRadius ?? 5,
+              pointHoverRadius: ds.pointHoverRadius ?? 7,
             })),
           }}
           options={{
@@ -172,6 +181,87 @@ function renderChart(chart: ChartData) {
               backgroundColor: ds.backgroundColor || 'rgba(59, 130, 246, 0.2)',
               borderWidth: ds.borderWidth ?? 2,
               fill: ds.fill ?? true,
+              pointRadius: ds.pointRadius ?? 3,
+              pointHoverRadius: ds.pointHoverRadius ?? 5,
+            })),
+          }}
+          options={commonOptions}
+        />
+      );
+
+    case 'pie':
+      return (
+        <Pie
+          data={{
+            labels: chart.labels,
+            datasets: chart.datasets.map(ds => ({
+              ...ds,
+              backgroundColor: ds.backgroundColors || [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(236, 72, 153, 0.8)',
+                'rgba(20, 184, 166, 0.8)',
+              ],
+              borderWidth: ds.borderWidth ?? 2,
+            })),
+          }}
+          options={{
+            ...commonOptions,
+            plugins: {
+              ...commonOptions.plugins,
+              legend: {
+                position: 'right' as const,
+              },
+            },
+          }}
+        />
+      );
+
+    case 'doughnut':
+      return (
+        <Doughnut
+          data={{
+            labels: chart.labels,
+            datasets: chart.datasets.map(ds => ({
+              ...ds,
+              backgroundColor: ds.backgroundColors || [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(236, 72, 153, 0.8)',
+                'rgba(20, 184, 166, 0.8)',
+              ],
+              borderWidth: ds.borderWidth ?? 2,
+              cutout: '50%',
+            })),
+          }}
+          options={{
+            ...commonOptions,
+            plugins: {
+              ...commonOptions.plugins,
+              legend: {
+                position: 'right' as const,
+              },
+            },
+          }}
+        />
+      );
+
+    case 'bubble':
+      return (
+        <Bubble
+          data={{
+            datasets: chart.datasets.map(ds => ({
+              ...ds,
+              data: ds.data as { x: number; y: number; r?: number }[],
+              backgroundColor: ds.backgroundColor || 'rgba(59, 130, 246, 0.6)',
+              borderColor: ds.borderColor || 'rgb(59, 130, 246)',
+              borderWidth: ds.borderWidth ?? 1,
             })),
           }}
           options={commonOptions}
