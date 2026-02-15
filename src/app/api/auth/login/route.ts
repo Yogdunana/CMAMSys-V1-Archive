@@ -10,6 +10,7 @@ import { verifyPassword } from '@/lib/password';
 import { generateToken, verifyTOTP } from '@/lib/crypto';
 import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { ApiResponse, LoginRequest, AuthResponse, UserDTO, UserRole } from '@/lib/types';
+import { createLoginLog, extractIpAddress, extractUserAgent } from '@/services/login-logger';
 
 // Validation schema
 const loginSchema = z.object({
@@ -41,12 +42,25 @@ export async function POST(request: NextRequest) {
 
     const { email, password, mfaCode } = validationResult.data;
 
+    // Extract IP and user agent for logging
+    const ipAddress = extractIpAddress(request);
+    const userAgent = extractUserAgent(request);
+
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
+      // Log failed login attempt
+      await createLoginLog({
+        email,
+        success: false,
+        ipAddress,
+        userAgent,
+        failureReason: 'USER_NOT_FOUND',
+      });
+
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -62,6 +76,16 @@ export async function POST(request: NextRequest) {
 
     // Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
+      // Log login attempt on locked account
+      await createLoginLog({
+        userId: user.id,
+        email,
+        success: false,
+        ipAddress,
+        userAgent,
+        failureReason: 'ACCOUNT_LOCKED',
+      });
+
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -102,6 +126,16 @@ export async function POST(request: NextRequest) {
           failedLoginAttempts: newFailedAttempts,
           lockedUntil,
         },
+      });
+
+      // Log failed login attempt
+      await createLoginLog({
+        userId: user.id,
+        email,
+        success: false,
+        ipAddress,
+        userAgent,
+        failureReason: shouldLockAccount ? 'ACCOUNT_LOCKED_TOO_MANY_ATTEMPTS' : 'INVALID_PASSWORD',
       });
 
       if (shouldLockAccount) {
@@ -156,6 +190,16 @@ export async function POST(request: NextRequest) {
       const isMfaValid = verifyTOTP(user.mfaSecret, mfaCode);
 
       if (!isMfaValid) {
+        // Log failed MFA attempt
+        await createLoginLog({
+          userId: user.id,
+          email,
+          success: false,
+          ipAddress,
+          userAgent,
+          failureReason: 'INVALID_MFA_CODE',
+        });
+
         return NextResponse.json<ApiResponse>(
           {
             success: false,
@@ -178,6 +222,15 @@ export async function POST(request: NextRequest) {
         lockedUntil: null,
         lastLoginAt: new Date(),
       },
+    });
+
+    // Log successful login
+    await createLoginLog({
+      userId: user.id,
+      email,
+      success: true,
+      ipAddress,
+      userAgent,
     });
 
     // Generate refresh token
