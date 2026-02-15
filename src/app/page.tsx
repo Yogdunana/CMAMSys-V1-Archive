@@ -27,9 +27,9 @@ export default function HomePage() {
             {/* Logo */}
             <div className="mb-8">
               <img
-                src="/logo.jpg"
+                src="/logo-withtext.svg"
                 alt="CMAMSys Logo"
-                className="h-24 w-auto object-contain"
+                className="h-32 w-auto object-contain"
               />
             </div>
 
