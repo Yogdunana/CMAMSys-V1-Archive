@@ -1,4 +1,4 @@
-import prisma from '../src/lib/prisma.ts';
+import prisma from '../src/lib/prisma';
 
 async function checkTask() {
   const task = await prisma.autoModelingTask.findUnique({

@@ -23,7 +23,9 @@ async function main() {
   console.log(`标题: ${discussion.discussionTitle}`);
   console.log(`状态: ${discussion.status}`);
   console.log(`当前回合: ${discussion.currentRound}/${discussion.maxRounds}`);
-  console.log(`参与者: ${discussion.participants.length}\n`);
+
+  const participants = discussion.participants as Array<any>;
+  console.log(`参与者: ${participants?.length || 0}\n`);
 
   console.log('### 讨论消息 ###');
   discussion.messages.forEach((msg, index) => {
@@ -36,16 +38,21 @@ async function main() {
   });
 
   console.log('\n### 讨论总结 ###');
-  if (discussion.summary) {
-    console.log('共识:', discussion.summary.consensus);
-    console.log('\n创新点:');
-    discussion.summary.innovations.forEach((inn, i) => {
-      console.log(`  ${i + 1}. ${inn.provider}: ${inn.content}`);
-    });
-    console.log('\n核心算法:');
-    discussion.summary.coreAlgorithms.forEach((algo, i) => {
-      console.log(`  ${i + 1}. ${algo.provider}: ${algo.content}`);
-    });
+  if (discussion.summary && typeof discussion.summary === 'object') {
+    const summary = discussion.summary as any;
+    console.log('共识:', summary.consensus || '(无)');
+    if (Array.isArray(summary.innovations)) {
+      console.log('\n创新点:');
+      summary.innovations.forEach((inn: any, i: number) => {
+        console.log(`  ${i + 1}. ${inn.provider}: ${inn.content}`);
+      });
+    }
+    if (Array.isArray(summary.coreAlgorithms)) {
+      console.log('\n核心算法:');
+      summary.coreAlgorithms.forEach((algo: any, i: number) => {
+        console.log(`  ${i + 1}. ${algo.provider}: ${algo.content}`);
+      });
+    }
   } else {
     console.log('❌ 没有总结');
   }

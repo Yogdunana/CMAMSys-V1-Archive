@@ -29,7 +29,7 @@ async function main() {
     if (discussion.messages.length > 0) {
       console.log('\n   Latest Messages:');
       discussion.messages.forEach((msg, i) => {
-        console.log(`      ${i + 1}. [${msg.role}] ${msg.content?.substring(0, 80)}...`);
+        console.log(`      ${i + 1}. [${msg.senderName}] ${msg.messageContent?.substring(0, 80)}...`);
       });
     }
   });
@@ -42,7 +42,7 @@ async function main() {
   });
 
   tasks.forEach((task) => {
-    console.log(`\n📋 Task: ${task.taskTitle || 'undefined'}`);
+    console.log(`\n📋 Task: ${task.problemTitle || 'undefined'}`);
     console.log(`   ID: ${task.id}`);
     console.log(`   Discussion ID: ${task.discussionId}`);
     console.log(`   Discussion Status: ${task.discussionStatus}`);
