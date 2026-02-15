@@ -50,10 +50,53 @@ async function streamWithSDK(
   onChunk: (chunk: string) => void,
   onTokenUpdate: (tokens: number) => void
 ): Promise<string> {
-  // 使用 LLM skill 实现真实的流式调用
-  // 如果调用失败，抛出错误而不是返回模拟数据
+  // 解密 API Key
+  const crypto = require('crypto');
+  const { decrypt } = require('@/lib/encryption');
 
-  throw new Error('流式 AI 调用功能正在开发中，请使用非流式调用方式');
+  const decryptedKey = decrypt(provider.apiKey);
+
+  // 获取 Provider 配置的模型和端点
+  const model = provider.supportedModels?.[0] || 'deepseek-chat';
+  const endpoint = provider.endpoint;
+
+  // 构建请求
+  try {
+    const response = await fetch(`${endpoint}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${decryptedKey}`,
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        stream: false, // 使用非流式调用
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API 调用失败 (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    // 模拟流式输出（一次性发送所有内容）
+    onChunk(content);
+    onTokenUpdate(content.length);
+
+    return content;
+  } catch (error) {
+    console.error('AI API error:', error);
+    throw new Error(`AI 调用失败: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**
