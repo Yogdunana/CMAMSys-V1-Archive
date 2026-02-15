@@ -106,12 +106,12 @@ export async function generateCode(
 }
 
 /**
- * 调用 AI 生成代码（带自动验证和超时保护）
+ * 调用 AI 生成代码（真实 AI 调用，不使用备用模板）
  */
 async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId?: string) {
   const maxRetries = 3; // 最多重试 3 次
   let retryCount = 0;
-  const timeoutMs = 3 * 60 * 1000; // 3 分钟超时
+  const timeoutMs = 10 * 60 * 1000; // 10 分钟超时（给 AI 充足的响应时间）
 
   while (retryCount < maxRetries) {
     try {
@@ -130,10 +130,14 @@ async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId
         return getFallbackCode(language);
       }
 
-      // 选择优先级最高的 Provider
-      const provider = providers.sort((a, b) => b.priority - a.priority)[0];
+      // 优先选择 isDefault 的 Provider，如果没有则选择优先级最高的
+      const defaultProvider = providers.find(p => p.isDefault);
+      const provider = defaultProvider || providers.sort((a, b) => b.priority - a.priority)[0];
 
-      console.log(`[CodeGeneration] 使用 Provider: ${provider.name}`);
+      console.log(`[CodeGeneration] 使用 Provider: ${provider.name} (type: ${provider.type})`);
+      if (defaultProvider) {
+        console.log(`[CodeGeneration] 使用默认 Provider: ${defaultProvider.name}`);
+      }
 
       // 调用 AI 生成代码，带超时保护
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -206,29 +210,19 @@ async function generateCodeWithAI(prompt: string, language: CodeLanguage, userId
 
     } catch (error) {
       retryCount++;
-      console.error(`[CodeValidation] 第 ${retryCount} 次尝试失败:`, error);
-
-      if (retryCount >= maxRetries) {
-        console.error(`[CodeGeneration] 已达到最大重试次数 ${maxRetries}，使用最后生成的代码`);
-        // 返回之前生成的代码（如果有）
-        return {
-          content: generatedCode || 'import numpy as np\nimport matplotlib.pyplot as plt\n\ndef main():\n    print("Hello, CMAMSys!")\n\nif __name__ == "__main__":\n    main()',
-          description: `${language} 代码，使用默认模板`,
-        };
-      }
-
-      if (retryCount >= maxRetries) {
-        console.error(`[CodeValidation] 达到最大重试次数，使用备用代码模板`);
-        return getFallbackCode(language);
-      }
-
-      // 修改 prompt，强调上一次的错误
       const errorMessage = error instanceof Error ? error.message : '未知错误';
-      prompt = `${prompt}\n\n注意：上次生成的代码有以下问题：${errorMessage}\n\n请重新生成代码，确保：\n1. 所有函数都有完整实现，不要返回 None\n2. 不要使用 TODO 或 pass 占位\n3. 代码必须能够独立运行\n4. 包含完整的中文注释`;
+      console.error(`[CodeGeneration] 第 ${retryCount} 次尝试失败:`, errorMessage);
+
+      if (retryCount >= maxRetries) {
+        throw new Error(`代码生成失败：已达到最大重试次数 ${maxRetries}，最后错误：${errorMessage}`);
+      }
+
+      // 修改 prompt，强调上一次的错误，并要求 AI 重新生成
+      prompt = `${prompt}\n\n【重要提示】上次生成的代码运行失败，错误信息：${errorMessage}\n\n请重新生成代码，确保：\n1. 所有函数都有完整实现，不要返回 None\n2. 不要使用 TODO 或 pass 占位\n3. 代码必须能够独立运行\n4. 包含完整的中文注释\n5. 如果需要数据，使用模拟数据（如 np.random）而非读取文件`;
     }
   }
 
-  return getFallbackCode(language);
+  throw new Error(`代码生成失败：未知错误`);
 }
 
 /**
