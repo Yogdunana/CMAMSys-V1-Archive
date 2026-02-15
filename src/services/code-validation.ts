@@ -9,26 +9,59 @@ import path from 'path';
 
 /**
  * 检查 Python 代码语法
+ * 使用 compile 函数检查语法，避免 pycompile 模块缺失问题
  */
 export async function checkPythonSyntax(code: string): Promise<{
   valid: boolean;
   error?: string;
 }> {
   try {
-    // 创建临时文件
+    // 创建临时脚本
     const tempDir = path.join(process.cwd(), 'temp', 'validation');
     await fs.mkdir(tempDir, { recursive: true });
-    
-    const tempFile = path.join(tempDir, `syntax_check_${Date.now()}.py`);
-    await fs.writeFile(tempFile, code, 'utf-8');
 
-    // 使用 python -m pycompile 检查语法
+    const tempFile = path.join(tempDir, `syntax_check_${Date.now()}.py`);
+
+    // 将代码包装在 try-except 中，避免执行时的错误影响语法检查
+    const wrappedCode = `
+import sys
+
+# 代码编译检查
+try:
+    ${code.split('\n').map(line => '    ' + line).join('\n')}
+except Exception as e:
+    print(f"Execution error: {e}", file=sys.stderr)
+    sys.exit(1)
+`;
+
+    await fs.writeFile(tempFile, wrappedCode, 'utf-8');
+
+    // 使用 python -c "compile()" 来检查语法
     return new Promise((resolve) => {
-      const pythonProcess = spawn('python3', ['-m', 'pycompile', tempFile], {
+      const pythonProcess = spawn('python3', ['-c', `
+import sys
+try:
+    with open('${tempFile.replace(/\\/g, '\\\\')}', 'r', encoding='utf-8') as f:
+        code = f.read()
+    compile(code, '${tempFile.replace(/\\/g, '\\\\')}', 'exec')
+    print("Syntax OK")
+    sys.exit(0)
+except SyntaxError as e:
+    print(f"Syntax Error: {e.msg} at line {e.lineno}", file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
+`], {
         cwd: tempDir,
       });
 
+      let stdout = '';
       let stderr = '';
+
+      pythonProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
 
       pythonProcess.stderr.on('data', (data) => {
         stderr += data.toString();
@@ -42,22 +75,31 @@ export async function checkPythonSyntax(code: string): Promise<{
           // 忽略清理错误
         }
 
-        if (code === 0) {
+        if (code === 0 && stdout.includes('Syntax OK')) {
           resolve({ valid: true });
         } else {
           resolve({
             valid: false,
-            error: stderr || '语法检查失败',
+            error: stderr || stdout || '语法检查失败',
           });
         }
       });
 
-      pythonProcess.on('error', () => {
+      pythonProcess.on('error', (error) => {
         resolve({
           valid: false,
-          error: 'Python 解释器不可用',
+          error: `Python 解释器错误: ${error.message}`,
         });
       });
+
+      // 10秒超时
+      setTimeout(() => {
+        pythonProcess.kill();
+        resolve({
+          valid: false,
+          error: '语法检查超时',
+        });
+      }, 10000);
     });
   } catch (error) {
     return {
