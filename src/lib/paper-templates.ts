@@ -250,3 +250,226 @@ export function validatePaperAgainstTemplate(
     missingSections,
   };
 }
+
+/**
+ * HiMCM 模板（美国高中数学建模竞赛）
+ */
+export const himcmTemplate: PaperTemplate = {
+  id: 'himcm',
+  name: 'HiMCM Template',
+  description: 'High School Mathematical Contest in Modeling standard template',
+  format: 'MCM',
+  language: 'ENGLISH',
+  sections: [
+    { id: 'summary', name: 'Summary', title: 'Summary', required: true, order: 1 },
+    { id: 'problem-analysis', name: 'Problem Analysis', title: 'Problem Analysis', required: true, order: 2 },
+    { id: 'assumptions', name: 'Assumptions', title: 'Assumptions', required: true, order: 3 },
+    { id: 'model', name: 'Model', title: 'Model', required: true, order: 4 },
+    { id: 'solution', name: 'Solution', title: 'Solution', required: true, order: 5 },
+    { id: 'results', name: 'Results', title: 'Results', required: true, order: 6 },
+    { id: 'discussion', name: 'Discussion', title: 'Discussion', required: true, order: 7 },
+    { id: 'conclusions', name: 'Conclusions', title: 'Conclusions', required: true, order: 8 },
+    { id: 'references', name: 'References', title: 'References', required: true, order: 9 },
+  ],
+  styling: {
+    fontSize: 11,
+    lineHeight: 1.5,
+    fontFamily: 'Times New Roman',
+    headingStyles: {
+      h1: { fontSize: 15, bold: true },
+      h2: { fontSize: 13, bold: true },
+      h3: { fontSize: 12, bold: true },
+      h4: { fontSize: 11, bold: true },
+    },
+    spacing: {
+      paragraph: 5,
+      section: 10,
+    },
+  },
+};
+
+/**
+ * MathorCup 模板
+ */
+export const mathorCupTemplate: PaperTemplate = {
+  id: 'mathorcup',
+  name: 'MathorCup Template',
+  description: 'MathorCup Global Mathematical Modeling Challenge standard template',
+  format: 'CUSTOM',
+  language: 'ENGLISH',
+  sections: [
+    { id: 'abstract', name: 'Abstract', title: 'Abstract', required: true, order: 1 },
+    { id: 'keywords', name: 'Keywords', title: 'Keywords', required: true, order: 2 },
+    { id: 'introduction', name: 'Introduction', title: 'Introduction', required: true, order: 3 },
+    { id: 'background', name: 'Background', title: 'Background', required: true, order: 4 },
+    { id: 'model', name: 'Model', title: 'Model', required: true, order: 5 },
+    { id: 'analysis', name: 'Analysis', title: 'Analysis', required: true, order: 6 },
+    { id: 'results', name: 'Results', title: 'Results', required: true, order: 7 },
+    { id: 'evaluation', name: 'Evaluation', title: 'Evaluation', required: false, order: 8 },
+    { id: 'conclusion', name: 'Conclusion', title: 'Conclusion', required: true, order: 9 },
+    { id: 'references', name: 'References', title: 'References', required: true, order: 10 },
+  ],
+  styling: {
+    fontSize: 12,
+    lineHeight: 1.6,
+    fontFamily: 'Times New Roman',
+    headingStyles: {
+      h1: { fontSize: 16, bold: true },
+      h2: { fontSize: 14, bold: true },
+      h3: { fontSize: 12, bold: true },
+      h4: { fontSize: 11, bold: true },
+    },
+    spacing: {
+      paragraph: 6,
+      section: 12,
+    },
+  },
+};
+
+/**
+ * APMCM 模板（亚太杯）
+ */
+export const apmcmTemplate: PaperTemplate = {
+  id: 'apmcm',
+  name: 'APMCM Template',
+  description: 'Asia-Pacific Mathematical Contest in Modeling standard template',
+  format: 'CUSTOM',
+  language: 'ENGLISH',
+  sections: [
+    { id: 'summary', name: 'Summary', title: 'Summary', required: true, order: 1 },
+    { id: 'keywords', name: 'Keywords', title: 'Keywords', required: true, order: 2 },
+    { id: 'introduction', name: 'Introduction', title: 'Introduction', required: true, order: 3 },
+    { id: 'problem-analysis', name: 'Problem Analysis', title: 'Problem Analysis', required: true, order: 4 },
+    { id: 'assumptions', name: 'Assumptions', title: 'Assumptions', required: true, order: 5 },
+    { id: 'model', name: 'Model', title: 'Model', required: true, order: 6 },
+    { id: 'solution', name: 'Solution', title: 'Solution', required: true, order: 7 },
+    { id: 'results', name: 'Results', title: 'Results', required: true, order: 8 },
+    { id: 'discussion', name: 'Discussion', title: 'Discussion', required: true, order: 9 },
+    { id: 'conclusions', name: 'Conclusions', title: 'Conclusions', required: true, order: 10 },
+    { id: 'references', name: 'References', title: 'References', required: true, order: 11 },
+  ],
+  styling: {
+    fontSize: 12,
+    lineHeight: 1.5,
+    fontFamily: 'Times New Roman',
+    headingStyles: {
+      h1: { fontSize: 16, bold: true },
+      h2: { fontSize: 14, bold: true },
+      h3: { fontSize: 12, bold: true },
+      h4: { fontSize: 11, bold: true },
+    },
+    spacing: {
+      paragraph: 6,
+      section: 12,
+    },
+  },
+};
+
+/**
+ * 研究生数学建模竞赛模板
+ */
+export const gmmcmTemplate: PaperTemplate = {
+  id: 'gmmcm',
+  name: 'GMMCM Template',
+  description: 'China Postgraduate Mathematical Contest in Modeling standard template',
+  format: 'CUMCM',
+  language: 'CHINESE',
+  sections: [
+    { id: 'summary', name: '摘要', title: '摘要', required: true, order: 1 },
+    { id: 'keywords', name: '关键词', title: '关键词', required: true, order: 2 },
+    { id: 'introduction', name: '问题背景与意义', title: '问题背景与意义', required: true, order: 3 },
+    { id: 'problem-analysis', name: '问题分析', title: '问题分析', required: true, order: 4 },
+    { id: 'assumptions', name: '模型假设', title: '模型假设', required: true, order: 5 },
+    { id: 'symbols', name: '符号说明', title: '符号说明', required: true, order: 6 },
+    { id: 'model', name: '模型建立', title: '模型建立', required: true, order: 7 },
+    { id: 'solution', name: '模型求解', title: '模型求解', required: true, order: 8 },
+    { id: 'results', name: '结果分析', title: '结果分析', required: true, order: 9 },
+    { id: 'discussion', name: '模型评价与改进', title: '模型评价与改进', required: true, order: 10 },
+    { id: 'references', name: '参考文献', title: '参考文献', required: true, order: 11 },
+    { id: 'appendix', name: '附录', title: '附录', required: false, order: 12 },
+  ],
+  styling: {
+    fontSize: 12,
+    lineHeight: 1.5,
+    fontFamily: '宋体',
+    headingStyles: {
+      h1: { fontSize: 16, bold: true },
+      h2: { fontSize: 14, bold: true },
+      h3: { fontSize: 12, bold: true },
+      h4: { fontSize: 11, bold: true },
+    },
+    spacing: {
+      paragraph: 6,
+      section: 12,
+    },
+  },
+};
+
+/**
+ * 更新模板预设
+ */
+export const paperTemplates = {
+  mcm: mcmTemplate,
+  cumcm: cumcmTemplate,
+  custom: customTemplate,
+  himcm: himcmTemplate,
+  mathorcup: mathorCupTemplate,
+  apmcm: apmcmTemplate,
+  gmmcm: gmmcmTemplate,
+};
+
+/**
+ * 创建自定义模板
+ */
+export function createCustomTemplate(
+  name: string,
+  description: string,
+  language: 'CHINESE' | 'ENGLISH',
+  sections: Array<{ title: string; required: boolean; order: number }>,
+): PaperTemplate {
+  return {
+    id: `custom_${Date.now()}`,
+    name,
+    description,
+    format: 'CUSTOM',
+    language,
+    sections: sections.map((section, index) => ({
+      id: `section_${index}`,
+      name: section.title,
+      title: section.title,
+      required: section.required,
+      order: section.order,
+    })),
+    styling: language === 'CHINESE'
+      ? {
+          fontSize: 12,
+          lineHeight: 1.5,
+          fontFamily: '宋体',
+          headingStyles: {
+            h1: { fontSize: 16, bold: true },
+            h2: { fontSize: 14, bold: true },
+            h3: { fontSize: 12, bold: true },
+            h4: { fontSize: 11, bold: true },
+          },
+          spacing: {
+            paragraph: 6,
+            section: 12,
+          },
+        }
+      : {
+          fontSize: 12,
+          lineHeight: 1.5,
+          fontFamily: 'Times New Roman',
+          headingStyles: {
+            h1: { fontSize: 16, bold: true },
+            h2: { fontSize: 14, bold: true },
+            h3: { fontSize: 12, bold: true },
+            h4: { fontSize: 11, bold: true },
+          },
+          spacing: {
+            paragraph: 6,
+            section: 12,
+          },
+        },
+  };
+}

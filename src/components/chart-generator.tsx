@@ -15,8 +15,13 @@ import {
   Filler,
   RadialLinearScale,
 } from 'chart.js';
+import { Chart } from 'chart.js';
+import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 import { Line, Bar, Scatter, Radar, Doughnut, Pie, Bubble, PolarArea } from 'react-chartjs-2';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+// 注册热力图插件
+Chart.register(MatrixController, MatrixElement);
 
 ChartJS.register(
   CategoryScale,
@@ -33,12 +38,12 @@ ChartJS.register(
 );
 
 interface ChartData {
-  type: 'line' | 'bar' | 'scatter' | 'radar' | 'pie' | 'doughnut' | 'bubble' | 'area' | 'polarArea' | 'stackedBar' | 'horizontalBar';
+  type: 'line' | 'bar' | 'scatter' | 'radar' | 'pie' | 'doughnut' | 'bubble' | 'area' | 'polarArea' | 'stackedBar' | 'horizontalBar' | 'heatmap';
   title: string;
   labels: string[];
   datasets: {
     label: string;
-    data: number[] | { x: number; y: number; r?: number }[];
+    data: number[] | { x: number; y: number; r?: number }[] | { x: string; y: string; v: number }[];
     borderColor?: string;
     backgroundColor?: string;
     backgroundColors?: string[];
@@ -47,6 +52,9 @@ interface ChartData {
     tension?: number;
     pointRadius?: number;
     pointHoverRadius?: number;
+    // 热力图特定属性
+    borderColorDark?: string;
+    borderColorLight?: string;
   }[];
 }
 
@@ -356,6 +364,80 @@ function renderChart(chart: ChartData) {
         />
       );
 
+    case 'heatmap':
+      return (
+        <div style={{ position: 'relative', height: '400px', width: '100%' }}>
+          <Chart
+            type="matrix"
+            data={{
+              datasets: chart.datasets.map(ds => ({
+                ...ds,
+                // 热力图数据格式: { x: string, y: string, v: number }
+                data: ds.data as { x: string; y: string; v: number }[],
+                backgroundColor(ctx: any) {
+                  const value = ctx.dataset.data[ctx.dataIndex]?.v || 0;
+                  const alpha = (value + 1) / 2;
+                  return `rgba(59, 130, 246, ${alpha})`;
+                },
+                borderColor(ctx: any) {
+                  const value = ctx.dataset.data[ctx.dataIndex]?.v || 0;
+                  return value > 0
+                    ? ds.borderColorDark || 'rgba(59, 130, 246, 1)'
+                    : ds.borderColorLight || 'rgba(59, 130, 246, 0.3)';
+                },
+                borderWidth: ds.borderWidth ?? 1,
+                width: ({ chart }: any) => (chart.chartArea || {}).width / chart.data.labels.length - 1,
+                height: ({ chart }: any) => (chart.chartArea || {}).height / chart.data.labels.length - 1,
+              })),
+              labels: chart.labels,
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  callbacks: {
+                    title() {
+                      return '';
+                    },
+                    label(context: any) {
+                      const v = context.dataset.data[context.dataIndex];
+                      return `X: ${v.x}, Y: ${v.y}, Value: ${v.v.toFixed(2)}`;
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  type: 'category',
+                  labels: chart.labels,
+                  ticks: {
+                    display: true,
+                  },
+                  grid: {
+                    display: false,
+                  },
+                },
+                y: {
+                  type: 'category',
+                  labels: chart.labels,
+                  offset: true,
+                  ticks: {
+                    display: true,
+                  },
+                  grid: {
+                    display: false,
+                  },
+                },
+              },
+            }}
+          />
+        </div>
+      );
+
     default:
       return null;
   }
@@ -379,7 +461,7 @@ export function extractChartsFromPaper(paperContent: string): ChartData[] {
     const line = lines[i].trim();
 
     // 检测图表开始标记
-    const chartMatch = line.match(/\[CHART:(LINE|BAR|SCATTER|RADAR|PIE|DOUGHNUT|BUBBLE|AREA|POLARAREA|STACKEDBAR|HORIZONTALBAR):(.+)\]/i);
+    const chartMatch = line.match(/\[CHART:(LINE|BAR|SCATTER|RADAR|PIE|DOUGHNUT|BUBBLE|AREA|POLARAREA|STACKEDBAR|HORIZONTALBAR|HEATMAP):(.+)\]/i);
     if (chartMatch) {
       if (currentChart) {
         // 保存上一个图表
