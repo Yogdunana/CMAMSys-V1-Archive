@@ -154,10 +154,9 @@ async function generatePaperContentWithAI(
   try {
     console.log('[generatePaperContentWithAI] 开始生成论文内容，userId:', userId);
 
-    // 获取用户的默认 AI Provider
+    // 获取所有激活的 AI Provider
     const providers = await prisma.aIProvider.findMany({
       where: {
-        createdById: userId,
         status: 'ACTIVE',
       },
     });

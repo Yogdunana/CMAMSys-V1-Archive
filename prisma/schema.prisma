@@ -684,16 +684,12 @@ model CodeGeneration {
   updatedAt         DateTime            @updatedAt
 
   autoTask          AutoModelingTask?   @relation
+  validations       CodeValidation[]
 
   @@index([autoTaskId])
   @@index([discussionId])
   @@index([executionStatus])
   @@index([createdAt])
-  @@map("code_generations")
-}
-  validations       CodeValidation[]
-
-  @@index([executionStatus])
   @@map("code_generations")
 }
 
