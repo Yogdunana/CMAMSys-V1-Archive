@@ -15,6 +15,9 @@ import { DiscussionHistoryViewer } from '@/components/discussion/DiscussionHisto
 import { OptimizationVisualizer } from '@/components/optimization/OptimizationVisualizer';
 import CodeExecutionLogViewer from '@/components/code-execution-log-viewer';
 import CodeGenerationProgress from '@/components/code-generation-progress';
+import LatexRenderer, { renderLatexText } from '@/components/latex-renderer';
+import ChartGenerator, { extractChartsFromPaper } from '@/components/chart-generator';
+import { exportToWord, exportToPDF } from '@/lib/document-export';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from 'sonner';
 import { useFetchWithAuth } from '@/lib/fetch-with-auth';
@@ -357,16 +360,25 @@ export default function AutoModelingTaskDetailPage() {
     try {
       console.log(`[handleDownloadPaper] 下载论文，格式: ${format}`);
 
-      // 创建 Blob
-      const blob = new Blob([paperContent.content], { type: 'text/plain;charset=utf-8' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${taskStatus.problemTitle}.${format === 'word' ? 'txt' : 'txt'}`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-
-      toast.success(`论文下载成功 (${format})`);
+      if (format === 'word') {
+        await exportToWord({
+          title: paperContent.title || taskStatus.problemTitle,
+          content: paperContent.content,
+          format: paperContent.format,
+          language: paperContent.language,
+          wordCount: paperContent.wordCount,
+        });
+        toast.success('Word 文档下载成功');
+      } else if (format === 'pdf') {
+        exportToPDF({
+          title: paperContent.title || taskStatus.problemTitle,
+          content: paperContent.content,
+          format: paperContent.format,
+          language: paperContent.language,
+          wordCount: paperContent.wordCount,
+        });
+        toast.success('PDF 文档下载成功');
+      }
     } catch (error) {
       console.error('[handleDownloadPaper] 下载失败:', error);
       toast.error('下载失败');
@@ -1357,8 +1369,14 @@ class VisualizationReport:
                               placeholder="编辑论文内容..."
                             />
                           ) : paperContent?.content ? (
-                            <div className="whitespace-pre-wrap">
-                              {paperContent.content}
+                            <div className="space-y-6">
+                              {/* 图表生成 */}
+                              <ChartGenerator charts={extractChartsFromPaper(paperContent.content)} />
+
+                              {/* LaTeX 公式渲染 */}
+                              <div className="whitespace-pre-wrap">
+                                {renderLatexText(paperContent.content)}
+                              </div>
                             </div>
                           ) : (
                             <div className="text-center py-12 text-gray-500">
