@@ -70,9 +70,15 @@ interface TaskStatus {
   errorLog: string | null;
   paperId: string | null;
   paperStatus: string | null;
+  discussionSummary?: {
+    taskList?: string[];
+  };
   discussion?: {
     id: string;
     messages: any[];
+    summary?: {
+      taskList?: string[];
+    };
   };
 }
 
@@ -265,54 +271,62 @@ export default function AutoModelingTaskDetailPage() {
     const progress = statusToUse.progress || 0;
     const status = statusToUse.overallStatus;
 
-    // 基础 TODO 列表
-    const baseTodos: TodoItem[] = [
-      { id: 1, text: '分析讨论记录，提取核心算法', status: 'pending', estimatedTime: '30s' },
-      { id: 2, text: '设计数据结构（Region, Station）', status: 'pending', estimatedTime: '20s' },
-      { id: 3, text: '实现遗传算法（GeneticAlgorithm）', status: 'pending', estimatedTime: '60s' },
-      { id: 4, text: '实现蚁群算法（AntColonyOptimization）', status: 'pending', estimatedTime: '50s' },
-      { id: 5, text: '实现混合优化器（HybridOptimizer）', status: 'pending', estimatedTime: '30s' },
-      { id: 6, text: '编写测试用例和验证代码', status: 'pending', estimatedTime: '40s' },
-      { id: 7, text: '生成可视化报告', status: 'pending', estimatedTime: '30s' },
-    ];
+    // 尝试从讨论结果中获取任务列表
+    let baseTodos: TodoItem[] = [];
+
+    // 优先从 discussionSummary 获取
+    if (statusToUse.discussionSummary && statusToUse.discussionSummary.taskList && statusToUse.discussionSummary.taskList.length > 0) {
+      console.log('[loadTodos] 使用 discussionSummary 中的任务列表');
+      baseTodos = statusToUse.discussionSummary.taskList.map((taskText: string, index: number) => ({
+        id: index + 1,
+        text: taskText,
+        status: 'pending' as const,
+        estimatedTime: '30s', // 默认估计时间
+      }));
+    }
+    // 其次从 discussion.summary 获取
+    else if (statusToUse.discussion && statusToUse.discussion.summary && statusToUse.discussion.summary.taskList && statusToUse.discussion.summary.taskList.length > 0) {
+      console.log('[loadTodos] 使用 discussion.summary 中的任务列表');
+      baseTodos = statusToUse.discussion.summary.taskList.map((taskText: string, index: number) => ({
+        id: index + 1,
+        text: taskText,
+        status: 'pending' as const,
+        estimatedTime: '30s', // 默认估计时间
+      }));
+    } else {
+      // 使用默认任务列表（兜底）
+      console.log('[loadTodos] 使用默认任务列表');
+      baseTodos = [
+        { id: 1, text: '分析讨论记录，提取核心算法', status: 'pending', estimatedTime: '30s' },
+        { id: 2, text: '设计数据结构', status: 'pending', estimatedTime: '20s' },
+        { id: 3, text: '实现核心算法/模型', status: 'pending', estimatedTime: '60s' },
+        { id: 4, text: '实现求解/优化方法', status: 'pending', estimatedTime: '50s' },
+        { id: 5, text: '结果验证和测试', status: 'pending', estimatedTime: '30s' },
+        { id: 6, text: '编写测试用例', status: 'pending', estimatedTime: '40s' },
+        { id: 7, text: '生成可视化报告', status: 'pending', estimatedTime: '30s' },
+      ];
+    }
 
     // 根据进度和状态更新 TODO 状态
     let completedCount = 0;
-    let currentTaskIndex = 0;
+    const totalTasks = baseTodos.length;
 
     if (status === 'COMPLETED' || status === 'PAPER_GENERATING') {
       // 所有任务已完成
-      completedCount = 7;
-      currentTaskIndex = 7;
+      completedCount = totalTasks;
     } else if (status === 'VALIDATING' || status === 'RETRYING') {
       // 代码生成完成，正在校验
-      completedCount = 5;
-      currentTaskIndex = 5;
+      completedCount = Math.floor(totalTasks * 0.8);
     } else if (status === 'CODING') {
       // 正在生成代码，根据进度判断
-      if (progress >= 60) {
-        completedCount = 5;
-        currentTaskIndex = 5;
-      } else if (progress >= 50) {
-        completedCount = 4;
-        currentTaskIndex = 4;
-      } else if (progress >= 40) {
-        completedCount = 3;
-        currentTaskIndex = 3;
-      } else if (progress >= 30) {
-        completedCount = 2;
-        currentTaskIndex = 2;
-      } else if (progress >= 20) {
-        completedCount = 1;
-        currentTaskIndex = 1;
-      }
+      completedCount = Math.floor((progress / 100) * totalTasks);
     } else if (status === 'DISCUSSING') {
       // 正在讨论
-      if (progress >= 30) {
-        completedCount = 1;
-        currentTaskIndex = 1;
-      }
+      completedCount = 0;
     }
+
+    // 确保 completedCount 不超过 totalTasks
+    completedCount = Math.min(completedCount, totalTasks);
 
     // 更新 TODO 状态
     const updatedTodos = baseTodos.map((todo, index) => {
