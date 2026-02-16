@@ -1661,93 +1661,93 @@ psql --version  # 应该输出 14.x 或更高
 redis-server --version  # 应该输出 7.x 或更高
 ```
 
-### 安装步骤
+### 安装方式
 
-#### 1. 克隆仓库
+CMAMSys 提供三种安装方式：
+
+#### 方式一：Web 界面安装（推荐新手）
+
+最简单的安装方式，通过可视化向导完成安装。
 
 ```bash
+# 1. 克隆仓库
 git clone https://github.com/your-org/cmamsys.git
 cd cmamsys
-```
 
-#### 2. 安装依赖
-
-```bash
+# 2. 安装依赖
 pnpm install
+
+# 3. 启动应用
+pnpm dev
+
+# 4. 打开浏览器访问安装向导
+# http://localhost:5000/install
 ```
 
-#### 3. 配置环境变量
+安装向导会引导你完成环境检查、数据库配置、管理员创建等步骤。
+
+详细说明：[Web 安装指南](DEPLOYMENT.md#方式一web-界面安装)
+
+#### 方式二：命令行安装
+
+通过交互式命令行脚本快速安装。
 
 ```bash
-# 复制环境变量模板
-cp .env.example .env
+# 1. 克隆仓库
+git clone https://github.com/your-org/cmamsys.git
+cd cmamsys
 
-# 编辑 .env 文件
-nano .env
-```
+# 2. 运行安装脚本
+node scripts/install-cli.js
 
-**必需的环境变量**：
+# 3. 跟随提示完成配置
 
-```env
-# 数据库
-DATABASE_URL="postgresql://user:password@localhost:5432/cmamsys"
-
-# JWT
-JWT_SECRET="your-super-secret-jwt-key-at-least-32-characters"
-JWT_ACCESS_TOKEN_EXPIRES_IN="15m"
-JWT_REFRESH_TOKEN_EXPIRES_IN="7d"
-
-# 加密
-ENCRYPTION_KEY="your-32-character-encryption-key"
-
-# 应用
-NEXT_PUBLIC_APP_URL="http://localhost:5000"
-NEXT_PUBLIC_APP_NAME="CMAMSys"
-
-# AI Provider（可选）
-DEEPSEEK_API_KEY=""
-DOUBAO_API_KEY=""
-```
-
-#### 4. 初始化数据库
-
-```bash
-# 运行数据库迁移
-pnpm prisma migrate dev
-
-# （可选）填充测试数据
-pnpm prisma seed
-```
-
-#### 5. 启动开发服务器
-
-```bash
+# 4. 启动应用
 pnpm dev
 ```
 
-服务器将运行在 `http://localhost:5000`
+详细说明：[命令行安装指南](DEPLOYMENT.md#方式二命令行安装)
 
-#### 6. 访问应用
+#### 方式三：Docker 部署（推荐生产环境）
 
-在浏览器中打开 `http://localhost:5000`
-
-默认管理员账户：
-- 邮箱：`admin@cmamsys.com`
-- 密码：`admin123`
-
-**⚠️ 请立即修改默认密码！**
-
-### Docker 快速开始
-
-#### 使用 Docker Compose
+使用 Docker Compose 一键部署，包含所有依赖服务。
 
 ```bash
-# 启动所有服务（包括数据库）
-cd docker
-docker-compose up -d
+# 1. 克隆仓库
+git clone https://github.com/your-org/cmamsys.git
+cd cmamsys
 
-# 查看日志
-docker-compose logs -f
+# 2. 配置环境变量
+cp .env.docker.example .env
+
+# 3. 启动服务
+chmod +x docker-deploy.sh
+./docker-deploy.sh start
+
+# 4. 初始化数据库
+./docker-deploy.sh migrate
+./docker-deploy.sh seed
+```
+
+详细说明：[Docker 部署指南](DEPLOYMENT.md#方式三docker-部署)
+
+---
+
+### 快速链接
+
+- 📖 [完整部署文档](DEPLOYMENT.md)
+- ⚡ [快速开始指南](QUICKSTART.md)
+- 📚 [用户指南](USER_GUIDE.md)
+- 🔌 [API 文档](API.md)
+
+### 默认账户
+
+根据安装方式不同，默认账户可能不同：
+
+- **Web/命令行安装**：安装时设置的管理员账户
+- **Docker 安装**：运行 `./docker-deploy.sh seed` 时创建的账户
+
+**⚠️ 请立即修改默认密码！**
 
 # 停止服务
 docker-compose down
@@ -1769,6 +1769,20 @@ docker run -p 5000:5000 \
 ---
 
 ## 📖 详细安装指南
+
+完整的部署和安装文档请参考：
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - 完整部署指南
+  - Web 界面安装
+  - 命令行安装
+  - Docker 部署
+  - 配置说明
+  - 常见问题
+  - 生产环境部署建议
+
+- **[QUICKSTART.md](QUICKSTART.md)** - 5 分钟快速开始
+
+---
 
 ### 前置安装
 
