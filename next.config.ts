@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 启用 standalone 输出模式（Docker 部署需要）
+  output: 'standalone',
 };
 
 export default nextConfig;
