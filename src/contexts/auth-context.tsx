@@ -73,14 +73,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function verifyToken(token: string): Promise<boolean> {
     try {
       // 先本地验证 token 是否过期
-      const { verifyAccessToken } = await import('@/lib/jwt');
-      const payload = verifyAccessToken(token);
+      const { verifyAccessToken, isJWTSignatureError } = await import('@/lib/jwt');
+      const payload = await verifyAccessToken(token);
 
       if (!payload) {
         // Token 无效或过期，尝试刷新
         console.log('[AuthContext] Token invalid, attempting refresh...');
-        await refreshAuth();
-        return false;
+        const refreshSuccess = await refreshAuth();
+        return refreshSuccess;
       }
 
       // Token 本地有效，再验证服务器端
@@ -94,15 +94,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!response.ok) {
         // 服务器端验证失败，尝试刷新
         console.log('[AuthContext] Server verification failed, attempting refresh...');
-        await refreshAuth();
-        return false;
+        const refreshSuccess = await refreshAuth();
+        return refreshSuccess;
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[AuthContext] Token verification failed:', error);
-      await refreshAuth();
-      return false;
+
+      // 如果是签名验证失败，触发自定义事件并退出登录
+      if (isJWTSignatureError(error)) {
+        console.log('[AuthContext] JWT signature verification failed');
+        // 触发自定义事件，让 UI 显示友好的对话框
+        window.dispatchEvent(new CustomEvent('jwt-signature-error'));
+        // 退出登录
+        logout();
+        return false;
+      }
+
+      // 其他错误，尝试刷新
+      const refreshSuccess = await refreshAuth();
+      return refreshSuccess;
     }
   }
 
