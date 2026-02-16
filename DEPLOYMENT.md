@@ -71,14 +71,16 @@ pnpm dev
 
 安装向导包含以下步骤：
 
-1. **欢迎页面** - 了解 CMAMSys 功能和系统要求
-2. **环境检查** - 自动检测 Node.js、数据库等环境
-3. **数据库配置** - 配置数据库连接信息
-4. **管理员账户** - 创建初始管理员账户
-5. **应用配置** - 配置应用名称、URL 等
-6. **安全配置** - 生成或配置安全密钥
-7. **安装进度** - 显示安装进度和日志
-8. **完成页面** - 安装完成，提供登录链接
+1. **欢迎使用** - 了解 CMAMSys 功能和系统要求
+2. **环境检查** - 自动检测 Node.js、数据库、文件权限等环境
+3. **数据库配置** - 配置数据库连接信息（支持新建或连接现有数据库）
+4. **管理员账户** - 创建初始管理员账户（用户名、邮箱、密码）
+5. **应用配置** - 配置应用名称、URL、端口，可选启用 Redis
+6. **邮件配置** - 配置 SMTP 邮件服务（可选，用于发送通知和密码重置）
+7. **路径配置** - 配置系统文件存储路径（安装路径、数据路径、日志路径、上传路径）
+8. **安全配置** - 生成或配置安全密钥（JWT、CSRF、加密、会话）
+9. **安装中** - 显示安装进度和日志
+10. **完成** - 安装完成，提供登录链接和后续指引
 
 ### 步骤 6: 开始使用
 
@@ -111,36 +113,87 @@ node scripts/install-cli.js
 欢迎使用 CMAMSys 安装向导！
 ================================
 
-? 请输入应用名称 (CMAMSys):
-? 请输入应用 URL (http://localhost:5000):
-? 数据库类型 (新建/已有) (新建):
-? 数据库主机 (localhost):
-? 数据库端口 (5432):
-? 数据库名称 (cmamsys):
-? 数据库用户名 (postgres):
+[步骤 1] 环境检查
+✓ Node.js 版本: v20.x.x
+✓ pnpm 版本: 9.x.x
+✓ PostgreSQL 可用
+
+[步骤 2] 数据库配置
+? 是否使用 Docker 部署数据库？(Y/n):
+? 数据库地址 (默认: localhost):
+? 数据库端口 (默认: 5432):
+? 数据库名称 (默认: cmamsys):
+? 数据库用户名 (默认: postgres):
 ? 数据库密码:
-? 管理员用户名 (admin):
+
+[步骤 3] 管理员账户
+? 管理员用户名 (默认: admin):
 ? 管理员邮箱:
 ? 管理员密码:
-? 生成随机安全密钥? (Y/n):
+? 确认密码:
 
-正在安装...
-✓ 环境检查完成
-✓ 数据库连接成功
-✓ 执行数据库迁移
+[步骤 4] 应用配置
+? 应用名称 (默认: CMAMSys):
+? 应用 URL (默认: http://localhost:5000):
+? 应用端口 (默认: 5000):
+? 是否启用 Redis？(y/N):
+
+[步骤 5] 邮件配置
+邮件服务用于发送通知和重置密码，可以稍后在系统设置中配置
+? 是否配置邮件服务？(y/N):
+? SMTP 服务器地址 (如 smtp.gmail.com):
+? SMTP 端口 (SSL: 465, TLS: 587): 587
+? 使用 SSL/TLS？(Y/n): Y
+? SMTP 用户名:
+? SMTP 密码:
+? 发件人邮箱 (如 noreply@example.com):
+? 发件人名称 (默认: CMAMSys):
+
+[步骤 6] 路径配置
+配置系统文件存储路径（可以是绝对路径或相对路径）
+? 安装路径 (默认: 当前目录): /opt/cmamsys
+? 数据存储路径 (默认: ./data): /var/lib/cmamsys/data
+? 日志存储路径 (默认: ./logs): /var/log/cmamsys
+? 上传文件路径 (默认: ./uploads): /var/lib/cmamsys/uploads
+
+[步骤 7] 安全配置
+? 是否自动生成安全密钥？(Y/n): Y
+✓ 已自动生成安全密钥
+
+[步骤 9] 确认安装
+
+配置摘要:
+  应用名称: CMAMSys
+  应用 URL: http://localhost:5000
+  管理员用户名: admin
+  管理员邮箱: admin@example.com
+  数据库: localhost:5432/cmamsys
+  邮件服务: 已启用
+  安装路径: /opt/cmamsys
+  数据路径: /var/lib/cmamsys/data
+  日志路径: /var/log/cmamsys
+  上传路径: /var/lib/cmamsys/uploads
+
+? 确认开始安装？(Y/n): Y
+
+[步骤 8] 开始安装
+✓ 生成环境变量文件
+✓ 安装依赖
+✓ 运行数据库迁移
+✓ 生成 Prisma Client
 ✓ 创建管理员账户
-✓ 生成配置文件
+✓ 创建安装标记文件
 
-安装完成！
-================================
+[步骤 10] 安装完成
+============================================================
+  安装成功！
+============================================================
 
-访问地址: http://localhost:5000
-登录邮箱: admin@example.com
-登录密码: **********
-
-启动应用:
-  pnpm dev      # 开发模式
-  pnpm start    # 生产模式
+下一步操作:
+  1. 启动应用: coze dev
+  2. 访问应用: http://localhost:5000
+  3. 使用管理员账户登录: admin
+============================================================
 ```
 
 ### 步骤 4: 启动应用
@@ -319,6 +372,93 @@ docker compose up -d --build
 | `ALLOWED_ORIGINS` | 允许的来源 | `http://localhost:5000` |
 | `ALLOWED_METHODS` | 允许的 HTTP 方法 | `GET,POST,PUT,DELETE,PATCH,OPTIONS` |
 | `ALLOWED_HEADERS` | 允许的请求头 | `Content-Type,Authorization,X-CSRF-Token` |
+
+#### 邮件配置（SMTP）
+
+邮件服务用于发送通知、密码重置等功能。虽然不是必需的，但建议配置。
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `SMTP_ENABLED` | 是否启用邮件服务 | `false` |
+| `SMTP_HOST` | SMTP 服务器地址 | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP 端口 | `587` |
+| `SMTP_SECURE` | 是否使用 SSL/TLS | `false` |
+| `SMTP_USER` | SMTP 用户名 | - |
+| `SMTP_PASSWORD` | SMTP 密码 | - |
+| `SMTP_FROM` | 发件人邮箱 | `noreply@example.com` |
+| `SMTP_FROM_NAME` | 发件人名称 | `CMAMSys` |
+
+**常用 SMTP 服务商配置示例**：
+
+```env
+# Gmail
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+
+# Gmail (SSL)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+
+# QQ 邮箱
+SMTP_HOST=smtp.qq.com
+SMTP_PORT=587
+SMTP_SECURE=false
+
+# 163 邮箱
+SMTP_HOST=smtp.163.com
+SMTP_PORT=465
+SMTP_SECURE=true
+
+# 阿里云企业邮箱
+SMTP_HOST=smtp.mxhichina.com
+SMTP_PORT=465
+SMTP_SECURE=true
+```
+
+**注意**：
+- Gmail 需要启用"应用专用密码"，不能使用账户密码
+- QQ 邮箱需要开启 SMTP 服务并获取授权码
+- 163 邮箱需要开启 SMTP 服务并获取授权码
+
+#### 路径配置
+
+系统文件存储路径，可以是绝对路径或相对路径。
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `INSTALL_PATH` | 应用安装路径 | `./` |
+| `DATA_PATH` | 数据存储路径 | `./data` |
+| `LOG_PATH` | 日志存储路径 | `./logs` |
+| `UPLOAD_PATH` | 上传文件路径 | `./uploads` |
+| `TEMP_PATH` | 临时文件路径 | `./temp` |
+
+**路径说明**：
+
+- **INSTALL_PATH**：CMAMSys 主程序所在路径
+- **DATA_PATH**：存储应用数据、配置文件、缓存等
+- **LOG_PATH**：存储系统日志文件
+- **UPLOAD_PATH**：存储用户上传的文件（论文、附件等）
+- **TEMP_PATH**：存储临时文件（如上传过程中的文件）
+
+**生产环境建议路径**：
+
+```env
+INSTALL_PATH=/opt/cmamsys
+DATA_PATH=/var/lib/cmamsys/data
+LOG_PATH=/var/log/cmamsys
+UPLOAD_PATH=/var/lib/cmamsys/uploads
+TEMP_PATH=/var/lib/cmamsys/temp
+```
+
+确保这些目录具有正确的读写权限：
+
+```bash
+sudo mkdir -p /opt/cmamsys /var/lib/cmamsys/data /var/log/cmamsys /var/lib/cmamsys/uploads /var/lib/cmamsys/temp
+sudo chown -R $USER:$USER /opt/cmamsys /var/lib/cmamsys /var/log/cmamsys
+sudo chmod -R 755 /opt/cmamsys /var/lib/cmamsys /var/log/cmamsys
+```
 
 ### 生成安全密钥
 

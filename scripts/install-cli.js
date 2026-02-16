@@ -152,6 +152,56 @@ async function promptAppConfig() {
   };
 }
 
+async function promptEmailConfig() {
+  printStep(5, '邮件配置');
+  
+  printInfo('邮件服务用于发送通知和重置密码，可以稍后在系统设置中配置');
+  const enableEmail = await question('是否配置邮件服务？(y/N): ');
+  
+  if (enableEmail.toLowerCase() !== 'y') {
+    return {
+      enableEmail: false,
+    };
+  }
+  
+  const smtpHost = await question('SMTP 服务器地址 (如 smtp.gmail.com): ');
+  const smtpPort = parseInt(await question('SMTP 端口 (SSL: 465, TLS: 587): ')) || 587;
+  const smtpSecure = await question('使用 SSL/TLS？(Y/n): ') || 'Y';
+  const smtpUser = await question('SMTP 用户名: ');
+  const smtpPassword = await question('SMTP 密码: ');
+  const smtpFrom = await question('发件人邮箱 (如 noreply@example.com): ');
+  const smtpFromName = await question('发件人名称 (默认: CMAMSys): ') || 'CMAMSys';
+  
+  return {
+    enableEmail: true,
+    smtpHost,
+    smtpPort,
+    smtpSecure: smtpSecure.toLowerCase() !== 'n',
+    smtpUser,
+    smtpPassword,
+    smtpFrom,
+    smtpFromName,
+  };
+}
+
+async function promptPathConfig() {
+  printStep(6, '路径配置');
+  
+  printInfo('配置系统文件存储路径（可以是绝对路径或相对路径）');
+  
+  const installPath = await question('安装路径 (默认: 当前目录): ') || process.cwd();
+  const dataPath = await question('数据存储路径 (默认: ./data): ') || './data';
+  const logPath = await question('日志存储路径 (默认: ./logs): ') || './logs';
+  const uploadPath = await question('上传文件路径 (默认: ./uploads): ') || './uploads';
+  
+  return {
+    installPath,
+    dataPath,
+    logPath,
+    uploadPath,
+  };
+}
+
 function generateSecret() {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)))
     .map(b => b.toString(16).padStart(2, '0'))
@@ -159,7 +209,7 @@ function generateSecret() {
 }
 
 async function promptSecurityConfig() {
-  printStep(5, '安全配置');
+  printStep(7, '安全配置');
   
   const autoGenerate = await question('是否自动生成安全密钥？(Y/n): ');
   
@@ -227,6 +277,16 @@ function generateEnvFile(config) {
     '# Redis',
     `REDIS_URL="${config.app.enableRedis ? config.app.redisUrl : ''}"`,
     '',
+    '# Email Configuration',
+    `SMTP_ENABLED="${config.email.enableEmail}"`,
+    `SMTP_HOST="${config.email.enableEmail ? config.email.smtpHost : ''}"`,
+    `SMTP_PORT="${config.email.enableEmail ? config.email.smtpPort : ''}"`,
+    `SMTP_SECURE="${config.email.enableEmail ? config.email.smtpSecure : ''}"`,
+    `SMTP_USER="${config.email.enableEmail ? config.email.smtpUser : ''}"`,
+    `SMTP_PASSWORD="${config.email.enableEmail ? config.email.smtpPassword : ''}"`,
+    `SMTP_FROM="${config.email.enableEmail ? config.email.smtpFrom : ''}"`,
+    `SMTP_FROM_NAME="${config.email.enableEmail ? config.email.smtpFromName : ''}"`,
+    '',
     '# Monitoring',
     `SENTRY_DSN=""`,
     '',
@@ -241,13 +301,19 @@ function generateEnvFile(config) {
     '# Upload',
     `MAX_FILE_SIZE=10485760`,
     `ALLOWED_FILE_TYPES=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.gif"`,
+    '',
+    '# Paths',
+    `INSTALL_PATH="${config.paths.installPath}"`,
+    `DATA_PATH="${config.paths.dataPath}"`,
+    `LOG_PATH="${config.paths.logPath}"`,
+    `UPLOAD_PATH="${config.paths.uploadPath}"`,
   ];
   
   return lines.join('\n');
 }
 
 async function install(config) {
-  printStep(6, '开始安装');
+  printStep(8, '开始安装');
   
   try {
     // 1. 生成环境变量文件
@@ -310,23 +376,32 @@ async function main() {
     const dbConfig = await promptDatabaseConfig();
     const adminConfig = await promptAdminAccount();
     const appConfig = await promptAppConfig();
+    const emailConfig = await promptEmailConfig();
+    const pathConfig = await promptPathConfig();
     const securityConfig = await promptSecurityConfig();
     
     const config = {
       db: dbConfig,
       admin: adminConfig,
       app: appConfig,
+      email: emailConfig,
+      paths: pathConfig,
       security: securityConfig,
     };
     
     // 确认安装
-    printStep(7, '确认安装');
+    printStep(9, '确认安装');
     console.log('\n配置摘要:');
     console.log(`  应用名称: ${config.app.appName}`);
     console.log(`  应用 URL: ${config.app.appUrl}`);
     console.log(`  管理员用户名: ${config.admin.username}`);
     console.log(`  管理员邮箱: ${config.admin.email}`);
     console.log(`  数据库: ${config.db.useDocker ? 'Docker 部署' : `${config.db.host}:${config.db.port}/${config.db.name}`}`);
+    console.log(`  邮件服务: ${config.email.enableEmail ? '已启用' : '未启用'}`);
+    console.log(`  安装路径: ${config.paths.installPath}`);
+    console.log(`  数据路径: ${config.paths.dataPath}`);
+    console.log(`  日志路径: ${config.paths.logPath}`);
+    console.log(`  上传路径: ${config.paths.uploadPath}`);
     console.log('');
     
     const confirm = await question('确认开始安装？(Y/n): ');
@@ -339,7 +414,7 @@ async function main() {
     const success = await install(config);
     
     if (success) {
-      printStep(8, '安装完成');
+      printStep(10, '安装完成');
       console.log('\n' + '='.repeat(60));
       console.log('  安装成功！');
       console.log('='.repeat(60));

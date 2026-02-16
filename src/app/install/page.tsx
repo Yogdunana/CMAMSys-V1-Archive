@@ -54,11 +54,27 @@ interface InstallConfig {
   encryptionKey?: string;
   sessionSecret?: string;
   
+  // 邮件配置
+  enableEmail: boolean;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpSecure?: boolean;
+  smtpUser?: string;
+  smtpPassword?: string;
+  smtpFrom?: string;
+  smtpFromName?: string;
+  
   // 其他配置
   enableRedis: boolean;
   redisUrl?: string;
   enableSentry: boolean;
   sentryDsn?: string;
+  
+  // 安装路径配置
+  installPath: string;
+  dataPath: string;
+  logPath: string;
+  uploadPath: string;
 }
 
 export default function InstallWizard() {
@@ -76,8 +92,13 @@ export default function InstallWizard() {
     appName: 'CMAMSys',
     appUrl: 'http://localhost:5000',
     appPort: 5000,
+    enableEmail: false,
     enableRedis: false,
     enableSentry: false,
+    installPath: process.cwd(),
+    dataPath: './data',
+    logPath: './logs',
+    uploadPath: './uploads',
   });
   
   const [envChecks, setEnvChecks] = useState<Record<string, boolean>>({});
@@ -95,6 +116,8 @@ export default function InstallWizard() {
     { title: '数据库配置', icon: Database },
     { title: '管理员账户', icon: User },
     { title: '应用配置', icon: Globe },
+    { title: '邮件配置', icon: Key },
+    { title: '路径配置', icon: Server },
     { title: '安全配置', icon: Key },
     { title: '安装中...', icon: Loader2 },
     { title: '完成', icon: CheckCircle2 },
@@ -222,6 +245,16 @@ export default function InstallWizard() {
       }
     }
     
+    if (currentStep === 5) {
+      // 邮件配置验证
+      if (config.enableEmail) {
+        if (!config.smtpHost || !config.smtpPort || !config.smtpUser || !config.smtpPassword || !config.smtpFrom) {
+          toast.error('启用邮件服务时，必须填写所有 SMTP 配置');
+          return;
+        }
+      }
+    }
+    
     setCurrentStep(currentStep + 1);
   };
 
@@ -302,6 +335,22 @@ export default function InstallWizard() {
             />
           )}
           {currentStep === 5 && (
+            <EmailConfigStep
+              config={config}
+              onConfigChange={setConfig}
+              onNext={nextStep}
+              onPrev={prevStep}
+            />
+          )}
+          {currentStep === 6 && (
+            <PathConfigStep
+              config={config}
+              onConfigChange={setConfig}
+              onNext={nextStep}
+              onPrev={prevStep}
+            />
+          )}
+          {currentStep === 7 && (
             <SecurityConfigStep
               config={config}
               onConfigChange={setConfig}
@@ -310,7 +359,7 @@ export default function InstallWizard() {
               onPrev={prevStep}
             />
           )}
-          {currentStep === 6 && (
+          {currentStep === 8 && (
             <InstallStep
               progress={installProgress}
               status={installStatus}
@@ -318,7 +367,7 @@ export default function InstallWizard() {
               onPrev={prevStep}
             />
           )}
-          {currentStep === 7 && <CompleteStep />}
+          {currentStep === 9 && <CompleteStep />}
         </CardContent>
       </Card>
     </div>
@@ -753,6 +802,225 @@ function AppConfigStep({ config, onConfigChange, onNext, onPrev }: any) {
               />
             </div>
           )}
+        </div>
+      </div>
+      
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={onPrev}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          上一步
+        </Button>
+        <Button onClick={onNext}>
+          下一步
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// 邮件配置步骤
+function EmailConfigStep({ config, onConfigChange, onNext, onPrev }: any) {
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <Key className="w-12 h-12 mx-auto mb-3 text-primary" />
+        <h2 className="text-2xl font-bold">邮件配置</h2>
+        <p className="text-muted-foreground">配置邮件服务器，用于发送通知和重置密码</p>
+      </div>
+      
+      <Alert>
+        <AlertDescription>
+          如果不配置邮件服务，某些功能（如邮件通知、密码重置）将不可用。可以稍后在系统设置中配置。
+        </AlertDescription>
+      </Alert>
+      
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="enableEmail"
+              checked={config.enableEmail}
+              onCheckedChange={(checked) =>
+                onConfigChange({ ...config, enableEmail: checked as boolean })
+              }
+            />
+            <Label htmlFor="enableEmail">启用邮件服务</Label>
+          </div>
+        </div>
+        
+        {config.enableEmail && (
+          <div className="space-y-4 mt-4 p-4 border rounded-lg bg-muted/50">
+            <div className="space-y-2">
+              <Label htmlFor="smtpHost">SMTP 服务器地址</Label>
+              <Input
+                id="smtpHost"
+                placeholder="smtp.gmail.com"
+                value={config.smtpHost || ''}
+                onChange={(e) => onConfigChange({ ...config, smtpHost: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                例如：smtp.gmail.com, smtp.qq.com, smtp.aliyun.com
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="smtpPort">SMTP 端口</Label>
+                <Input
+                  id="smtpPort"
+                  type="number"
+                  placeholder="587"
+                  value={config.smtpPort || ''}
+                  onChange={(e) => onConfigChange({ ...config, smtpPort: parseInt(e.target.value) })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  SSL: 465, TLS: 587
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 pt-6">
+                  <Checkbox
+                    id="smtpSecure"
+                    checked={config.smtpSecure || false}
+                    onCheckedChange={(checked) =>
+                      onConfigChange({ ...config, smtpSecure: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="smtpSecure">使用 SSL/TLS</Label>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="smtpUser">SMTP 用户名</Label>
+                <Input
+                  id="smtpUser"
+                  placeholder="your-email@example.com"
+                  value={config.smtpUser || ''}
+                  onChange={(e) => onConfigChange({ ...config, smtpUser: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="smtpPassword">SMTP 密码</Label>
+                <Input
+                  id="smtpPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={config.smtpPassword || ''}
+                  onChange={(e) => onConfigChange({ ...config, smtpPassword: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="smtpFrom">发件人邮箱</Label>
+              <Input
+                id="smtpFrom"
+                placeholder="noreply@example.com"
+                value={config.smtpFrom || ''}
+                onChange={(e) => onConfigChange({ ...config, smtpFrom: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="smtpFromName">发件人名称</Label>
+              <Input
+                id="smtpFromName"
+                placeholder="CMAMSys"
+                value={config.smtpFromName || ''}
+                onChange={(e) => onConfigChange({ ...config, smtpFromName: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={onPrev}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          上一步
+        </Button>
+        <Button onClick={onNext}>
+          下一步
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// 路径配置步骤
+function PathConfigStep({ config, onConfigChange, onNext, onPrev }: any) {
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <Server className="w-12 h-12 mx-auto mb-3 text-primary" />
+        <h2 className="text-2xl font-bold">路径配置</h2>
+        <p className="text-muted-foreground">配置系统文件存储路径</p>
+      </div>
+      
+      <Alert>
+        <AlertDescription>
+          路径可以是绝对路径（如 /var/lib/cmamsys）或相对路径（如 ./data）。
+          确保指定的目录具有读写权限。
+        </AlertDescription>
+      </Alert>
+      
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="installPath">安装路径</Label>
+          <Input
+            id="installPath"
+            placeholder="/workspace/projects"
+            value={config.installPath}
+            onChange={(e) => onConfigChange({ ...config, installPath: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            CMAMSys 主程序所在路径
+          </p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="dataPath">数据存储路径</Label>
+          <Input
+            id="dataPath"
+            placeholder="./data"
+            value={config.dataPath}
+            onChange={(e) => onConfigChange({ ...config, dataPath: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            存储应用数据、配置文件等
+          </p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="logPath">日志存储路径</Label>
+          <Input
+            id="logPath"
+            placeholder="./logs"
+            value={config.logPath}
+            onChange={(e) => onConfigChange({ ...config, logPath: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            存储系统日志文件
+          </p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="uploadPath">上传文件路径</Label>
+          <Input
+            id="uploadPath"
+            placeholder="./uploads"
+            value={config.uploadPath}
+            onChange={(e) => onConfigChange({ ...config, uploadPath: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            存储用户上传的文件（论文、附件等）
+          </p>
         </div>
       </div>
       
