@@ -23,6 +23,7 @@ const createUserSchema = z.object({
 /**
  * GET /api/admin/users
  * Get all users
+ * 修复：添加分页和限制
  */
 export async function GET(request: NextRequest) {
   return withPermission(
@@ -31,26 +32,46 @@ export async function GET(request: NextRequest) {
     PermissionAction.READ,
     async (req, user) => {
       try {
-        const users = await prisma.user.findMany({
-          select: {
-            id: true,
-            email: true,
-            username: true,
-            role: true,
-            isVerified: true,
-            isMfaEnabled: true,
-            createdAt: true,
-            lastLoginAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        });
+        // 获取分页参数
+        const searchParams = request.nextUrl.searchParams;
+        const page = parseInt(searchParams.get('page') || '1');
+        const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '20'), 100); // 最大 100
+
+        const skip = (page - 1) * pageSize;
+
+        const [users, total] = await Promise.all([
+          prisma.user.findMany({
+            select: {
+              id: true,
+              email: true,
+              username: true,
+              role: true,
+              isVerified: true,
+              isMfaEnabled: true,
+              createdAt: true,
+              lastLoginAt: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            skip,
+            take: pageSize,
+          }),
+          prisma.user.count(),
+        ]);
 
         return NextResponse.json<ApiResponse>(
           {
             success: true,
-            data: users,
+            data: {
+              users,
+              pagination: {
+                page,
+                pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize),
+              },
+            },
             timestamp: new Date().toISOString(),
           },
           { status: 200 }

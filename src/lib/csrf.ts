@@ -5,9 +5,12 @@
 
 import { SignJWT, jwtVerify } from 'jose';
 
-const CSRF_SECRET = new TextEncoder().encode(
-  process.env.CSRF_SECRET || 'your-super-secret-csrf-key-change-in-production'
-);
+// 修复：移除默认值，强制要求环境变量
+const CSRF_SECRET_VALUE = process.env.CSRF_SECRET;
+if (!CSRF_SECRET_VALUE) {
+  throw new Error('CSRF_SECRET environment variable is required');
+}
+const CSRF_SECRET = new TextEncoder().encode(CSRF_SECRET_VALUE);
 
 const CSRF_TOKEN_EXPIRY = '1h'; // 1 hour
 

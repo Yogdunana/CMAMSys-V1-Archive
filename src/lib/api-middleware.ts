@@ -75,6 +75,7 @@ export function createApiMiddleware<T extends NextRequest>(
 /**
  * Predefined Middleware Configurations
  * 预定义中间件配置
+ * 修复：为所有修改数据的 API 启用 CSRF 保护
  */
 export const MiddlewarePresets = {
   // Auth endpoints - strict rate limiting, CSRF required
@@ -84,24 +85,24 @@ export const MiddlewarePresets = {
     version: { enabled: true, requireVersion: true },
   },
 
-  // General API - standard rate limiting, CSRF optional
+  // General API - standard rate limiting, CSRF enabled for write operations
   general: {
     rateLimit: { enabled: true, preset: 'general' },
-    csrf: { enabled: false },
+    csrf: { enabled: true, skipMethods: ['GET', 'HEAD', 'OPTIONS', 'PATCH'] },
     version: { enabled: true, requireVersion: true },
   },
 
-  // AI Chat - strict rate limiting, no CSRF
+  // AI Chat - strict rate limiting, CSRF enabled
   aiChat: {
     rateLimit: { enabled: true, preset: 'aiChat' },
-    csrf: { enabled: false },
+    csrf: { enabled: true, skipMethods: ['GET', 'HEAD', 'OPTIONS'] },
     version: { enabled: true, requireVersion: true },
   },
 
-  // Modeling tasks - strict rate limiting, CSRF optional
+  // Modeling tasks - strict rate limiting, CSRF enabled
   modelingTask: {
     rateLimit: { enabled: true, preset: 'modelingTask' },
-    csrf: { enabled: false },
+    csrf: { enabled: true, skipMethods: ['GET', 'HEAD', 'OPTIONS'] },
     version: { enabled: true, requireVersion: true },
   },
 
@@ -162,17 +163,21 @@ export async function validateCSRFServerSide(request: NextRequest): Promise<bool
 /**
  * Helper: Add Security Headers
  * 辅助函数：添加安全响应头
+ * 修复：使用 nonce-based CSP，移除 unsafe-inline 和 unsafe-eval
  */
-export function addSecurityHeaders(response: Response): Response {
+export function addSecurityHeaders(response: Response, nonce?: string): Response {
   // Helper function to set headers safely
   const setHeader = (key: string, value: string) => {
     (response.headers as Headers).set(key, value);
   };
 
-  // Content Security Policy
+  // 如果没有提供 nonce，生成一个
+  const cspNonce = nonce || crypto.randomUUID();
+
+  // Content Security Policy - 使用 nonce 替代 unsafe-inline 和 unsafe-eval
   setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';"
+    `default-src 'self'; script-src 'self' 'nonce-${cspNonce}'; style-src 'self' 'nonce-${cspNonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';`
   );
 
   // X-Content-Type-Options

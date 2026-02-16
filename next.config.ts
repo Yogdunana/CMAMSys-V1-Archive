@@ -5,7 +5,10 @@ const nextConfig: NextConfig = {
   // 明确指定输出文件追踪根目录
   // outputFileTracingRoot: path.resolve(__dirname),
   /* config options here */
-  allowedDevOrigins: ['*.dev.coze.site'],
+  // 修复：仅在开发环境设置 allowedDevOrigins
+  ...(process.env.NODE_ENV === 'development' ? {
+    allowedDevOrigins: ['*.dev.coze.site'],
+  } : {}),
   images: {
     remotePatterns: [
       {

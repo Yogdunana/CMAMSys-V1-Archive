@@ -53,6 +53,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      // 修复：添加随机延迟以防止时序攻击
+      const delay = Math.random() * 400 + 100;
+      await new Promise(resolve => setTimeout(resolve, delay));
+
       // Log failed login attempt
       await createLoginLog({
         email,
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             code: 'INVALID_CREDENTIALS',
-            message: 'Invalid email or password',
+            message: 'Invalid credentials',
           },
           timestamp: new Date().toISOString(),
         },
@@ -174,10 +178,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             code: 'INVALID_CREDENTIALS',
-            message: 'Invalid email or password',
-            details: {
-              attemptsRemaining: maxAttempts - newFailedAttempts,
-            },
+            message: 'Invalid credentials',
           },
           timestamp: new Date().toISOString(),
         },

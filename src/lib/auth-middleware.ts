@@ -17,6 +17,7 @@ import { UserRole } from '@/lib/types';
 
 /**
  * Extract JWT token from request
+ * 仅从 Authorization header 和 cookie 中提取 Token，不使用 URL 查询参数
  */
 export function extractToken(request: NextRequest): string | null {
   // Try Authorization header
@@ -29,12 +30,6 @@ export function extractToken(request: NextRequest): string | null {
   const tokenCookie = request.cookies.get('accessToken');
   if (tokenCookie) {
     return tokenCookie.value;
-  }
-
-  // Try query parameter (not recommended, but fallback)
-  const tokenParam = request.nextUrl.searchParams.get('token');
-  if (tokenParam) {
-    return tokenParam;
   }
 
   return null;

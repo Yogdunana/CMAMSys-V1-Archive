@@ -15,18 +15,20 @@ const ENCRYPTED_POSITION = TAG_POSITION + TAG_LENGTH;
 
 /**
  * Derive encryption key from password using PBKDF2
+ * 修复：增加迭代次数到 1,000,000 以增强安全性
  */
 function deriveKey(password: string, salt: Buffer): Buffer {
-  return crypto.pbkdf2Sync(password, salt, 100000, KEY_LENGTH, 'sha256');
+  return crypto.pbkdf2Sync(password, salt, 1000000, KEY_LENGTH, 'sha256');
 }
 
 /**
  * Get encryption password from environment
+ * 修复：强制使用独立的加密密钥，不回退到 JWT Secret
  */
 function getEncryptionPassword(): string {
-  const password = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET;
+  const password = process.env.ENCRYPTION_KEY;
   if (!password) {
-    throw new Error('ENCRYPTION_KEY or JWT_SECRET environment variable is required for encryption');
+    throw new Error('ENCRYPTION_KEY environment variable is required');
   }
   return password;
 }
