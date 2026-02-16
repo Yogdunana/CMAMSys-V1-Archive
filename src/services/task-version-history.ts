@@ -205,55 +205,6 @@ export function compareVersions(
 export const createTaskVersion = createVersion;
 export const getTaskVersionHistory = getVersionHistoryByTaskId;
 export const restoreTaskVersion = restoreVersion;
-export function compareVersions(
-  version1: TaskListVersion,
-  version2: TaskListVersion
-): {
-  added: string[];
-  removed: string[];
-  modified: string[];
-  unchanged: string[];
-  diff: {
-    type: 'add' | 'remove' | 'modify' | 'unchanged';
-    task: string;
-    index?: number;
-  }[];
-} {
-  const added: string[] = [];
-  const removed: string[] = [];
-  const modified: string[] = [];
-  const unchanged: string[] = [];
-  const diff: { type: 'add' | 'remove' | 'modify' | 'unchanged'; task: string; index?: number }[] = [];
-
-  // 简单的比较逻辑
-  version2.taskList.forEach((task, index) => {
-    if (!version1.taskList.includes(task)) {
-      added.push(task);
-      diff.push({ type: 'add', task, index });
-    } else {
-      unchanged.push(task);
-      diff.push({ type: 'unchanged', task, index });
-    }
-  });
-
-  version1.taskList.forEach(task => {
-    if (!version2.taskList.includes(task)) {
-      removed.push(task);
-      diff.push({ type: 'remove', task });
-    }
-  });
-
-  // 检查修改（简化版本）
-  if (version1.taskList.length === version2.taskList.length) {
-    version1.taskList.forEach((task, index) => {
-      if (version2.taskList[index] !== task) {
-        modified.push(version2.taskList[index]);
-      }
-    });
-  }
-
-  return { added, removed, modified, unchanged, diff };
-}
 
 /**
  * 删除版本历史
