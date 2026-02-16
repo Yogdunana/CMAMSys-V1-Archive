@@ -146,7 +146,8 @@
   "pnpm": {
     "overrides": {
       "esbuild": "^0.25.12",
-      "estree-util-is-identifier-name": "^2.0.0"
+      "estree-util-is-identifier-name": "^2.0.0",
+      "camelcase": "^8.0.0"
     }
   }
 }
