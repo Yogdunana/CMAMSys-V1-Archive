@@ -282,3 +282,16 @@ export function getSortReport(tasks: TaskItem[]): {
     suggestions,
   };
 }
+
+/**
+ * 简化接口：直接对字符串数组进行排序
+ */
+export async function sortTasksSmartly(taskList: string[]): Promise<string[]> {
+  const tasks: TaskItem[] = taskList.map((text, index) => ({
+    id: index,
+    text,
+  }));
+
+  const result = smartSortTasks(tasks);
+  return result.sortedTasks.map(t => t.text);
+}

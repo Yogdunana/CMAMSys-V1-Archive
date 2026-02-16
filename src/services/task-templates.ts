@@ -380,3 +380,31 @@ export function getTemplateStats(): {
     byCategory,
   };
 }
+
+/**
+ * 简化接口：获取可用模板列表（用于下拉菜单）
+ */
+export function getAvailableTemplates(): Array<{
+  name: string;
+  label: string;
+  description: string;
+  tasks: string[];
+}> {
+  return getAllTemplates().map(template => ({
+    name: template.id,
+    label: template.name,
+    description: template.description,
+    tasks: template.tasks,
+  }));
+}
+
+/**
+ * 简化接口：应用模板
+ */
+export async function applyTemplate(templateId: string): Promise<string[]> {
+  const template = getTemplateById(templateId);
+  if (!template) {
+    throw new Error(`模板 "${templateId}" 不存在`);
+  }
+  return [...template.tasks];
+}
