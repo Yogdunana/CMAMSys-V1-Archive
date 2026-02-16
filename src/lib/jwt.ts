@@ -5,21 +5,18 @@
 
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production'
-);
-
-const REFRESH_TOKEN_SECRET = new TextEncoder().encode(
-  process.env.REFRESH_TOKEN_SECRET || 'your-super-secret-refresh-token-key'
-);
-
-// 调试：输出 Secret（只在开发环境）
-if (process.env.NODE_ENV === 'development') {
-  console.log('[JWT] JWT_SECRET loaded:', JWT_SECRET.byteLength, 'bytes');
-  console.log('[JWT] REFRESH_TOKEN_SECRET loaded:', REFRESH_TOKEN_SECRET.byteLength, 'bytes');
-  console.log('[JWT] JWT_SECRET from env:', !!process.env.JWT_SECRET);
-  console.log('[JWT] REFRESH_TOKEN_SECRET from env:', !!process.env.REFRESH_TOKEN_SECRET);
+// 修复：移除默认值，强制要求环境变量
+const JWT_SECRET_VALUE = process.env.JWT_SECRET;
+if (!JWT_SECRET_VALUE) {
+  throw new Error('JWT_SECRET environment variable is required');
 }
+const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_VALUE);
+
+const REFRESH_TOKEN_SECRET_VALUE = process.env.REFRESH_TOKEN_SECRET;
+if (!REFRESH_TOKEN_SECRET_VALUE) {
+  throw new Error('REFRESH_TOKEN_SECRET environment variable is required');
+}
+const REFRESH_TOKEN_SECRET = new TextEncoder().encode(REFRESH_TOKEN_SECRET_VALUE);
 
 export interface TokenPayload {
   userId: string;
@@ -86,11 +83,6 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
     return payload as unknown as AccessTokenPayload;
   } catch (error: any) {
     console.error('[JWT] Invalid access token:', error.name, error.message);
-    // 添加更多调试信息
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[JWT] Token:', token.substring(0, 50) + '...');
-      console.error('[JWT] Secret length:', JWT_SECRET.byteLength);
-    }
     return null;
   }
 }
@@ -113,11 +105,6 @@ export async function verifyRefreshToken(
     return payload as unknown as RefreshTokenPayload;
   } catch (error: any) {
     console.error('[JWT] Invalid refresh token:', error.name, error.message);
-    // 添加更多调试信息
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[JWT] Token:', token.substring(0, 50) + '...');
-      console.error('[JWT] Secret length:', REFRESH_TOKEN_SECRET.byteLength);
-    }
     return null;
   }
 }

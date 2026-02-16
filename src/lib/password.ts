@@ -5,7 +5,8 @@
 
 import bcrypt from 'bcrypt';
 
-const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');
+// 修复：将默认轮次增加到 14 以增强安全性
+const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '14');
 
 /**
  * Hash a plain text password
