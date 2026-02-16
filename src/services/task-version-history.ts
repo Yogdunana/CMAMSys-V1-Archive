@@ -150,6 +150,62 @@ export function restoreVersion(
  * 比较两个版本
  */
 export function compareVersions(
+  taskId: string,
+  version1Id: string,
+  version2Id: string
+): {
+  added: string[];
+  removed: string[];
+  modified: { index: number; from: string; to: string }[];
+} {
+  const v1 = getVersionById(taskId, version1Id);
+  const v2 = getVersionById(taskId, version2Id);
+
+  if (!v1 || !v2) {
+    return { added: [], removed: [], modified: [] };
+  }
+
+  const added: string[] = [];
+  const removed: string[] = [];
+  const modified: { index: number; from: string; to: string }[] = [];
+
+  const tasks1 = v1.taskList;
+  const tasks2 = v2.taskList;
+
+  // 查找新增的任务
+  tasks2.forEach(task => {
+    if (!tasks1.includes(task)) {
+      added.push(task);
+    }
+  });
+
+  // 查找删除的任务
+  tasks1.forEach(task => {
+    if (!tasks2.includes(task)) {
+      removed.push(task);
+    }
+  });
+
+  // 查找修改的任务（内容不同但索引相同）
+  const maxIndex = Math.max(tasks1.length, tasks2.length);
+  for (let i = 0; i < maxIndex; i++) {
+    const task1 = tasks1[i];
+    const task2 = tasks2[i];
+    if (task1 && task2 && task1 !== task2) {
+      modified.push({ index: i, from: task1, to: task2 });
+    }
+  }
+
+  return { added, removed, modified };
+}
+
+/**
+ * 别名导出，用于兼容性
+ */
+export const createTaskVersion = createVersion;
+export const getTaskVersionHistory = getVersionHistoryByTaskId;
+export const restoreTaskVersion = restoreVersion;
+export function compareVersions(
   version1: TaskListVersion,
   version2: TaskListVersion
 ): {
