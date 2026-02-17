@@ -12,6 +12,10 @@ COPY prisma ./prisma/
 # Install pnpm
 RUN npm install -g pnpm
 
+# Set DATABASE_URL for Prisma client generation during dependency installation
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/cmamsys}
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
@@ -28,7 +32,10 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
-# Generate Prisma client
+# Generate Prisma client (use dummy URL for build time)
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/cmamsys}
+
 RUN npx prisma generate
 
 # Build the application
