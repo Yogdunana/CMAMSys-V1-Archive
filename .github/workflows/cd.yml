@@ -19,51 +19,39 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          node-version: '24'
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: |
-            yogdunana/cmamsys
-            ghcr.io/yogdunana/cmamsys
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Install dependencies
+        run: pnpm install
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build application
+        run: pnpm run build
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64
+      - name: Build Docker image
+        run: |
+          docker build -t cmamsys:latest .
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Tag and push Docker image
+        run: |
+          docker tag cmamsys:latest ghcr.io/yogdunana/cmamsys:latest
+          docker push ghcr.io/yogdunana/cmamsys:latest
+
+      - name: Tag with SHA and push
+        run: |
+          docker tag cmamsys:latest ghcr.io/yogdunana/cmamsys:${{ github.sha }}
+          docker push ghcr.io/yogdunana/cmamsys:${{ github.sha }}
 
   deploy-production:
     name: Deploy to Production
@@ -141,45 +129,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '24'
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: |
-            ghcr.io/yogdunana/cmamsys
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Install dependencies
+        run: pnpm install
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64
+      - name: Build application
+        run: pnpm run build
 
       - name: Generate changelog
         id: changelog
-        uses: mindsers/changelog-generator-action@v2
-        with:
-          fromTag: ${{ github.ref }}
-          toTag: HEAD
+        run: |
+          echo "## Release Notes" > changelog.md
+          echo "" >> changelog.md
+          echo "Changes in this release:" >> changelog.md
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> changelog.md
+          echo "" >> changelog.md
+          echo "### Docker Image" >> changelog.md
+          echo "To build and push the image manually, run:" >> changelog.md
+          echo "\`\`\`bash" >> changelog.md
+          echo "docker build -t ghcr.io/yogdunana/cmamsys:${{ github.ref_name }} ." >> changelog.md
+          echo "echo \${GITHUB_TOKEN} | docker login ghcr.io -u \${{ github.actor }} --password-stdin" >> changelog.md
+          echo "docker push ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "\`\`\`" >> changelog.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -188,6 +163,15 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }}
-          body: ${{ steps.changelog.outputs.changelog }}
+          body_path: changelog.md
           draft: false
           prerelease: false
+
+      - name: Notify Docker Image Build Instructions
+        run: |
+          echo "🎉 Release ${{ github.ref }} created successfully!"
+          echo ""
+          echo "📦 To build and push the Docker image, run:"
+          echo "   docker build -t ghcr.io/yogdunana/cmamsys:${{ github.ref_name }} ."
+          echo "   echo \${GITHUB_TOKEN} | docker login ghcr.io -u \${{ github.actor }} --password-stdin"
+          echo "   docker push ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
