@@ -29,7 +29,7 @@ export default function HomePage() {
               <img
                 src="/logo-withtext.svg"
                 alt="CMAMSys Logo"
-                className="h-32 w-auto object-contain"
+                className="h-32 w-auto object-contain dark:invert"
               />
             </div>
 

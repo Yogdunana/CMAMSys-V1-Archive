@@ -46,7 +46,7 @@ export function Header() {
             <img
               src="/logo.svg"
               alt="CMAMSys"
-              className="h-8 w-auto object-contain"
+              className="h-8 w-auto object-contain dark:invert"
             />
             <span className="hidden font-bold sm:inline-block">
               CMAMSys
