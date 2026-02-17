@@ -44,7 +44,7 @@ async function main() {
   const providers = [
     {
       name: 'DeepSeek-Reasoner',
-      type: 'DEEPSEEK',
+      type: 'DEEPSEEK' as const,
       apiKey: encryptApiKey('sk-deepseek-mock-key-123456'),
       endpoint: 'https://api.deepseek.com/v1',
       priority: 10,
@@ -57,7 +57,7 @@ async function main() {
     },
     {
       name: '豆包-Volcengine',
-      type: 'VOLCENGINE',
+      type: 'VOLCENGINE' as const,
       apiKey: encryptApiKey('sk-volcengine-mock-key-789012'),
       endpoint: 'https://ark.cn-beijing.volces.com/api/v3',
       priority: 8,
@@ -70,7 +70,7 @@ async function main() {
     },
     {
       name: '阿里百炼',
-      type: 'ALIYUN',
+      type: 'ALIYUN' as const,
       apiKey: encryptApiKey('sk-aliyun-mock-key-345678'),
       endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
       priority: 6,

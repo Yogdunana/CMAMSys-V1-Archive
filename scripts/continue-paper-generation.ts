@@ -68,8 +68,8 @@ async function main() {
       ],
     },
     coreAlgorithms: discussion.messages.map((msg) => ({
-      content: msg.content,
-      role: msg.role,
+      content: msg.messageContent,
+      role: msg.messageType,
     })),
     disagreements: [],
   };

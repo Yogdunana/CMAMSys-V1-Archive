@@ -101,7 +101,7 @@ export async function DELETE(
     // 级联删除关联数据
     await prisma.$transaction(async (tx) => {
       // 删除讨论消息
-      if (task.discussion) {
+      if (task.discussion && task.discussionId) {
         await tx.discussionMessage.deleteMany({
           where: { discussionId: task.discussionId },
         });
@@ -116,14 +116,14 @@ export async function DELETE(
       });
 
       // 删除代码生成记录
-      if (task.codeGeneration) {
+      if (task.codeGeneration && task.codeGenerationId) {
         await tx.codeGeneration.delete({
           where: { id: task.codeGenerationId },
         });
       }
 
       // 删除论文
-      if (task.paper) {
+      if (task.paper && task.paperId) {
         await tx.generatedPaper.delete({
           where: { id: task.paperId },
         });

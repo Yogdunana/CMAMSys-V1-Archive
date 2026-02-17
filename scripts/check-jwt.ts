@@ -26,7 +26,7 @@ async function main() {
     console.log(`   User ID: ${refreshToken.userId}`);
     console.log(`   Expires At: ${refreshToken.expiresAt}`);
     console.log(`   Created At: ${refreshToken.createdAt}`);
-    console.log(`   Revoked: ${refreshToken.revoked}`);
+    console.log(`   Revoked At: ${refreshToken.revokedAt || 'Not revoked'}`);
   } else {
     console.log('ℹ️  No refresh tokens found');
   }

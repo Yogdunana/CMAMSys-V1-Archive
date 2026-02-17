@@ -20,13 +20,13 @@ export async function exportToWord(paper: {
   // 将 Markdown 内容转换为 HTML
   const htmlContent = markdownToHtml(paper);
 
-  // 创建 Word 文档
-  const doc = html2docx.default(htmlContent);
-
-  // 生成 Blob
-  const blob = new Blob([doc], {
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  });
+  // 创建 Word 文档 Blob
+  const result = await html2docx.asBlob(htmlContent);
+  
+  // 确保转换为 Blob（如果是 Buffer）
+  const blob = result instanceof Buffer 
+    ? new Blob([result as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }) as Blob
+    : result as Blob;
 
   // 下载
   saveAs(blob, `${paper.title}.docx`);
@@ -357,48 +357,49 @@ function parseMarkdown(content: string) {
 
 /**
  * 解析节并生成 Word 段落
+ * 注释：此函数需要 docx 库支持，暂时禁用
  */
-function parseSection(section: { level: number; title: string; content: string }): Paragraph[] {
-  const paragraphs: Paragraph[] = [];
-
-  // 标题
-  const headingLevel = section.level === 1 ? HeadingLevel.HEADING_1 :
-                      section.level === 2 ? HeadingLevel.HEADING_2 :
-                      section.level === 3 ? HeadingLevel.HEADING_3 :
-                      HeadingLevel.HEADING_4;
-
-  paragraphs.push(
-    new Paragraph({
-      text: section.title,
-      heading: headingLevel,
-      spacing: {
-        before: 200,
-        after: 100,
-      },
-    })
-  );
-
-  // 内容（按段落分割）
-  const contentParagraphs = section.content.split('\n\n');
-
-  contentParagraphs.forEach(paragraphText => {
-    if (paragraphText.trim()) {
-      paragraphs.push(
-        new Paragraph({
-          children: [new TextRun({
-            text: paragraphText,
-            size: 24,
-          })],
-          spacing: {
-            after: 120,
-          },
-        })
-      );
-    }
-  });
-
-  return paragraphs;
-}
+// function parseSection(section: { level: number; title: string; content: string }): Paragraph[] {
+//   const paragraphs: Paragraph[] = [];
+//
+//   // 标题
+//   const headingLevel = section.level === 1 ? HeadingLevel.HEADING_1 :
+//                       section.level === 2 ? HeadingLevel.HEADING_2 :
+//                       section.level === 3 ? HeadingLevel.HEADING_3 :
+//                       HeadingLevel.HEADING_4;
+//
+//   paragraphs.push(
+//     new Paragraph({
+//       text: section.title,
+//       heading: headingLevel,
+//       spacing: {
+//         before: 200,
+//         after: 100,
+//       },
+//     })
+//   );
+//
+//   // 内容（按段落分割）
+//   const contentParagraphs = section.content.split('\n\n');
+//
+//   contentParagraphs.forEach(paragraphText => {
+//     if (paragraphText.trim()) {
+//       paragraphs.push(
+//         new Paragraph({
+//           children: [new TextRun({
+//             text: paragraphText,
+//             size: 24,
+//           })],
+//           spacing: {
+//             after: 120,
+//           },
+//         })
+//       );
+//     }
+//   });
+//
+//   return paragraphs;
+// }
 
 /**
  * 导出为支持中文的 PDF（服务器端生成）

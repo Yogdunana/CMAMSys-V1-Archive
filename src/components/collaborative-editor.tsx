@@ -206,7 +206,6 @@ export function CollaborativeEditor({ content, onChange, readOnly = false }: Col
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{myUser.name} (我)</p>
-                    <p className="text-xs text-muted-foreground">{myUser.email}</p>
                   </div>
                   <Badge variant="outline">编辑中</Badge>
                 </div>
@@ -219,7 +218,6 @@ export function CollaborativeEditor({ content, onChange, readOnly = false }: Col
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <Badge variant={user.isOnline ? 'default' : 'secondary'}>
                     {user.isOnline ? '在线' : '离线'}

@@ -47,10 +47,10 @@ async function main() {
     console.log('### 消息详情 ###');
     discussion.messages.forEach((msg, index) => {
       console.log(`\n[${index + 1}] ${msg.senderName} (回合 ${msg.round})`);
-      console.log(`    角色: ${msg.role}`);
+      console.log(`    消息类型: ${msg.messageType}`);
       console.log(`    Provider ID: ${msg.senderProviderId}`);
-      const contentPreview = msg.content ? msg.content.substring(0, 200) : '(空)';
-      console.log(`    内容: ${contentPreview}${msg.content && msg.content.length > 200 ? '...' : ''}`);
+      const contentPreview = msg.messageContent ? msg.messageContent.substring(0, 200) : '(空)';
+      console.log(`    内容: ${contentPreview}${msg.messageContent && msg.messageContent.length > 200 ? '...' : ''}`);
     });
   } else {
     console.log('没有找到讨论记录');
@@ -66,8 +66,8 @@ async function main() {
   if (codeGeneration) {
     console.log('\n找到代码生成记录:');
     console.log(`  代码 ID: ${codeGeneration.id}`);
-    console.log(`  状态: ${codeGeneration.status}`);
-    console.log(`  代码: ${codeGeneration.code.substring(0, 200)}${codeGeneration.code.length > 200 ? '...' : ''}`);
+    console.log(`  状态: ${codeGeneration.executionStatus}`);
+    console.log(`  代码: ${codeGeneration.codeContent.substring(0, 200)}${codeGeneration.codeContent.length > 200 ? '...' : ''}`);
   } else {
     console.log('\n没有找到代码生成记录');
   }
@@ -81,7 +81,7 @@ async function main() {
     console.log('\n找到校验记录:');
     console.log(`  校验 ID: ${validation.id}`);
     console.log(`  状态: ${validation.status}`);
-    console.log(`  回溯次数: ${validation.retryCount}`);
+    console.log(`  是否重试: ${validation.retried ? '是' : '否'}`);
     console.log(`  错误: ${validation.errorMessage || '无'}`);
   } else {
     console.log('\n没有找到校验记录');

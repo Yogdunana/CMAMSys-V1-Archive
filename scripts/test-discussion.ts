@@ -50,7 +50,7 @@ async function testDiscussion() {
 
     console.log('\n\nDiscussion completed!');
     console.log(`Discussion ID: ${result.discussion.id}`);
-    console.log(`Messages: ${result.discussion.messages.length}`);
+    console.log(`Messages: ${result.messages.length}`);
     console.log(`Status: ${result.discussion.status}`);
     console.log('\nSummary:');
     console.log(`Main Algorithm: ${result.summary.consensus?.mainAlgorithm}`);
@@ -58,8 +58,8 @@ async function testDiscussion() {
     console.log(`Core Algorithms: ${result.summary.coreAlgorithms.map((a: any) => a.content).join(', ')}`);
 
     // 显示第一条消息
-    if (result.discussion.messages.length > 0) {
-      const firstMessage = result.discussion.messages[0];
+    if (result.messages.length > 0) {
+      const firstMessage = result.messages[0];
       console.log('\nFirst Message:');
       console.log(`Sender: ${firstMessage.senderName}`);
       console.log(`Content: ${firstMessage.messageContent.substring(0, 200)}...`);

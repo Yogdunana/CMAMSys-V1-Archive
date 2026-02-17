@@ -35,12 +35,8 @@ export async function createPaperVersion(data: PaperVersionData) {
     data: {
       paperId: data.paperId,
       versionNumber,
-      title: data.title,
       content: data.content,
-      sections: data.sections,
-      wordCount: data.wordCount,
-      changeDescription: data.changeDescription,
-      isMajorVersion: data.isMajorVersion ?? false,
+      changeDescription: data.changeDescription ?? '',
       createdBy: data.createdBy,
     },
   });
@@ -98,14 +94,11 @@ export async function restorePaperVersion(paperId: string, versionNumber: number
     throw new Error(`Version ${versionNumber} not found for paper ${paperId}`);
   }
 
-  // 更新当前论文内容
+  // 更新当前论文内容（只恢复 content，其他字段保持不变）
   const updatedPaper = await prisma.generatedPaper.update({
     where: { id: paperId },
     data: {
-      title: version.title,
       content: version.content,
-      sections: version.sections,
-      wordCount: version.wordCount,
       updatedAt: new Date(),
     },
   });
@@ -113,12 +106,9 @@ export async function restorePaperVersion(paperId: string, versionNumber: number
   // 创建一个新的版本记录这次恢复操作
   await createPaperVersion({
     paperId,
-    title: version.title,
+    title: updatedPaper.title,
     content: version.content,
-    sections: version.sections,
-    wordCount: version.wordCount,
     changeDescription: `Restored from version ${versionNumber}`,
-    isMajorVersion: false,
   });
 
   return updatedPaper;
@@ -182,8 +172,8 @@ export async function cleanupOldVersions(paperId: string, keepCount: number = 10
 export async function getVersionStatistics(paperId: string) {
   const versions = await getPaperVersions(paperId);
 
-  const majorVersions = versions.filter(v => v.isMajorVersion);
-  const minorVersions = versions.filter(v => !v.isMajorVersion);
+  const majorVersions = versions.filter(v => v.versionNumber % 10 === 0);
+  const minorVersions = versions.filter(v => v.versionNumber % 10 !== 0);
 
   return {
     totalVersions: versions.length,

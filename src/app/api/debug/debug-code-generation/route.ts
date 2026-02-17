@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         discussionStatus: true,
         validationStatus: true,
         codeGenerationId: true,
+        discussionId: true,
         progress: true,
       },
     });

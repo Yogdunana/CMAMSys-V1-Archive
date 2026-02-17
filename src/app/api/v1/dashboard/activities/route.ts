@@ -123,24 +123,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (type === 'all' || type === 'tasks') {
-        const tasks = await prisma.modelingTask.findMany({
-          where: {
-            deletedAt: null,
-          },
-          include: {
-            competition: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            createdBy: {
-              select: {
-                id: true,
-                username: true,
-              },
-            },
-          },
+        const tasks = await prisma.autoModelingTask.findMany({
           orderBy: {
             createdAt: 'desc',
           },
@@ -151,11 +134,11 @@ export async function GET(request: NextRequest) {
           ...tasks.map((t) => ({
             id: t.id,
             type: 'task',
-            name: t.name,
-            status: t.status,
+            name: t.problemTitle,
+            status: t.overallStatus,
             progress: t.progress,
-            competitionName: t.competition?.name,
-            createdBy: t.createdBy.username,
+            competitionName: t.competitionType,
+            createdBy: null, // AutoModelingTask 模型没有 createdBy 关联
             createdAt: t.createdAt,
             updatedAt: t.updatedAt,
           }))

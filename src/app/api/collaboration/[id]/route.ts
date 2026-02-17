@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
  * SSE 协作 API
  * 使用 Server-Sent Events 实现实时协作
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const paperId = params.id;
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: paperId } = await params;
 
   // 设置 SSE 响应头
   const headers = new Headers({
@@ -64,9 +64,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 /**
  * POST 请求：发送协作消息
  */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const paperId = params.id;
+    const { id: paperId } = await params;
     const body = await request.json();
     const { type, userId, message } = body;
 

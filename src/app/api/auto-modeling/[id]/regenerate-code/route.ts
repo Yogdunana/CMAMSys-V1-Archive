@@ -31,7 +31,7 @@ export async function POST(
     }
 
     console.log('[RegenerateCode] Token 已提供');
-    const decoded = verifyAccessToken(token);
+    const decoded = await verifyAccessToken(token);
     if (!decoded) {
       console.log('[RegenerateCode] Token 验证失败');
       return NextResponse.json(

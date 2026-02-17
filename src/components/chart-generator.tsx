@@ -365,29 +365,20 @@ function renderChart(chart: ChartData) {
       );
 
     case 'heatmap':
+      // 热力图需要特殊处理，暂时降级为散点图
       return (
         <div style={{ position: 'relative', height: '400px', width: '100%' }}>
-          <Chart
-            type="matrix"
+          <Scatter
             data={{
               datasets: chart.datasets.map(ds => ({
                 ...ds,
-                // 热力图数据格式: { x: string, y: string, v: number }
-                data: ds.data as { x: string; y: string; v: number }[],
-                backgroundColor(ctx: any) {
-                  const value = ctx.dataset.data[ctx.dataIndex]?.v || 0;
-                  const alpha = (value + 1) / 2;
-                  return `rgba(59, 130, 246, ${alpha})`;
-                },
-                borderColor(ctx: any) {
-                  const value = ctx.dataset.data[ctx.dataIndex]?.v || 0;
-                  return value > 0
-                    ? ds.borderColorDark || 'rgba(59, 130, 246, 1)'
-                    : ds.borderColorLight || 'rgba(59, 130, 246, 0.3)';
-                },
-                borderWidth: ds.borderWidth ?? 1,
-                width: ({ chart }: any) => (chart.chartArea || {}).width / chart.data.labels.length - 1,
-                height: ({ chart }: any) => (chart.chartArea || {}).height / chart.data.labels.length - 1,
+                data: (ds.data as any[]).map((d: any) => ({
+                  x: d.x,
+                  y: d.y,
+                  r: Math.abs(d.v || 5) * 3, // 使用值作为半径
+                })),
+                backgroundColor: ds.backgroundColor || 'rgba(59, 130, 246, 0.6)',
+                borderColor: ds.borderColor || 'rgba(59, 130, 246, 1)',
               })),
               labels: chart.labels,
             }}

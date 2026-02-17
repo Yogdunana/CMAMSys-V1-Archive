@@ -226,7 +226,7 @@ export function calculateCriticalPath(tasks: TaskWithDependencies[]): {
 
   // 回溯路径
   const path: number[] = [];
-  let current = endTask[0];
+  let current: number | undefined = endTask[0];
   while (current !== undefined) {
     path.unshift(current);
     current = predecessors.get(current);

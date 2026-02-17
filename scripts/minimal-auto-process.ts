@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
 ## 摘要
 
-本文针对${task.problemTitle}问题，提出了基于${task.discussion?.summary?.consensus?.mainAlgorithm || '机器学习'}的解决方案。
+本文针对${task.problemTitle}问题，提出了基于${((task.discussion?.summary as any)?.consensus?.mainAlgorithm) || '机器学习'}的解决方案。
 
 ## 1. 问题分析
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 （列出所有假设）
 
 ### 2.3 模型建立
-${task.discussion?.summary?.consensus?.mainAlgorithm || '建立数学模型'}
+${((task.discussion?.summary as any)?.consensus?.mainAlgorithm) || '建立数学模型'}
 
 ## 3. 模型求解
 

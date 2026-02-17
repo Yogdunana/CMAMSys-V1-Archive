@@ -15,7 +15,7 @@ import { Trash2, Plus, ArrowUp, ArrowDown, CheckCircle2, XCircle, AlertTriangle,
 import { toast } from 'sonner';
 import { checkTaskListQuality, formatQualityReport, TaskListQualityReport } from '@/services/task-list-quality-check';
 import { TaskVisualization } from '@/components/task-visualization';
-import { TaskWithDependencies, DependencyGraph } from '@/services/task-dependencies';
+import { TaskWithDependencies } from '@/services/task-dependencies';
 import { sortTasksSmartly } from '@/services/smart-task-sorter';
 import { applyTemplate, getAvailableTemplates } from '@/services/task-templates';
 import { getTaskVersionHistory, createTaskVersion, restoreTaskVersion } from '@/services/task-version-history';
@@ -192,7 +192,7 @@ export function TaskListEditor({ isOpen, onClose, taskId, initialTaskList, onSav
   const handleSaveVersion = async () => {
     const validTasks = tasks.filter(t => t.trim().length > 0);
     try {
-      await createTaskVersion(taskId, validTasks);
+      await createTaskVersion(taskId, validTasks, '手动保存版本');
       await loadVersionHistory();
       toast.success('版本已保存');
     } catch (error) {
@@ -204,10 +204,14 @@ export function TaskListEditor({ isOpen, onClose, taskId, initialTaskList, onSav
   // 恢复版本
   const handleRestoreVersion = async (versionId: string) => {
     try {
-      const restoredTasks = await restoreTaskVersion(taskId, versionId);
-      setTasks(restoredTasks);
-      await loadVersionHistory();
-      toast.success('版本已恢复');
+      const restoredVersion = await restoreTaskVersion(taskId, versionId);
+      if (restoredVersion) {
+        setTasks(restoredVersion.taskList);
+        await loadVersionHistory();
+        toast.success('版本已恢复');
+      } else {
+        toast.error('版本不存在');
+      }
     } catch (error) {
       console.error('恢复版本失败:', error);
       toast.error('恢复版本失败');
@@ -506,9 +510,10 @@ export function TaskListEditor({ isOpen, onClose, taskId, initialTaskList, onSav
           <TabsContent value="visualize" className="mt-4">
             <TaskVisualization tasks={tasks.map((task, index) => ({
               id: index + 1,
-              task,
+              text: task,
               status: 'pending' as const,
               dependencies: [],
+              dependents: [],
             }))} />
           </TabsContent>
 

@@ -43,15 +43,15 @@ async function checkTaskExecutionStatus() {
       console.log(`  代码语言: ${task.codeGeneration.codeLanguage}`);
       console.log(`  代码长度: ${task.codeGeneration.codeContent.length} 字符`);
       console.log(`  质量评分: ${task.codeGeneration.qualityScore}`);
-      console.log(`  执行时间: ${task.codeGeneration.executionTime}ms`);
-      console.log(`  执行输出长度: ${task.codeGeneration.executionOutput?.length || 0} 字符`);
+      // console.log(`  执行时间: ${task.codeGeneration.executionTime}ms`); // 字段不存在
+      // console.log(`  执行输出长度: ${task.codeGeneration.executionOutput?.length || 0} 字符`); // 字段不存在
       console.log(`  错误日志: ${task.codeGeneration.errorLog?.length || 0} 字符`);
 
       if (task.codeGeneration.executionStatus === 'PENDING') {
         console.log('\n⚠️  代码状态为 PENDING，需要在"代码执行"标签页中点击"执行"按钮');
       } else if (task.codeGeneration.executionStatus === 'SUCCESS') {
         console.log('\n✅ 代码已执行成功');
-        console.log(`\n执行输出:\n${task.codeGeneration.executionOutput}`);
+        // console.log(`\n执行输出:\n${task.codeGeneration.executionOutput}`); // 字段不存在
       } else if (task.codeGeneration.executionStatus === 'FAILED') {
         console.log('\n❌ 代码执行失败');
         console.log(`\n错误日志:\n${task.codeGeneration.errorLog}`);

@@ -1,4 +1,4 @@
-import prisma from '../src/lib/prisma.ts';
+import prisma from '../src/lib/prisma';
 
 async function fixTask() {
   const taskId = 'cmlhkso8c0001cf20jfprnz4o';

@@ -17,7 +17,8 @@ async function main() {
 
   console.log('📊 Current Configuration:');
   console.log(`   Supported Models: ${volcengine.supportedModels?.join(', ')}`);
-  console.log(`   Endpoint Mapping: ${JSON.stringify(volcengine.config?.endpointMapping, null, 2)}`);
+  const configDisplay = volcengine.config as any;
+  console.log(`   Endpoint Mapping: ${JSON.stringify(configDisplay?.endpointMapping, null, 2)}`);
 
   // 更新配置：只保留有端点的模型
   const updatedVolcengine = await prisma.aIProvider.update({
@@ -34,7 +35,8 @@ async function main() {
 
   console.log('\n✅ Updated Configuration:');
   console.log(`   Supported Models: ${updatedVolcengine.supportedModels?.join(', ')}`);
-  console.log(`   Endpoint Mapping: ${JSON.stringify(updatedVolcengine.config?.endpointMapping, null, 2)}`);
+  const updatedConfig = updatedVolcengine.config as any;
+  console.log(`   Endpoint Mapping: ${JSON.stringify(updatedConfig?.endpointMapping, null, 2)}`);
 
   // 检查 DeepSeek 是否为默认 Provider
   console.log('\n🔍 Checking default provider...');

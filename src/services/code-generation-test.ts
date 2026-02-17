@@ -92,7 +92,7 @@ export async function testCodeGeneration(
     result.endTime = endTime;
     result.duration = endTime - startTime;
     result.codeGenerationId = codeGeneration.id;
-    result.codeLength = codeGeneration.generatedCode.length;
+    result.codeLength = codeGeneration.codeContent.length;
     result.success = true;
 
     console.log(
@@ -151,7 +151,7 @@ export async function testCodeExecution(
     const codeValidation = await prisma.codeValidation.findFirst({
       where: {
         codeGenerationId: codeGeneration.id,
-        validationType: 'CODE_EXECUTION',
+        validationType: 'RESULT',
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -51,12 +51,13 @@ export function calculatePasswordStrength(
   const errors: string[] = [];
   const suggestions: string[] = [];
   const opts = { ...DEFAULT_OPTIONS, ...options };
+  const minLength = opts.minLength ?? 8;
   let score = 0;
 
   // Length check
-  if (password.length < opts.minLength) {
-    errors.push(`Password must be at least ${opts.minLength} characters`);
-  } else if (password.length >= opts.minLength && password.length < 12) {
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters`);
+  } else if (password.length >= minLength && password.length < 12) {
     score += 1;
     suggestions.push('Consider using a longer password for better security');
   } else if (password.length >= 12 && password.length < 16) {

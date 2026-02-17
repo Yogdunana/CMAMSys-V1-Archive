@@ -27,10 +27,10 @@ async function checkLatestDiscussion() {
     console.log(`Title: ${discussion.discussionTitle}`);
     console.log(`Status: ${discussion.status}`);
     console.log(`Rounds: ${discussion.currentRound}/${discussion.maxRounds}`);
-    console.log(`Participants: ${discussion.participants.length}`);
+    console.log(`Participants: ${Array.isArray(discussion.participants) ? discussion.participants.length : 0}`);
 
-    console.log(`\nMessages (${discussion.messages.length}):`);
-    for (const message of discussion.messages) {
+    console.log(`\nMessages (${Array.isArray(discussion.messages) ? discussion.messages.length : 0}):`);
+    for (const message of (Array.isArray(discussion.messages) ? discussion.messages : [])) {
       console.log(`\n[${message.round}] ${message.senderName} (${message.messageType}):`);
       console.log(message.messageContent.substring(0, 500) + '...');
       console.log(`Core Algorithms: ${message.coreAlgorithms}`);

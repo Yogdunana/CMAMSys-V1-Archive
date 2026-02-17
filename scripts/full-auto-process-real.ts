@@ -87,7 +87,7 @@ async function executeFullAutoProcessReal(taskId: string, userId: string) {
     await prisma.autoModelingTask.update({
       where: { id: taskId },
       data: {
-        validationStatus: ValidationStatus.COMPLETED,
+        validationStatus: 'PASSED',
         progress: 70,
       },
     });
@@ -104,7 +104,7 @@ async function executeFullAutoProcessReal(taskId: string, userId: string) {
       await prisma.autoModelingTask.update({
         where: { id: taskId },
         data: {
-          overallStatus: OverallStatus.PAPER_GENERATION,
+          overallStatus: OverallStatus.PAPER_GENERATING,
           progress: 75,
         },
       });

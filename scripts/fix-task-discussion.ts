@@ -52,7 +52,7 @@ async function main() {
 
   console.log(`📨 Discussion Messages: ${messages.length}`);
   messages.forEach((msg, index) => {
-    console.log(`   ${index + 1}. [${msg.role || 'Unknown'}] ${msg.content || 'No content'}`);
+    console.log(`   ${index + 1}. [${msg.messageType || 'Unknown'}] ${msg.messageContent || 'No content'}`);
     console.log(`      Created: ${msg.createdAt}`);
   });
 

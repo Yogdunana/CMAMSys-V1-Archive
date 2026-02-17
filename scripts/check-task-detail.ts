@@ -33,8 +33,8 @@ async function checkTaskDetail(taskId: string) {
     console.log(`\nDiscussion Status: ${task.discussionStatus}`)
     console.log(`Validation Status: ${task.validationStatus}`)
     console.log(`Paper Status: ${task.paperStatus}`)
-    console.log(`\nIdea:\n${task.idea || 'No idea'}`)
-    console.log(`\nSummary:\n${task.summary || 'No summary'}`)
+    // console.log(`\nIdea:\n${task.idea || 'No idea'}`) // 字段不存在
+    // console.log(`\nSummary:\n${task.summary || 'No summary'}`) // 字段不存在
 
     if (task.discussion) {
       console.log(`\nDiscussion ID: ${task.discussion.id}`)
@@ -43,12 +43,12 @@ async function checkTaskDetail(taskId: string) {
 
     if (task.codeGeneration) {
       console.log(`\nCode Generation ID: ${task.codeGeneration.id}`)
-      console.log(`Status: ${task.codeGeneration.status}`)
       console.log(`Execution Status: ${task.codeGeneration.executionStatus}`)
-      console.log(`Runtime: ${task.codeGeneration.runtimeMs}ms`)
-      console.log(`Memory: ${task.codeGeneration.memoryUsageBytes}B`)
-      console.log(`\nCode:\n${task.codeGeneration.code}`)
-      console.log(`\nExecution Output:\n${task.codeGeneration.executionOutput || 'No output'}`)
+      console.log(`Code Language: ${task.codeGeneration.codeLanguage}`)
+      // console.log(`Runtime: ${task.codeGeneration.runtimeMs}ms`) // 字段不存在
+      // console.log(`Memory: ${task.codeGeneration.memoryUsageBytes}B`) // 字段不存在
+      console.log(`\nCode:\n${task.codeGeneration.codeContent}`)
+      // console.log(`\nExecution Output:\n${task.codeGeneration.executionOutput || 'No output'}`) // 字段不存在
     }
 
     if (task.validations && task.validations.length > 0) {
@@ -57,8 +57,9 @@ async function checkTaskDetail(taskId: string) {
         console.log(`\nValidation ${index + 1}:`)
         console.log(`  ID: ${validation.id}`)
         console.log(`  Status: ${validation.status}`)
-        console.log(`  Issues: ${validation.issues}`)
-        console.log(`  Suggestions: ${validation.suggestions}`)
+        console.log(`  Error: ${validation.errorMessage || 'None'}`)
+        // console.log(`  Issues: ${validation.issues}`) // 字段不存在
+        // console.log(`  Suggestions: ${validation.suggestions}`) // 字段不存在
       })
     }
 

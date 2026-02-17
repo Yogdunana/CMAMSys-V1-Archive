@@ -145,7 +145,7 @@ export async function GET(
     // 获取讨论数据（用于回放）
     const discussions = discussion ? [{
       id: discussion.id,
-      timestamp: discussion.timestamp,
+      timestamp: discussion.createdAt,
       participant: discussion.participants ? (typeof discussion.participants === 'string' ? discussion.participants : JSON.stringify(discussion.participants)) : 'Unknown',
       message: discussion.summary ? (typeof discussion.summary === 'string' ? discussion.summary : JSON.stringify(discussion.summary)) : '',
     }] : [];

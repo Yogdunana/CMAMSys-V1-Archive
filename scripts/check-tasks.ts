@@ -23,7 +23,7 @@ async function main() {
   const modelingTasks = await prisma.autoModelingTask.findMany();
   console.log(`\n🤖 Auto Modeling Tasks: ${modelingTasks.length}`);
   modelingTasks.forEach(t => {
-    console.log(`   - ${t.taskTitle} (${t.id}) - Status: ${t.status}`);
+    console.log(`   - ${t.problemTitle} (${t.id}) - Status: ${t.overallStatus}`);
   });
 
   // 4. 检查群组讨论
@@ -37,7 +37,7 @@ async function main() {
   const papers = await prisma.generatedPaper.findMany();
   console.log(`\n📄 Generated Papers: ${papers.length}`);
   papers.forEach(p => {
-    console.log(`   - ${p.paperTitle} (${p.id})`);
+    console.log(`   - ${p.title} (${p.id})`);
   });
 
   // 6. 检查代码生成

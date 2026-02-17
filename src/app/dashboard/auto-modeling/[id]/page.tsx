@@ -383,7 +383,7 @@ export default function AutoModelingTaskDetailPage() {
       console.log(`[handleDownloadPaper] 下载论文，格式: ${format}`);
 
       exportToPDF({
-        title: paperContent.title || taskStatus.problemTitle,
+        title: paperContent.title || taskStatus?.problemTitle || '论文',
         content: paperContent.content,
         format: paperContent.format,
         language: paperContent.language,
@@ -1282,8 +1282,6 @@ class VisualizationReport:
             <TabsContent value="optimization" className="space-y-6">
               <OptimizationVisualizer
                 taskId={taskId}
-                isOptimizing={taskStatus.overallStatus === 'RETRYING'}
-                onRefresh={loadTaskStatus}
               />
             </TabsContent>
 

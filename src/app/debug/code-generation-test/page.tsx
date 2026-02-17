@@ -316,3 +316,5 @@ export function CodeGenerationTestPage() {
     </div>
   );
 }
+
+export default CodeGenerationTestPage;

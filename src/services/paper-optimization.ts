@@ -89,7 +89,7 @@ export async function optimizePaper(request: OptimizationRequest): Promise<Optim
         where: { id: paper.id },
         data: {
           content: result.improvedContent,
-          status: PaperStatus.OPTIMIZED,
+          status: PaperStatus.COMPLETED,
           updatedAt: new Date(),
         },
       });
@@ -110,7 +110,7 @@ export async function optimizePaper(request: OptimizationRequest): Promise<Optim
  * 构建优化 Prompt
  */
 function buildOptimizationPrompt(paper: any, optimizationType: string): string {
-  const typeDescriptions = {
+  const typeDescriptions: Record<string, string> = {
     grammar: '语法和拼写检查，修正语言错误',
     structure: '结构调整，优化段落组织',
     content: '内容增强，丰富论述和分析',
@@ -163,7 +163,7 @@ function parseOptimizationResult(response: string): OptimizationResult {
   try {
     // 提取优化后的论文
     const optimizedMatch = response.match(/<OPTIMIZED_PAPER>([\s\S]*?)<\/OPTIMIZED_PAPER>/);
-    const improvedContent = optimizedMatch ? optimizedMatch[1].trim() : null;
+    const improvedContent = optimizedMatch ? optimizedMatch[1].trim() : undefined;
 
     // 提取修改点
     const changesMatch = response.match(/<CHANGES>([\s\S]*?)<\/CHANGES>/);
