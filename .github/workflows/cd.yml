@@ -15,11 +15,20 @@ permissions:
   deployments: write
   metadata: read
 
+env:
+  NODE_ENV: production
+  DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
+  JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
+  REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
+  ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
+  CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
+  SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
+  LOG_FILE_PATH: /tmp/app.log
+
 jobs:
   build-and-push-docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout code
@@ -38,15 +47,6 @@ jobs:
 
       - name: Build application
         run: pnpm run build
-        env:
-          NODE_ENV: production
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
-          JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
-          REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
-          ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
-          CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
-          SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
-          LOG_FILE_PATH: /tmp/app.log
 
       - name: Set up Docker Buildx
         run: |
@@ -55,10 +55,13 @@ jobs:
 
       - name: Build Docker image
         run: |
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
+            IMAGE_TAG=${GITHUB_SHA:0:7}
+          fi
           docker buildx build \
             --platform linux/amd64 \
-            --tag ghcr.io/yogdunana/cmamsys:${{ github.ref_name }} \
-            --tag ghcr.io/yogdunana/cmamsys:latest \
+            --tag ghcr.io/yogdunana/cmamsys:${IMAGE_TAG} \
             --load \
             .
 
@@ -68,18 +71,36 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
+            IMAGE_TAG=${GITHUB_SHA:0:7}
+          fi
+          docker push ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}
+
+      - name: Tag as latest (only on main branch)
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        run: |
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
+            IMAGE_TAG=${GITHUB_SHA:0:7}
+          fi
+          docker tag ghcr.io/yogdunana/cmamsys:${IMAGE_TAG} ghcr.io/yogdunana/cmamsys:latest
           docker push ghcr.io/yogdunana/cmamsys:latest
 
       - name: Output image info
         run: |
-          echo "🎉 Docker images pushed successfully!"
-          echo "📦 Image tags:"
-          echo "   - ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
-          echo "   - ghcr.io/yogdunana/cmamsys:latest"
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
+            IMAGE_TAG=${GITHUB_SHA:0:7}
+          fi
+          echo "🎉 Docker image pushed successfully!"
+          echo "📦 Image tag: ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
+          if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ startsWith(github.ref, 'refs/tags/v') }}" = "true" ]; then
+            echo "📦 Latest tag: ghcr.io/yogdunana/cmamsys:latest"
+          fi
           echo ""
           echo "🚀 To pull the image:"
-          echo "   docker pull ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
+          echo "   docker pull ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
 
   release:
     name: Create Release
@@ -93,7 +114,8 @@ jobs:
 
       - name: Generate changelog
         run: |
-          echo "## 📦 Release ${{ github.ref_name }}" > changelog.md
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          echo "## 📦 Release ${IMAGE_TAG}" > changelog.md
           echo "" >> changelog.md
           echo "### 🚀 What's New" >> changelog.md
           echo "" >> changelog.md
@@ -102,17 +124,17 @@ jobs:
           echo "" >> changelog.md
           echo "### 🐳 Docker Image" >> changelog.md
           echo "" >> changelog.md
-          echo "Docker images have been automatically built and pushed to GitHub Container Registry:" >> changelog.md
+          echo "Docker image has been automatically built and pushed to GitHub Container Registry:" >> changelog.md
           echo "" >> changelog.md
           echo "\`\`\`bash" >> changelog.md
           echo "# Pull the image" >> changelog.md
-          echo "docker pull ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "docker pull ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}" >> changelog.md
           echo "" >> changelog.md
           echo "# Run with Docker Compose" >> changelog.md
           echo "cat > docker-compose.yml <<EOF" >> changelog.md
           echo "services:" >> changelog.md
           echo "  app:" >> changelog.md
-          echo "    image: ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "    image: ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}" >> changelog.md
           echo "    ports:" >> changelog.md
           echo "      - \"3000:3000\"" >> changelog.md
           echo "    env_file:" >> changelog.md
@@ -129,7 +151,7 @@ jobs:
           echo "\`\`\`bash" >> changelog.md
           echo "git clone https://github.com/Yogdunana/CMAMSys.git" >> changelog.md
           echo "cd CMAMSys" >> changelog.md
-          echo "git checkout ${{ github.ref_name }}" >> changelog.md
+          echo "git checkout ${IMAGE_TAG}" >> changelog.md
           echo "cp .env.docker.example .env" >> changelog.md
           echo "# Edit .env with your configuration" >> changelog.md
           echo "docker compose up -d" >> changelog.md
@@ -163,8 +185,7 @@ jobs:
 
       - name: Notify Release
         run: |
-          echo "🎉 Release ${{ github.ref_name }} created successfully!"
-          echo "📦 View release: https://github.com/Yogdunana/CMAMSys/releases/tag/${{ github.ref_name }}"
-          echo "🐳 Docker images:"
-          echo "   - ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
-          echo "   - ghcr.io/yogdunana/cmamsys:latest"
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          echo "🎉 Release ${IMAGE_TAG} created successfully!"
+          echo "📦 View release: https://github.com/Yogdunana/CMAMSys/releases/tag/${IMAGE_TAG}"
+          echo "🐳 Docker image: ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
