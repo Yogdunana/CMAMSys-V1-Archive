@@ -5,20 +5,9 @@ on:
     branches: [main]
     tags: ['v*']
 
-# 配置 Actions 权限
 permissions:
   contents: write
   packages: write
-
-env:
-  NODE_ENV: production
-  DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
-  JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
-  REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
-  ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
-  CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
-  SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
-  LOG_FILE_PATH: /tmp/app.log
 
 jobs:
   build-docker:
@@ -41,44 +30,40 @@ jobs:
         run: pnpm install
 
       - name: Build application
+        env:
+          NODE_ENV: production
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
+          JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
+          REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
+          ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
+          CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
+          SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
+          LOG_FILE_PATH: /tmp/app.log
         run: pnpm run build
 
       - name: Build Docker image
         run: |
-          IMAGE_TAG=${GITHUB_REF#refs/tags/}
-          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
-            IMAGE_TAG=${GITHUB_SHA:0:7}
+          VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///' | sed 's/refs\/heads\///')
+          if [ "$VERSION" = "main" ]; then
+            VERSION=$(git rev-parse --short HEAD)
           fi
-          docker build -t ghcr.io/yogdunana/cmamsys:${IMAGE_TAG} .
+          echo "IMAGE_TAG=$VERSION" >> $GITHUB_ENV
+          docker build -t ghcr.io/yogdunana/cmamsys:$VERSION .
 
       - name: Login to GitHub Container Registry
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push Docker image
-        run: |
-          IMAGE_TAG=${GITHUB_REF#refs/tags/}
-          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
-            IMAGE_TAG=${GITHUB_SHA:0:7}
-          fi
-          docker push ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}
+        run: docker push ghcr.io/yogdunana/cmamsys:$IMAGE_TAG
 
-      - name: Tag as latest (only on main)
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+      - name: Tag and push as latest
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: |
-          IMAGE_TAG=${GITHUB_REF#refs/tags/}
-          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
-            IMAGE_TAG=${GITHUB_SHA:0:7}
-          fi
-          docker tag ghcr.io/yogdunana/cmamsys:${IMAGE_TAG} ghcr.io/yogdunana/cmamsys:latest
+          docker tag ghcr.io/yogdunana/cmamsys:$IMAGE_TAG ghcr.io/yogdunana/cmamsys:latest
           docker push ghcr.io/yogdunana/cmamsys:latest
 
       - name: Output image info
         run: |
-          IMAGE_TAG=${GITHUB_REF#refs/tags/}
-          if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
-            IMAGE_TAG=${GITHUB_SHA:0:7}
-          fi
-          echo "🎉 Docker image pushed successfully!"
-          echo "📦 ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
-          echo "📦 ghcr.io/yogdunana/cmamsys:latest"
+          echo "Docker image pushed successfully!"
+          echo "Image: ghcr.io/yogdunana/cmamsys:$IMAGE_TAG"
+          echo "Latest: ghcr.io/yogdunana/cmamsys:latest"
