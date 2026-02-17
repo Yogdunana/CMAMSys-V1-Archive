@@ -17,8 +17,8 @@ importers:
         specifier: ^3.958.0
         version: 3.990.0
       '@aws-sdk/lib-storage':
-        specifier: ^3.958.0
-        version: 3.990.0(@aws-sdk/client-s3@3.990.0)
+        specifier: ^3.991.0
+        version: 3.991.0(@aws-sdk/client-s3@3.990.0)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1(react@19.2.3))
@@ -420,11 +420,11 @@ packages:
     resolution: {integrity: sha512-CZhN1bOc1J3ubQPqbmr5b4KaMJBgdDvYsmEIZuX++wFlzmZsKj1bwkaiTEb5U2V7kXuzLlpF5HJSOM9eY/6nGA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/lib-storage@3.990.0':
-    resolution: {integrity: sha512-SHog6kMWXwLBTeVwFAd+EHwr1874Ei5ob1DTL5mLmJDwbmkFog2VDKN+9BmI4di0yxY057Ps2vhhWLhKy89wuA==}
+  '@aws-sdk/lib-storage@3.991.0':
+    resolution: {integrity: sha512-NLnFgLcJTixE6PrFxqPkbjbEtjr7JE7/5xxk8Xf8Xr8kFOlx3LyCUVKrmk5zKZBTJRjGomN3FCxRm5KEdOz/Yg==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
-      '@aws-sdk/client-s3': ^3.990.0
+      '@aws-sdk/client-s3': ^3.991.0
 
   '@aws-sdk/middleware-bucket-endpoint@3.972.3':
     resolution: {integrity: sha512-fmbgWYirF67YF1GfD7cg5N6HHQ96EyRNx/rDIrTF277/zTWVuPI2qS/ZHgofwR1NZPe/NWvoppflQY01LrbVLg==}
@@ -7782,7 +7782,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/lib-storage@3.990.0(@aws-sdk/client-s3@3.990.0)':
+  '@aws-sdk/lib-storage@3.991.0(@aws-sdk/client-s3@3.990.0)':
     dependencies:
       '@aws-sdk/client-s3': 3.990.0
       '@smithy/abort-controller': 4.2.8
