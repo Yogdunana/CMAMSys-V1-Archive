@@ -134,7 +134,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "only-allow": "^1.2.2",
-    "prisma": "^6.19.2",
+    "prisma": "^7.4.0",
     "react-dev-inspector": "^2.0.1",
     "shadcn": "latest",
     "tailwindcss": "^4",
