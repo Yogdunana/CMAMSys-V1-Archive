@@ -1,194 +1,229 @@
-# 手动部署指南
+# CMAMSys 部署文档
 
-由于 GitHub 免费私有仓库不支持 GitHub Actions 的 Docker actions，我们提供了手动部署工具。
+## 📋 目录
 
-## 快速开始
+- [部署方式对比](#部署方式对比)
+- [方式一：GitHub Actions 自动部署](#方式一-github-actions-自动部署)
+- [方式二：手动部署](#方式二手动部署)
+- [环境变量配置](#环境变量配置)
+- [常见问题](#常见问题)
 
-### 1. 准备环境变量
+---
 
-复制环境变量模板：
+## 部署方式对比
+
+| 特性 | GitHub Actions 自动部署 | 手动部署 |
+|------|------------------------|----------|
+| 难度 | 低 | 中 |
+| 触发方式 | Git Tag 推送 | 手动执行脚本 |
+| 部署位置 | GitHub Container Registry | Docker Hub / 任意仓库 |
+| 适用场景 | 生产环境 | 开发环境 / 测试环境 |
+
+**推荐**：生产环境使用 **GitHub Actions 自动部署**（推送 Tag 触发），开发环境使用 **手动部署脚本**。
+
+---
+
+## 方式一：GitHub Actions 自动部署
+
+### 1. 前置条件
+
+- 确保仓库为 **GitHub Pro** 或 **Enterprise**
+- 确保 GitHub Actions 已启用：`Settings` → `Actions` → `General` → `Actions permissions` → `Allow all actions and reusable workflows`
+- 确保 GitHub Container Registry 已启用（默认已启用）
+
+### 2. 配置 GitHub Token
+
+1. 进入仓库设置：`Settings` → `Secrets and variables` → `Actions`
+2. 确保 `GITHUB_TOKEN` 权限包含：
+   - `contents: read`
+   - `deployments: write`
+   - `packages: write`
+   - `metadata: read`
+
+这些权限已在 `.github/workflows/cd.yml` 中配置。
+
+### 3. 创建 Tag 触发部署
 
 ```bash
-cp .env.docker.example .env
+# 格式：v<主版本>.<次版本>.<修订版本>
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
-编辑 `.env` 文件，填入真实值：
+### 4. 查看部署进度
 
-```env
-# 数据库配置
-POSTGRES_PASSWORD=your_secure_postgres_password_here
+进入 `Actions` 标签页，查看 `Continuous Deployment` workflow 运行状态。
 
-# JWT 配置
-JWT_SECRET=your_jwt_secret_minimum_32_characters_long
-REFRESH_TOKEN_SECRET=your_refresh_token_secret_minimum_32
+### 5. 部署位置
 
-# 加密和安全
-ENCRYPTION_KEY=your_encryption_key_minimum_32_characters
-CSRF_SECRET=your_csrf_secret_minimum_32_characters_long
-SESSION_SECRET=your_session_secret_minimum_32_characters
-```
+镜像将推送到：
+- `ghcr.io/yogdunana/cmamsys:latest`
+- `ghcr.io/yogdunana/cmamsys:v1.0.0`
 
-### 2. 手动部署
-
-使用部署脚本：
+### 6. 拉取镜像
 
 ```bash
+docker pull ghcr.io/yogdunana/cmamsys:latest
+```
+
+---
+
+## 方式二：手动部署
+
+### 方法 1：使用一键部署脚本
+
+```bash
+# 1. 确保已登录 Docker Hub（如果推送到 Docker Hub）
+docker login -u <your-username>
+
+# 2. 执行部署脚本
+chmod +x scripts/manual-deploy.sh
 ./scripts/manual-deploy.sh production
+
+# 3. 按照提示输入版本号（如：1.0.0）
 ```
 
-### 3. 查看日志
+### 方法 2：使用 Docker Compose
 
 ```bash
+# 1. 复制环境变量模板
+cp .env.docker.example .env
+
+# 2. 编辑环境变量
+nano .env
+
+# 3. 构建并启动
+docker compose up -d --build
+
+# 4. 查看日志
 docker compose logs -f
 ```
 
-## 部署脚本功能
-
-`scripts/manual-deploy.sh` 脚本会自动执行以下操作：
-
-1. ✅ 检查 Docker 运行状态
-2. ✅ 备份数据库（如果服务正在运行）
-3. ✅ 拉取最新镜像
-4. ✅ 构建镜像
-5. ✅ 停止旧容器
-6. ✅ 启动新容器
-7. ✅ 运行数据库迁移
-8. ✅ 清理旧镜像
-
-## 手动部署步骤
-
-如果你需要完全手动控制，可以执行以下步骤：
-
-### 1. 拉取最新代码
+### 方法 3：手动构建（完全控制）
 
 ```bash
-git pull origin main
+# 1. 构建镜像
+docker build -t ghcr.io/yogdunana/cmamsys:latest .
+
+# 2. 登录 GitHub Container Registry
+echo $GITHUB_TOKEN | docker login ghcr.io -u <username> --password-stdin
+
+# 3. 推送镜像
+docker push ghcr.io/yogdunana/cmamsys:latest
 ```
 
-### 2. 构建 Docker 镜像
+---
+
+## 环境变量配置
+
+### 必需的环境变量
+
+| 变量名 | 说明 | 示例 | 默认值 |
+|--------|------|------|--------|
+| `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://user:pass@host:5432/db?schema=public` | - |
+| `JWT_SECRET` | JWT 签名密钥 | `your-secret-key` | - |
+| `NEXT_PUBLIC_APP_NAME` | 应用名称 | `CMAMSys` | `CMAMSys` |
+| `NEXTAUTH_SECRET` | NextAuth 密钥 | `your-nextauth-secret` | - |
+| `NEXTAUTH_URL` | 应用 URL | `https://your-domain.com` | - |
+
+### Sentry 监控配置（可选）
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `SENTRY_DSN` | Sentry DSN | `https://xxx@sentry.io/xxx` |
+| `SENTRY_AUTH_TOKEN` | Sentry 认证令牌 | `your-auth-token` |
+| `NEXT_PUBLIC_SENTRY_DSN` | 公开 Sentry DSN | `https://xxx@sentry.io/xxx` |
+
+### AI Provider 配置（可选）
 
 ```bash
-docker compose build
+# DeepSeek
+DEEPSEEK_API_KEY=your-deepseek-api-key
+
+# Kimi
+KIMI_API_KEY=your-kimi-api-key
+
+# Seed/豆包
+SEED_API_KEY=your-seed-api-key
 ```
 
-### 3. 停止旧容器
-
-```bash
-docker compose down
-```
-
-### 4. 启动新容器
-
-```bash
-docker compose up -d
-```
-
-### 5. 运行数据库迁移
-
-```bash
-docker compose exec -T app npx prisma migrate deploy
-```
-
-## 数据库备份
-
-### 手动备份数据库
-
-```bash
-docker exec cmamsys-db pg_dump -U postgres cmamsys > backup_$(date +%Y%m%d).sql
-```
-
-### 恢复数据库
-
-```bash
-cat backup_20240217.sql | docker exec -i cmamsys-db psql -U postgres cmamsys
-```
+---
 
 ## 常见问题
 
-### 1. 端口冲突
+### 1. GitHub Actions 构建失败
 
-如果 5000 端口被占用，修改 `docker-compose.yml`：
+**错误**：`Unable to resolve action docker/login-action@v4`
 
-```yaml
-app:
-  ports:
-    - "5001:5000"  # 改为其他端口
+**原因**：Docker actions 在私有仓库中有访问限制
+
+**解决**：使用 **GitHub Container Registry (ghcr.io)** 方案（CD workflow 已配置）
+
+### 2. Docker Hub 登录失败
+
+**错误**：`unauthorized: incorrect username or password`
+
+**解决**：
+```bash
+# 重新登录
+docker logout
+docker login -u <username>
 ```
 
-### 2. 数据库连接失败
+### 3. 端口冲突
 
-检查 `.env` 文件中的 `DATABASE_URL` 配置是否正确。
+**错误**：`bind: address already in use`
 
-### 3. 迁移失败
+**解决**：修改 `.env` 文件中的端口配置
 
+### 4. 数据库连接失败
+
+**错误**：`Can't reach database server`
+
+**解决**：
+1. 检查 `DATABASE_URL` 是否正确
+2. 确保 PostgreSQL 服务已启动
+3. 检查防火墙设置
+
+### 5. 镜像拉取超时
+
+**错误**：`net/http: request canceled while waiting for connection`
+
+**解决**：
 ```bash
-# 重置数据库（慎用！会删除所有数据）
-docker compose exec app npx prisma migrate reset --force
-
-# 重新运行迁移
-docker compose exec -T app npx prisma migrate deploy
+# 配置镜像加速器（中国大陆用户）
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://docker.mirrors.ustc.edu.cn"]
+}
+EOF
+sudo systemctl restart docker
 ```
 
-## 监控和维护
+---
 
-### 查看容器状态
-
-```bash
-docker compose ps
-```
-
-### 查看资源使用
+## 快速开始（5分钟部署）
 
 ```bash
-docker stats
-```
+# 1. 克隆仓库
+git clone https://github.com/Yogdunana/CMAMSys.git
+cd CMAMSys
 
-### 清理未使用的资源
+# 2. 配置环境变量
+cp .env.docker.example .env
+nano .env
 
-```bash
-docker system prune -a
-```
-
-## 回滚部署
-
-如果新版本有问题，可以快速回滚：
-
-```bash
-# 1. 停止当前容器
-docker compose down
-
-# 2. 拉取上一个稳定版本
-git checkout <stable-commit-hash>
-
-# 3. 重新构建和启动
+# 3. 使用 Docker Compose 启动
 docker compose up -d
+
+# 4. 访问应用
+open http://localhost:3000
 ```
 
-## 安全建议
+---
 
-1. **定期备份数据库**：建议每天自动备份
-2. **更新依赖**：定期更新 Docker 镜像和依赖
-3. **监控日志**：定期检查应用日志
-4. **使用强密码**：所有环境变量使用强密码
-5. **限制访问**：配置防火墙规则，只允许必要的端口访问
+## 技术支持
 
-## 自动化部署（可选）
-
-如果你有 VPS 服务器，可以设置 cron 定时任务自动部署：
-
-```bash
-# 编辑 crontab
-crontab -e
-
-# 添加定时任务（每天凌晨 2 点部署）
-0 2 * * * cd /opt/cmamsys && git pull && ./scripts/manual-deploy.sh production >> /var/log/cmamsys-deploy.log 2>&1
-```
-
-## 支持
-
-如果遇到问题，请检查：
-
-1. Docker 版本：`docker --version`（建议 20.10+）
-2. Docker Compose 版本：`docker compose version`（建议 2.0+）
-3. 系统资源：确保有足够的内存和磁盘空间
-4. 日志文件：`docker compose logs --tail=100`
+- GitHub Issues: https://github.com/Yogdunana/CMAMSys/issues
+- 文档: https://github.com/Yogdunana/CMAMSys/wiki
