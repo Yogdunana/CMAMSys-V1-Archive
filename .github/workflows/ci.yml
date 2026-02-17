@@ -85,6 +85,7 @@ jobs:
           ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
           CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
           SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
+          LOG_FILE_PATH: /tmp/app.log
 
   test:
     name: Tests
@@ -202,6 +203,7 @@ jobs:
           ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
           CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
           SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
+          LOG_FILE_PATH: /tmp/app.log
 
   security-scan:
     name: Security Scan
