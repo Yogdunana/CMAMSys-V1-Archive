@@ -356,38 +356,50 @@ export default function InstallWizard() {
                   <CardTitle className="text-2xl font-bold">CMAMSys 安装向导</CardTitle>
                   <CardDescription>企业级数学建模竞赛自动化系统</CardDescription>
                 </div>
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                  {steps.map((step, index) => (
-                    <div key={index} className="flex items-center shrink-0">
-                      <div
-                        className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
-                          index === currentStep
-                            ? 'bg-primary text-primary-foreground'
-                            : index < currentStep
-                            ? 'bg-green-500 text-white'
-                            : 'bg-muted'
-                        }`}
-                      >
-                        {index < currentStep ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
-                      </div>
-                      <span className={`ml-2 text-sm whitespace-nowrap ${
-                        index === currentStep
-                          ? 'text-foreground font-medium'
-                          : index < currentStep
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-muted-foreground'
-                      }`}>
-                        {step.title}
-                      </span>
-                      {index < steps.length - 1 && (
+                <div className="w-full">
+                  {/* 第一行：步骤圆圈和连接线 */}
+                  <div className="flex items-center justify-between mb-2">
+                    {steps.map((step, index) => (
+                      <div key={index} className="flex items-center">
                         <div
-                          className={`w-6 h-0.5 mx-2 shrink-0 ${
-                            index < currentStep ? 'bg-green-500' : 'bg-muted'
+                          className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                            index === currentStep
+                              ? 'bg-primary text-primary-foreground ring-2 ring-primary/50'
+                              : index < currentStep
+                              ? 'bg-green-500 text-white'
+                              : 'bg-muted text-muted-foreground'
                           }`}
-                        />
-                      )}
-                    </div>
-                  ))}
+                        >
+                          {index < currentStep ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
+                        </div>
+                        {index < steps.length - 1 && (
+                          <div
+                            className={`flex-1 mx-2 h-0.5 ${
+                              index < currentStep ? 'bg-green-500' : 'bg-muted'
+                            }`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {/* 第二行：步骤标题 */}
+                  <div className="flex items-center justify-between text-xs">
+                    {steps.map((step, index) => (
+                      <div key={index} className="flex-1 text-center px-1">
+                        <span
+                          className={`inline-block ${
+                            index === currentStep
+                              ? 'text-foreground font-medium'
+                              : index < currentStep
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          {step.title}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </CardHeader>
