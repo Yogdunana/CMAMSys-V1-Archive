@@ -106,12 +106,11 @@ export async function GET(request: NextRequest) {
           },
         }),
         // 进行中的建模任务
-        prisma.modelingTask.count({
+        prisma.autoModelingTask.count({
           where: {
-            status: {
-              in: ['PENDING', 'PREPROCESSING', 'MODELING', 'EVALUATING', 'REPORTING'],
+            overallStatus: {
+              in: ['PENDING', 'DISCUSSING', 'CODING', 'VALIDATING', 'PAPER_GENERATING'],
             },
-            deletedAt: null,
           },
         }),
         // 团队成员
@@ -136,24 +135,18 @@ export async function GET(request: NextRequest) {
           },
         }),
         // 总任务数
-        prisma.modelingTask.count({
-          where: {
-            deletedAt: null,
-          },
-        }),
+        prisma.autoModelingTask.count({}),
         // 完成的任务数
-        prisma.modelingTask.count({
+        prisma.autoModelingTask.count({
           where: {
-            status: 'COMPLETED',
-            deletedAt: null,
+            overallStatus: 'COMPLETED',
           },
         }),
         // 平均进度
-        prisma.modelingTask.aggregate({
+        prisma.autoModelingTask.aggregate({
           where: {
-            deletedAt: null,
-            status: {
-              in: ['PENDING', 'PREPROCESSING', 'MODELING', 'EVALUATING', 'REPORTING'],
+            overallStatus: {
+              in: ['PENDING', 'DISCUSSING', 'CODING', 'VALIDATING', 'PAPER_GENERATING'],
             },
           },
           _avg: {

@@ -93,7 +93,7 @@ async function verifyOptimizations() {
           testPrompt,
           {
             modelType: 'CHAT',
-            context: 'test',
+            context: 'modeling',
           },
           userId
         );

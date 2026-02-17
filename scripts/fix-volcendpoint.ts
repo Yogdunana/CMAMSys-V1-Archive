@@ -17,11 +17,13 @@ async function main() {
 
   console.log('📊 Current Configuration:');
   console.log(`   Supported Models: ${volcengine.supportedModels?.join(', ')}`);
-  console.log(`   Endpoint Mapping: ${JSON.stringify(volcengine.config?.endpointMapping, null, 2)}`);
+  const configDisplay = volcengine.config as any;
+  console.log(`   Endpoint Mapping: ${JSON.stringify(configDisplay?.endpointMapping, null, 2)}`);
   console.log('');
 
   // 获取推理端点 ID
-  const inferenceEndpoint = volcengine.config?.endpointMapping?.['doubao-pro-128k'];
+  const config = volcengine.config as any;
+  const inferenceEndpoint = config?.endpointMapping?.['doubao-pro-128k'];
 
   if (!inferenceEndpoint) {
     console.error('❌ No inference endpoint found');
@@ -48,9 +50,10 @@ async function main() {
 
   console.log('✅ Updated Configuration:');
   console.log(`   Supported Models: ${updatedProvider.supportedModels?.join(', ')}`);
-  console.log(`   Endpoint Mapping: ${JSON.stringify(updatedProvider.config?.endpointMapping, null, 2)}`);
-  console.log(`   Display Name: ${updatedProvider.config?.displayName}`);
-  console.log(`   Original Model: ${updatedProvider.config?.originalModel}`);
+  const updatedConfig = updatedProvider.config as any;
+  console.log(`   Endpoint Mapping: ${JSON.stringify(updatedConfig?.endpointMapping, null, 2)}`);
+  console.log(`   Display Name: ${updatedConfig?.displayName}`);
+  console.log(`   Original Model: ${updatedConfig?.originalModel}`);
   console.log('');
 
   console.log('✅ Volcengine Provider configuration fixed!');

@@ -305,6 +305,7 @@ export default function InstallWizard() {
               isChecking={isCheckingEnv}
               onRetry={checkEnvironment}
               onNext={nextStep}
+              onPrev={() => setCurrentStep(0)}
             />
           )}
           {currentStep === 2 && (
@@ -1066,7 +1067,7 @@ function SecurityConfigStep({ config, onConfigChange, onAutoGenerate, onNext, on
           <Input
             id="jwtSecret"
             type="password"
-            placeholder="点击"自动生成所有密钥"或手动输入"
+            placeholder='点击"自动生成所有密钥"或手动输入'
             value={config.jwtSecret || ''}
             onChange={(e) => onConfigChange({ ...config, jwtSecret: e.target.value })}
           />
@@ -1077,7 +1078,7 @@ function SecurityConfigStep({ config, onConfigChange, onAutoGenerate, onNext, on
           <Input
             id="csrfSecret"
             type="password"
-            placeholder="点击"自动生成所有密钥"或手动输入"
+            placeholder='点击"自动生成所有密钥"或手动输入'
             value={config.csrfSecret || ''}
             onChange={(e) => onConfigChange({ ...config, csrfSecret: e.target.value })}
           />
@@ -1088,7 +1089,7 @@ function SecurityConfigStep({ config, onConfigChange, onAutoGenerate, onNext, on
           <Input
             id="encryptionKey"
             type="password"
-            placeholder="点击"自动生成所有密钥"或手动输入"
+            placeholder='点击"自动生成所有密钥"或手动输入'
             value={config.encryptionKey || ''}
             onChange={(e) => onConfigChange({ ...config, encryptionKey: e.target.value })}
           />
@@ -1099,7 +1100,7 @@ function SecurityConfigStep({ config, onConfigChange, onAutoGenerate, onNext, on
           <Input
             id="sessionSecret"
             type="password"
-            placeholder="点击"自动生成所有密钥"或手动输入"
+            placeholder='点击"自动生成所有密钥"或手动输入'
             value={config.sessionSecret || ''}
             onChange={(e) => onConfigChange({ ...config, sessionSecret: e.target.value })}
           />

@@ -9,7 +9,7 @@ try {
   console.log('Type:', typeof result);
   console.log('Length:', result.length);
 } catch (e) {
-  console.log('htmlDocx(html) - Failed:', e.message);
+  console.log('htmlDocx(html) - Failed:', e instanceof Error ? e.message : String(e));
 }
 
 try {
@@ -18,5 +18,5 @@ try {
   console.log('Type:', typeof result);
   console.log('Size:', result.size);
 } catch (e) {
-  console.log('htmlDocx.asBlob(html) - Failed:', e.message);
+  console.log('htmlDocx.asBlob(html) - Failed:', e instanceof Error ? e.message : String(e));
 }

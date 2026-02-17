@@ -155,103 +155,6 @@ export const customTemplate: PaperTemplate = {
 };
 
 /**
- * 模板预设
- */
-export const paperTemplates = {
-  mcm: mcmTemplate,
-  cumcm: cumcmTemplate,
-  custom: customTemplate,
-};
-
-/**
- * 获取模板
- */
-export function getTemplate(templateId: string): PaperTemplate | undefined {
-  return paperTemplates[templateId as keyof typeof paperTemplates];
-}
-
-/**
- * 获取所有模板列表
- */
-export function getTemplateList(): PaperTemplate[] {
-  return Object.values(paperTemplates);
-}
-
-/**
- * 根据格式获取推荐模板
- */
-export function getRecommendedTemplate(format: 'MCM' | 'ICM' | 'CUMCM' | 'CUSTOM'): PaperTemplate {
-  switch (format) {
-    case 'MCM':
-    case 'ICM':
-      return mcmTemplate;
-    case 'CUMCM':
-      return cumcmTemplate;
-    case 'CUSTOM':
-    default:
-      return customTemplate;
-  }
-}
-
-/**
- * 根据模板生成论文大纲
- */
-export function generatePaperOutline(template: PaperTemplate): string {
-  let outline = `# ${template.name}\n\n`;
-  outline += `${template.description}\n\n`;
-
-  template.sections.forEach((section) => {
-    const requiredMark = section.required ? '*' : '';
-    outline += `${section.order}. ${section.title}${requiredMark}\n`;
-  });
-
-  return outline;
-}
-
-/**
- * 根据模板生成论文初始内容
- */
-export function generatePaperInitialContent(template: PaperTemplate): string {
-  let content = '';
-
-  template.sections.forEach((section) => {
-    const headingLevel = section.order === 1 ? '#' : '#'.repeat(Math.min(section.order, 4));
-    content += `${headingLevel} ${section.title}\n\n`;
-
-    if (section.defaultContent) {
-      content += section.defaultContent + '\n\n';
-    }
-  });
-
-  return content;
-}
-
-/**
- * 验证论文内容是否符合模板要求
- */
-export function validatePaperAgainstTemplate(
-  paperContent: string,
-  template: PaperTemplate,
-): { valid: boolean; missingSections: string[] } {
-  const missingSections: string[] = [];
-
-  template.sections.forEach((section) => {
-    if (section.required) {
-      // 简单检查：查找标题
-      const regex = new RegExp(`^#{1,4}\\s*${section.title}`, 'm');
-      if (!regex.test(paperContent)) {
-        missingSections.push(section.title);
-      }
-    }
-  });
-
-  return {
-    valid: missingSections.length === 0,
-    missingSections,
-  };
-}
-
-/**
  * HiMCM 模板（美国高中数学建模竞赛）
  */
 export const himcmTemplate: PaperTemplate = {
@@ -406,7 +309,7 @@ export const gmmcmTemplate: PaperTemplate = {
 };
 
 /**
- * 更新模板预设
+ * 模板预设
  */
 export const paperTemplates = {
   mcm: mcmTemplate,
@@ -417,6 +320,94 @@ export const paperTemplates = {
   apmcm: apmcmTemplate,
   gmmcm: gmmcmTemplate,
 };
+
+/**
+ * 获取模板
+ */
+export function getTemplate(templateId: string): PaperTemplate | undefined {
+  return paperTemplates[templateId as keyof typeof paperTemplates];
+}
+
+/**
+ * 获取所有模板列表
+ */
+export function getTemplateList(): PaperTemplate[] {
+  return Object.values(paperTemplates);
+}
+
+/**
+ * 根据格式获取推荐模板
+ */
+export function getRecommendedTemplate(format: 'MCM' | 'ICM' | 'CUMCM' | 'CUSTOM'): PaperTemplate {
+  switch (format) {
+    case 'MCM':
+    case 'ICM':
+      return mcmTemplate;
+    case 'CUMCM':
+      return cumcmTemplate;
+    case 'CUSTOM':
+    default:
+      return customTemplate;
+  }
+}
+
+/**
+ * 根据模板生成论文大纲
+ */
+export function generatePaperOutline(template: PaperTemplate): string {
+  let outline = `# ${template.name}\n\n`;
+  outline += `${template.description}\n\n`;
+
+  template.sections.forEach((section) => {
+    const requiredMark = section.required ? '*' : '';
+    outline += `${section.order}. ${section.title}${requiredMark}\n`;
+  });
+
+  return outline;
+}
+
+/**
+ * 根据模板生成论文初始内容
+ */
+export function generatePaperInitialContent(template: PaperTemplate): string {
+  let content = '';
+
+  template.sections.forEach((section) => {
+    const headingLevel = section.order === 1 ? '#' : '#'.repeat(Math.min(section.order, 4));
+    content += `${headingLevel} ${section.title}\n\n`;
+
+    if (section.defaultContent) {
+      content += section.defaultContent + '\n\n';
+    }
+  });
+
+  return content;
+}
+
+/**
+ * 验证论文内容是否符合模板要求
+ */
+export function validatePaperAgainstTemplate(
+  paperContent: string,
+  template: PaperTemplate,
+): { valid: boolean; missingSections: string[] } {
+  const missingSections: string[] = [];
+
+  template.sections.forEach((section) => {
+    if (section.required) {
+      // 简单检查：查找标题
+      const regex = new RegExp(`^#{1,4}\\s*${section.title}`, 'm');
+      if (!regex.test(paperContent)) {
+        missingSections.push(section.title);
+      }
+    }
+  });
+
+  return {
+    valid: missingSections.length === 0,
+    missingSections,
+  };
+}
 
 /**
  * 创建自定义模板

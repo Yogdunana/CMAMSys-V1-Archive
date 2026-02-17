@@ -17,7 +17,7 @@ async function main() {
 
   console.log('📊 Task Info:');
   console.log(`   ID: ${task.id}`);
-  console.log(`   Task Title: ${task.taskTitle || 'undefined'}`);
+  console.log(`   Task Title: ${task.problemTitle || 'undefined'}`);
   console.log(`   Overall Status: ${task.overallStatus}`);
   console.log(`   Discussion Status: ${task.discussionStatus}`);
   console.log(`   Discussion ID: ${task.discussionId}`);
@@ -52,7 +52,7 @@ async function main() {
       if (discussion.messages.length > 0) {
         console.log('📨 Recent Messages:');
         discussion.messages.forEach((msg, index) => {
-          console.log(`   ${index + 1}. [${msg.role}] ${msg.content?.substring(0, 100)}...`);
+          console.log(`   ${index + 1}. [${msg.messageType}] ${msg.messageContent?.substring(0, 100)}...`);
           console.log(`      Created: ${msg.createdAt}`);
         });
       }

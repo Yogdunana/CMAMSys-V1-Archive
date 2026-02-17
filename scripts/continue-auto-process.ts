@@ -91,7 +91,7 @@ async function continueAutoProcess(taskId: string, userId: string) {
       // 执行代码
       console.log('🔄 执行代码...');
       const executionResult = await executeCode(codeGeneration.id);
-      console.log(`✅ 代码执行完成，状态: ${executionResult.executionStatus}`);
+      console.log(`✅ 代码执行完成`); // 状态: ${executionResult.executionStatus}`);
       console.log('');
 
       // 更新任务
@@ -162,7 +162,7 @@ async function continueAutoProcess(taskId: string, userId: string) {
 
     console.log('✅ 论文生成完成');
     console.log(`   Paper ID: ${paper.id}`);
-    console.log(`   Paper Title: ${paper.paperTitle}`);
+    console.log(`   Paper Title: ${paper.title}`);
     console.log('');
 
     // 4. 完成任务

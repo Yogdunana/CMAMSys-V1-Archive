@@ -154,7 +154,7 @@ export default function TaskStatusFixPage() {
       console.log('[fixIssue] 修复响应:', response);
 
       if (response.success) {
-        toast.success(response.message || '修复成功');
+        toast.success('修复成功');
         console.log('[fixIssue] 修复成功，重新检查');
         // 重新检查
         checkTaskStatus();

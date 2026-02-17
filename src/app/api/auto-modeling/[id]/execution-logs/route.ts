@@ -79,6 +79,15 @@ export async function GET(
           // 发送开始日志
           sendLog('info', '🚀 开始执行代码...');
           sendLog('info', `任务 ID: ${taskId}`);
+
+          // 检查代码生成是否存在
+          if (!task.codeGeneration) {
+            sendLog('error', '❌ 未找到代码生成记录');
+            sendComplete(false);
+            controller.close();
+            return;
+          }
+
           sendLog('info', `代码语言: ${task.codeGeneration.codeLanguage}`);
 
           // 创建临时文件保存代码

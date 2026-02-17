@@ -99,8 +99,9 @@ export function isChineseFontSupported(): boolean {
  */
 export function getFontConfig(language: 'CHINESE' | 'ENGLISH', fontStyle: 'normal' | 'bold' | 'italic' | 'bolditalic') {
   if (language === 'CHINESE' && isChineseFontLoaded) {
+    const fontKey = fontStyle === 'normal' ? 'standard' : fontStyle;
     return {
-      fontName: CHINESE_FONTS[fontStyle],
+      fontName: CHINESE_FONTS[fontKey as keyof typeof CHINESE_FONTS],
       isCustomFont: true,
     };
   }

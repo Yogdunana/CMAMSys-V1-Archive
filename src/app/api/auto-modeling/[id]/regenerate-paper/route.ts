@@ -105,9 +105,9 @@ export async function POST(
 
     // 获取代码执行结果
     const codeExecutionResult = {
-      output: task.codeGeneration?.executionOutput || '代码执行成功',
+      output: task.codeGeneration?.errorLog || '代码执行成功',
       success: task.codeGeneration?.executionStatus === 'SUCCESS',
-      executionTime: task.codeGeneration?.executionTimeMs || 0,
+      executionTime: 0, // CodeGeneration 模型没有 executionTimeMs 字段
     };
 
     // 确定论文格式和语言

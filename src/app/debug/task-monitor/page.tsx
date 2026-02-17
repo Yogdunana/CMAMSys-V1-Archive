@@ -72,7 +72,7 @@ export function TaskMonitorPage() {
       });
 
       if (response.success) {
-        toast.success(response.message);
+        toast.success('重置成功');
         loadTasks();
       } else {
         toast.error(response.error || '重置失败');
@@ -96,7 +96,7 @@ export function TaskMonitorPage() {
       });
 
       if (response.success) {
-        toast.success(response.message);
+        toast.success('操作成功');
         loadTasks();
       } else {
         toast.error(response.error || '操作失败');
@@ -117,7 +117,9 @@ export function TaskMonitorPage() {
         method: 'POST',
       });
 
-      if (response.success) {
+      const data = await response.json();
+
+      if (data.success) {
         toast.success('Token 已清除，请重新登录');
 
         // 清除本地存储
@@ -129,7 +131,7 @@ export function TaskMonitorPage() {
           window.location.href = '/auth/login';
         }, 1000);
       } else {
-        toast.error(response.error || '清除失败');
+        toast.error(data.error || '清除失败');
       }
     } catch (error) {
       console.error('清除失败:', error);
@@ -326,3 +328,5 @@ export function TaskMonitorPage() {
     </div>
   );
 }
+
+export default TaskMonitorPage;

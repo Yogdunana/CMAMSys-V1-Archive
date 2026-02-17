@@ -69,10 +69,7 @@ export async function GET(
             email: true,
           },
         },
-        tasks: {
-          where: {
-            deletedAt: null,
-          },
+        problems: {
           orderBy: {
             createdAt: 'desc',
           },

@@ -703,7 +703,7 @@ const OptimizationVisualizer = ({ taskId }: { taskId: string }) => {
                           </CardHeader>
                           <CardContent>
                             <div className="text-2xl font-bold">
-                              {data.convergence.data[currentIteration].populationDiversity?.toFixed(3) || 'N/A'}
+                              N/A
                             </div>
                           </CardContent>
                         </Card>

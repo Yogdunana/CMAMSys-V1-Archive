@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
         data: {
           overallStatus: 'CODING',
           discussionStatus: 'COMPLETED',
-          validationStatus: 'NOT_STARTED',
-          paperStatus: 'NOT_STARTED',
+          validationStatus: 'PENDING',
+          paperStatus: 'DRAFT',
           codeGenerationId: null,
           progress: 50,
           errorLog: null,

@@ -44,6 +44,8 @@ export default function LatexRenderer({
 
   // 应用样式
   const appliedStyle = displayMode ? styleConfig.blockStyle : styleConfig.inlineStyle;
+  const inlineStyle = styleConfig.inlineStyle;
+  const blockStyle = styleConfig.blockStyle;
 
   React.useEffect(() => {
     if (!latex) {
@@ -93,10 +95,10 @@ export default function LatexRenderer({
       style={{
         fontSize: appliedStyle?.fontSize,
         color: appliedStyle?.color,
-        fontFamily: appliedStyle?.fontFamily,
-        padding: appliedStyle?.padding,
-        textAlign: displayMode ? appliedStyle?.textAlign : undefined,
-        margin: displayMode ? appliedStyle?.margin : undefined,
+        fontFamily: styleConfig.fontFamily,
+        padding: !displayMode ? (inlineStyle as any)?.padding : undefined,
+        textAlign: displayMode ? (blockStyle as any)?.textAlign : undefined,
+        margin: displayMode ? (blockStyle as any)?.margin : undefined,
       }}
       dangerouslySetInnerHTML={{ __html: html }}
     />

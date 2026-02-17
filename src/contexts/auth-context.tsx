@@ -79,8 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!payload) {
         // Token 无效或过期，尝试刷新
         console.log('[AuthContext] Token invalid, attempting refresh...');
-        const refreshSuccess = await refreshAuth();
-        return refreshSuccess;
+        await refreshAuth();
+        // 刷新后重新验证
+        const newToken = localStorage.getItem('accessToken') || '';
+        const newPayload = await verifyAccessToken(newToken);
+        return !!newPayload;
       }
 
       // Token 本地有效，再验证服务器端
@@ -94,8 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!response.ok) {
         // 服务器端验证失败，尝试刷新
         console.log('[AuthContext] Server verification failed, attempting refresh...');
-        const refreshSuccess = await refreshAuth();
-        return refreshSuccess;
+        await refreshAuth();
+        // 刷新后重新验证
+        const newToken = localStorage.getItem('accessToken') || '';
+        return !!newToken;
       }
 
       return true;
@@ -103,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('[AuthContext] Token verification failed:', error);
 
       // 如果是签名验证失败，触发自定义事件并退出登录
+      const { isJWTSignatureError } = await import('@/lib/jwt');
       if (isJWTSignatureError(error)) {
         console.log('[AuthContext] JWT signature verification failed');
         // 触发自定义事件，让 UI 显示友好的对话框
@@ -113,8 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // 其他错误，尝试刷新
-      const refreshSuccess = await refreshAuth();
-      return refreshSuccess;
+      await refreshAuth();
+      // 刷新后重新验证
+      const newToken = localStorage.getItem('accessToken') || '';
+      return !!newToken;
     }
   }
 

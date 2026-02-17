@@ -36,6 +36,13 @@ export async function POST(request: NextRequest) {
     );
 
     if (!rateLimitResult.allowed) {
+      const headers = new Headers({
+        'X-RateLimit-Limit': maxAttempts.toString(),
+        'X-RateLimit-Remaining': '0',
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
+        ...(rateLimitResult.retryAfter ? { 'Retry-After': rateLimitResult.retryAfter.toString() } : {}),
+      });
+
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -50,12 +57,7 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 429,
-          headers: {
-            'X-RateLimit-Limit': maxAttempts.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
-            'Retry-After': rateLimitResult.retryAfter?.toString(),
-          },
+          headers,
         }
       );
     }

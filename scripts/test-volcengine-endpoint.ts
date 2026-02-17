@@ -29,7 +29,7 @@ async function testVolcengineEndpoint() {
   console.log('');
 
   // 获取推理端点
-  const endpointMapping = volcengine.config?.endpointMapping || {};
+  const endpointMapping = (volcengine.config as any)?.endpointMapping || {};
   const inferenceEndpoint = endpointMapping['doubao-pro-128k'];
 
   console.log(`🎯 Inference Endpoint: ${inferenceEndpoint}`);

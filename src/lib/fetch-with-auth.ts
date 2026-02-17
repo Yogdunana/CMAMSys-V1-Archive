@@ -123,9 +123,9 @@ export async function fetchWithAuth<T = any>(
   let token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
   // 设置请求头
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers,
+    ...(fetchOptions.headers as Record<string, string> || {}),
   };
 
   // 如果需要认证且有 token，添加 Authorization 头
@@ -238,9 +238,9 @@ export function useFetchWithAuth() {
       let token = localStorage.getItem('accessToken');
 
       // 设置请求头
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...fetchOptions.headers,
+        ...(fetchOptions.headers as Record<string, string> || {}),
       };
 
       // 如果需要认证且有 token，添加 Authorization 头
