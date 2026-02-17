@@ -36,7 +36,6 @@ COPY . .
 
 # Set environment for build
 ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
 
 # Generate Prisma client (use dummy URL for build time)
 ARG DATABASE_URL
@@ -44,11 +43,11 @@ ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/c
 
 RUN npx prisma generate
 
-# Reinstall all dependencies (including devDependencies) for build
-RUN pnpm install --frozen-lockfile --prefer-offline --prod=false
-
-# Build the application
+# Build the application (NODE_ENV is not set yet to allow devDependencies)
 RUN pnpm run build
+
+# Set production environment after build
+ENV NODE_ENV production
 
 # Stage 3: Runner
 FROM node:24-alpine AS runner
