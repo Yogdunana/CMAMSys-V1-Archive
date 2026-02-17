@@ -5,18 +5,29 @@
 
 import { SignJWT, jwtVerify } from 'jose';
 
-// 修复：移除默认值，强制要求环境变量
-const JWT_SECRET_VALUE = process.env.JWT_SECRET;
-if (!JWT_SECRET_VALUE) {
-  throw new Error('JWT_SECRET environment variable is required');
+/**
+ * Get JWT secret from environment
+ * Throws error if not set (unless in test mode)
+ */
+function getJwtSecret(): Uint8Array {
+  const value = process.env.JWT_SECRET;
+  if (!value) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return new TextEncoder().encode(value);
 }
-const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_VALUE);
 
-const REFRESH_TOKEN_SECRET_VALUE = process.env.REFRESH_TOKEN_SECRET;
-if (!REFRESH_TOKEN_SECRET_VALUE) {
-  throw new Error('REFRESH_TOKEN_SECRET environment variable is required');
+/**
+ * Get refresh token secret from environment
+ * Throws error if not set
+ */
+function getRefreshTokenSecret(): Uint8Array {
+  const value = process.env.REFRESH_TOKEN_SECRET;
+  if (!value) {
+    throw new Error('REFRESH_TOKEN_SECRET environment variable is required');
+  }
+  return new TextEncoder().encode(value);
 }
-const REFRESH_TOKEN_SECRET = new TextEncoder().encode(REFRESH_TOKEN_SECRET_VALUE);
 
 export interface TokenPayload {
   userId: string;
@@ -45,7 +56,7 @@ export async function generateAccessToken(payload: TokenPayload): Promise<string
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
     .setExpirationTime(accessTokenExpiry)
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 /**
@@ -64,7 +75,7 @@ export async function generateRefreshToken(
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
     .setExpirationTime(refreshTokenExpiry)
-    .sign(REFRESH_TOKEN_SECRET);
+    .sign(getRefreshTokenSecret());
 }
 
 /**
@@ -72,7 +83,7 @@ export async function generateRefreshToken(
  */
 export async function verifyAccessToken(token: string): Promise<AccessTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
 
     // 验证 token 类型
     if (payload.type !== 'access') {
@@ -94,7 +105,7 @@ export async function verifyRefreshToken(
   token: string
 ): Promise<RefreshTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, REFRESH_TOKEN_SECRET);
+    const { payload } = await jwtVerify(token, getRefreshTokenSecret());
 
     // 验证 token 类型
     if (payload.type !== 'refresh') {

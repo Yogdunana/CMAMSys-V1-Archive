@@ -7,6 +7,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { encrypt, decrypt, isEncrypted, hashSensitiveData } from '@/lib/encryption';
 
 describe('Encryption Utilities', () => {
+  // Set up test environment variables
+  beforeEach(() => {
+    process.env.ENCRYPTION_KEY = 'test-encryption-key-for-testing-only-32-chars';
+  });
+
   const testCases = [
     { name: 'API Key', value: 'sk-1234567890abcdef' },
     { name: 'Password', value: 'MySecurePassword123!' },
