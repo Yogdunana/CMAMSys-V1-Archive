@@ -1,15 +1,25 @@
 name: CD
 
+# 暂时禁用 CD workflow - 免费私有仓库不支持 Docker actions
+# 如需启用，请升级到 GitHub Team 或 Enterprise 计划
+# 或者使用方案 2：手动部署到服务器
 on:
   push:
     branches: [main]
     tags: ['v*']
+  workflow_dispatch:
+
+# 暂时禁用 CD workflow - 免费私有仓库不支持 Docker actions
+# 如需启用，请升级到 GitHub Team 或 Enterprise 计划
+# 或者使用方案 2：手动部署到服务器
 
 jobs:
   build-docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # 暂时禁用此 job - 免费私有仓库不支持 Docker actions
+    if: false
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
