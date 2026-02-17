@@ -121,7 +121,7 @@
     "@types/file-saver": "^2.0.7",
     "@types/html-docx-js": "^0.3.4",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20",
+    "@types/node": "^25",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.10",
     "@types/pg": "^8.16.0",
