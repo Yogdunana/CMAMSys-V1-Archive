@@ -112,7 +112,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "@prisma/client": "^6.19.2",
+    "@prisma/client": "^7.4.0",
     "@react-dev-inspector/babel-plugin": "^2.0.1",
     "@react-dev-inspector/middleware": "^2.0.1",
     "@tailwindcss/postcss": "^4",
