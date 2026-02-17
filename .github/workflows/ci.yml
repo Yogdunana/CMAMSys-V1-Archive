@@ -75,6 +75,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
+
       - name: Run TypeScript check
         run: pnpm ts-check
         env:
