@@ -83,9 +83,6 @@ COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-
 # Create necessary directories
 RUN mkdir -p /app/uploads /app/logs /app/temp && \
     chown -R nextjs:nodejs /app/uploads /app/logs /app/temp
