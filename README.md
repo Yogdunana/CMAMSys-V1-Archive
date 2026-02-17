@@ -1735,10 +1735,19 @@ chmod +x docker-deploy.sh
 
 ### 快速链接
 
+#### 文档
 - 📖 [完整部署文档](DEPLOYMENT.md)
 - ⚡ [快速开始指南](QUICKSTART.md)
 - 📚 [用户指南](USER_GUIDE.md)
 - 🔌 [API 文档](API.md)
+- 💻 [开发指南](DEVELOPMENT.md)
+- 🤝 [贡献指南](CONTRIBUTING.md)
+- 🆘 [获取支持](SUPPORT.md)
+
+#### 社区
+- 💬 [Discussions](https://github.com/Yogdunana/CMAMSys/discussions)
+- 🐛 [Issues](https://github.com/Yogdunana/CMAMSys/issues)
+- 📝 [Wiki](https://github.com/Yogdunana/CMAMSys/wiki)
 
 ### 默认账户
 

@@ -1,0 +1,89 @@
+name: Scheduled Tasks
+
+on:
+  schedule:
+    # 每天凌晨 2 点运行
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    name: Check for outdated dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Check for outdated packages
+        run: pnpm outdated --json > outdated.json || true
+
+      - name: Create issue if outdated packages found
+        if: hashFiles('outdated.json') != ''
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: '📦 Outdated dependencies detected'
+          content-filepath: outdated.json
+          labels: 'dependencies, maintenance'
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'typescript']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  database-backup:
+    name: Automated Database Backup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Backup PostgreSQL database
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            cd /opt/cmamsys
+            DATE=$(date +%Y%m%d_%H%M%S)
+            docker compose exec -T postgres pg_dump -U postgres cmamsys > /backups/cmamsys_$DATE.sql
+            gzip /backups/cmamsys_$DATE.sql
+            # Keep only last 7 days of backups
+            find /backups -name "*.sql.gz" -mtime +7 -delete
+            echo "Database backup completed: cmamsys_$DATE.sql.gz"
