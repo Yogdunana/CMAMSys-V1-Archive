@@ -44,8 +44,8 @@ ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/c
 
 RUN npx prisma generate
 
-# Reinstall devDependencies to ensure build tools are available
-RUN pnpm install --frozen-lockfile --prefer-offline
+# Reinstall all dependencies (including devDependencies) for build
+RUN pnpm install --frozen-lockfile --prefer-offline --prod=false
 
 # Build the application
 RUN pnpm run build
