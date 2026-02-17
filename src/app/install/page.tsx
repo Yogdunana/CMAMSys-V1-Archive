@@ -356,49 +356,53 @@ export default function InstallWizard() {
                   <CardTitle className="text-2xl font-bold">CMAMSys 安装向导</CardTitle>
                   <CardDescription>企业级数学建模竞赛自动化系统</CardDescription>
                 </div>
-                <div className="w-full">
-                  {/* 第一行：步骤圆圈和连接线 */}
-                  <div className="flex items-center justify-between mb-2">
-                    {steps.map((step, index) => (
-                      <div key={index} className="flex items-center">
-                        <div
-                          className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                            index === currentStep
-                              ? 'bg-primary text-primary-foreground ring-2 ring-primary/50'
-                              : index < currentStep
-                              ? 'bg-green-500 text-white'
-                              : 'bg-muted text-muted-foreground'
-                          }`}
-                        >
-                          {index < currentStep ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
-                        </div>
-                        {index < steps.length - 1 && (
-                          <div
-                            className={`flex-1 mx-2 h-0.5 ${
-                              index < currentStep ? 'bg-green-500' : 'bg-muted'
-                            }`}
-                          />
-                        )}
-                      </div>
-                    ))}
+                <div className="flex items-center justify-between">
+                  {/* 当前步骤指示器 */}
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm text-muted-foreground">步骤</div>
+                    <div className="flex items-center gap-1.5">
+                      {steps.slice(Math.max(0, currentStep - 1), currentStep + 2).map((step, relativeIndex) => {
+                        const actualIndex = Math.max(0, currentStep - 1) + relativeIndex;
+                        const isCurrent = actualIndex === currentStep;
+                        const isPast = actualIndex < currentStep;
+                        
+                        // 如果是第一个显示的步骤，但不是真正的第一个，显示省略号
+                        const showEllipsisBefore = actualIndex > 0 && relativeIndex === 0;
+                        // 如果是最后一个显示的步骤，但不是真正的最后一个，显示省略号
+                        const showEllipsisAfter = actualIndex < steps.length - 1 && relativeIndex === 2 && actualIndex !== steps.length - 1;
+                        
+                        return (
+                          <React.Fragment key={actualIndex}>
+                            {showEllipsisBefore && <span className="text-muted-foreground">...</span>}
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium transition-all ${
+                                  isCurrent
+                                    ? 'bg-primary text-primary-foreground scale-110'
+                                    : isPast
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-muted text-muted-foreground'
+                                }`}
+                              >
+                                {isPast ? <CheckCircle2 className="w-3 h-3" /> : actualIndex + 1}
+                              </div>
+                              <span
+                                className={`text-sm font-medium whitespace-nowrap ${
+                                  isCurrent ? 'text-foreground' : isPast ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
+                                }`}
+                              >
+                                {step.title}
+                              </span>
+                            </div>
+                            {showEllipsisAfter && <span className="text-muted-foreground">...</span>}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
                   </div>
-                  {/* 第二行：步骤标题 */}
-                  <div className="flex items-center justify-between text-xs">
-                    {steps.map((step, index) => (
-                      <div key={index} className="flex-1 text-center px-1">
-                        <span
-                          className={`inline-block ${
-                            index === currentStep
-                              ? 'text-foreground font-medium'
-                              : index < currentStep
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          {step.title}
-                        </span>
-                      </div>
-                    ))}
+                  {/* 总进度 */}
+                  <div className="text-sm text-muted-foreground">
+                    {currentStep + 1} / {steps.length}
                   </div>
                 </div>
               </div>
