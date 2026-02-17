@@ -14,6 +14,12 @@ import {
 import type { AccessTokenPayload, RefreshTokenPayload } from '@/lib/jwt';
 
 describe('JWT Utilities', () => {
+  // Set up test environment variables
+  beforeEach(() => {
+    process.env.JWT_SECRET = 'test-jwt-secret-for-testing-only-32-chars';
+    process.env.REFRESH_TOKEN_SECRET = 'test-refresh-token-secret-for-testing-32';
+  });
+
   const mockUserPayload = {
     userId: 'user-123',
     email: 'test@example.com',
