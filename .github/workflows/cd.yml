@@ -5,15 +5,10 @@ on:
     branches: [main]
     tags: ['v*']
 
-# GitHub Pro 支持完整的 CI/CD 功能
-# 如需启用 Code Scanning，请在仓库设置中启用
-
-# 配置 Actions 权限（GitHub Pro 必需）
+# 配置 Actions 权限
 permissions:
-  contents: write  # 创建 Release 需要 write 权限
+  contents: write
   packages: write
-  deployments: write
-  metadata: read
 
 env:
   NODE_ENV: production
@@ -26,8 +21,8 @@ env:
   LOG_FILE_PATH: /tmp/app.log
 
 jobs:
-  build-and-push-docker:
-    name: Build and Push Docker Image
+  build-docker:
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
@@ -48,22 +43,13 @@ jobs:
       - name: Build application
         run: pnpm run build
 
-      - name: Set up Docker Buildx
-        run: |
-          docker buildx create --use
-          docker buildx install
-
       - name: Build Docker image
         run: |
           IMAGE_TAG=${GITHUB_REF#refs/tags/}
           if [ "$IMAGE_TAG" = "$GITHUB_REF" ]; then
             IMAGE_TAG=${GITHUB_SHA:0:7}
           fi
-          docker buildx build \
-            --platform linux/amd64 \
-            --tag ghcr.io/yogdunana/cmamsys:${IMAGE_TAG} \
-            --load \
-            .
+          docker build -t ghcr.io/yogdunana/cmamsys:${IMAGE_TAG} .
 
       - name: Login to GitHub Container Registry
         run: |
@@ -77,7 +63,7 @@ jobs:
           fi
           docker push ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}
 
-      - name: Tag as latest (only on main branch)
+      - name: Tag as latest (only on main)
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         run: |
           IMAGE_TAG=${GITHUB_REF#refs/tags/}
@@ -94,98 +80,5 @@ jobs:
             IMAGE_TAG=${GITHUB_SHA:0:7}
           fi
           echo "🎉 Docker image pushed successfully!"
-          echo "📦 Image tag: ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
-          if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ startsWith(github.ref, 'refs/tags/v') }}" = "true" ]; then
-            echo "📦 Latest tag: ghcr.io/yogdunana/cmamsys:latest"
-          fi
-          echo ""
-          echo "🚀 To pull the image:"
-          echo "   docker pull ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
-
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build-and-push-docker
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Generate changelog
-        run: |
-          IMAGE_TAG=${GITHUB_REF#refs/tags/}
-          echo "## 📦 Release ${IMAGE_TAG}" > changelog.md
-          echo "" >> changelog.md
-          echo "### 🚀 What's New" >> changelog.md
-          echo "" >> changelog.md
-          echo "Changes in this release:" >> changelog.md
-          git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "HEAD^")..HEAD >> changelog.md || echo "- Initial release" >> changelog.md
-          echo "" >> changelog.md
-          echo "### 🐳 Docker Image" >> changelog.md
-          echo "" >> changelog.md
-          echo "Docker image has been automatically built and pushed to GitHub Container Registry:" >> changelog.md
-          echo "" >> changelog.md
-          echo "\`\`\`bash" >> changelog.md
-          echo "# Pull the image" >> changelog.md
-          echo "docker pull ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}" >> changelog.md
-          echo "" >> changelog.md
-          echo "# Run with Docker Compose" >> changelog.md
-          echo "cat > docker-compose.yml <<EOF" >> changelog.md
-          echo "services:" >> changelog.md
-          echo "  app:" >> changelog.md
-          echo "    image: ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}" >> changelog.md
-          echo "    ports:" >> changelog.md
-          echo "      - \"3000:3000\"" >> changelog.md
-          echo "    env_file:" >> changelog.md
-          echo "      - .env" >> changelog.md
-          echo "EOF" >> changelog.md
-          echo "" >> changelog.md
-          echo "# Start the service" >> changelog.md
-          echo "docker compose up -d" >> changelog.md
-          echo "\`\`\`" >> changelog.md
-          echo "" >> changelog.md
-          echo "### 🔧 Alternative Deployment Methods" >> changelog.md
-          echo "" >> changelog.md
-          echo "#### Option 2: Clone and Deploy" >> changelog.md
-          echo "\`\`\`bash" >> changelog.md
-          echo "git clone https://github.com/Yogdunana/CMAMSys.git" >> changelog.md
-          echo "cd CMAMSys" >> changelog.md
-          echo "git checkout ${IMAGE_TAG}" >> changelog.md
-          echo "cp .env.docker.example .env" >> changelog.md
-          echo "# Edit .env with your configuration" >> changelog.md
-          echo "docker compose up -d" >> changelog.md
-          echo "\`\`\`" >> changelog.md
-          echo "" >> changelog.md
-          echo "#### Option 3: Using Deployment Script" >> changelog.md
-          echo "\`\`\`bash" >> changelog.md
-          echo "chmod +x scripts/manual-deploy.sh" >> changelog.md
-          echo "./scripts/manual-deploy.sh production" >> changelog.md
-          echo "\`\`\`" >> changelog.md
-          echo "" >> changelog.md
-          echo "### 📚 Documentation" >> changelog.md
-          echo "- [Deployment Guide](https://github.com/Yogdunana/CMAMSys/blob/main/docs/MANUAL_DEPLOYMENT.md)" >> changelog.md
-          echo "- [API Documentation](https://github.com/Yogdunana/CMAMSys/blob/main/API.md)" >> changelog.md
-          echo "" >> changelog.md
-          echo "### ⚠️ Important Notes" >> changelog.md
-          echo "- Make sure to configure all required environment variables" >> changelog.md
-          echo "- Run database migrations: \`docker compose exec -T app npx prisma migrate deploy\`" >> changelog.md
-          echo "- Ensure PostgreSQL is running and accessible" >> changelog.md
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref_name }}
-          body_path: changelog.md
-          draft: false
-          prerelease: false
-
-      - name: Notify Release
-        run: |
-          IMAGE_TAG=${GITHUB_REF#refs/tags/}
-          echo "🎉 Release ${IMAGE_TAG} created successfully!"
-          echo "📦 View release: https://github.com/Yogdunana/CMAMSys/releases/tag/${IMAGE_TAG}"
-          echo "🐳 Docker image: ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
+          echo "📦 ghcr.io/yogdunana/cmamsys:${IMAGE_TAG}"
+          echo "📦 ghcr.io/yogdunana/cmamsys:latest"
