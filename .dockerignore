@@ -63,8 +63,7 @@ docker-compose.yml
 README.md
 docs/
 
-# Scripts
-scripts/
+# Config
 .prettierrc
 .prettierignore
 .eslintrc.json
