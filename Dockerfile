@@ -21,7 +21,7 @@ RUN pnpm install --frozen-lockfile
 
 # Stage 2: Builder
 FROM node:24-alpine AS builder
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat python3 make g++ bash
 WORKDIR /app
 
 # Install pnpm
