@@ -24,6 +24,9 @@ FROM node:24-alpine AS builder
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
+# Install pnpm
+RUN npm install -g pnpm
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 COPY . .
