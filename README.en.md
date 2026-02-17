@@ -1,5 +1,7 @@
 # CMAMSys - Enterprise-Grade Mathematical Modeling Competition Automation Platform
 
+**English** | [简体中文](README.md)
+
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)

@@ -1,5 +1,7 @@
 # CMAMSys - 企业级数学建模竞赛自动化平台
 
+**简体中文** | [English](README.en.md)
+
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
