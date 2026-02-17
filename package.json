@@ -5,6 +5,7 @@
   "description": "CompetiMath AutoModel System - Enterprise Mathematical Modeling Competition Platform",
   "scripts": {
     "build": "bash ./scripts/build.sh",
+    "prebuild": "prisma generate",
     "dev": "bash ./scripts/dev.sh",
     "lint": "eslint",
     "start": "bash ./scripts/start.sh",
