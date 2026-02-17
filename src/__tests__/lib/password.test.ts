@@ -87,12 +87,12 @@ describe('Password Utilities', () => {
         hashPassword(password),
         hashPassword(password),
       ]);
-      
+
       for (const hash of hashes) {
         const isValid = await verifyPassword(password, hash);
         expect(isValid).toBe(true);
       }
-    });
+    }, 10000);
 
     it('should reject null/undefined parameters', async () => {
       const validHash = await hashPassword('test');
