@@ -26,22 +26,9 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build application
-        env:
-          NODE_ENV: production
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
-          JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
-          REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
-          ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
-          CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
-          SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
-          LOG_FILE_PATH: /tmp/app.log
-        run: pnpm run build
-
       - name: Build Docker image
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
         run: |
           VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///' | sed 's/refs\/heads\///')
           if [ "$VERSION" = "main" ]; then
@@ -49,7 +36,7 @@ jobs:
           fi
           echo "IMAGE_TAG=$VERSION" >> $GITHUB_ENV
           echo "Building Docker image with tag: $VERSION"
-          docker build --no-cache -t ghcr.io/yogdunana/cmamsys:$VERSION .
+          docker build --no-cache --build-arg DATABASE_URL="$DATABASE_URL" -t ghcr.io/yogdunana/cmamsys:$VERSION .
 
       - name: Login to GitHub Container Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
