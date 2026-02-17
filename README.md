@@ -1883,8 +1883,8 @@ Authorization: Bearer {accessToken}
     "status": "RUNNING",
     "currentPhase": "CODE",
     "progress": 50,
-    "createdAt": "2024-01-01T00:00:00Z",
-    "updatedAt": "2024-01-01T00:30:00Z"
+    "createdAt": "2026-02-18T00:00:00Z",
+    "updatedAt": "2026-02-18T00:30:00Z"
   }
 }
 ```
@@ -1928,9 +1928,9 @@ import { formatDate } from '../utils';
 
 describe('formatDate', () => {
   it('should format date correctly', () => {
-    const date = new Date('2024-01-01');
+    const date = new Date('2026-02-18');
     const formatted = formatDate(date);
-    expect(formatted).toBe('2024-01-01');
+    expect(formatted).toBe('2026-02-18');
   });
 });
 ```
@@ -2215,7 +2215,7 @@ sudo certbot --nginx -d your-domain.com
 
 MIT License
 
-Copyright (c) 2024 CMAMSys Team
+Copyright (c) 2026 CMAMSys Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2261,7 +2261,7 @@ SOFTWARE.
 
 ## 📝 更新日志
 
-### v1.0.0 (2024-01-01)
+### v1.0.0 (2026-02-18)
 
 #### 新功能
 - ✅ 完整的安装向导
