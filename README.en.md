@@ -1,25 +1,19 @@
-# CMAMSys - CompetiMath AutoModel System
-
-<div align="center">
-
-**CompetiMath AutoModel System v1.0.0**
+# CMAMSys - Enterprise-Grade Mathematical Modeling Competition Automation Platform
 
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black.svg)
-![React](https://img.shields.io/badge/React-19.2.3-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black.svg)
+![React](https://img.shields.io/badge/React-19.2.4-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg)
-![Prisma](https://img.shields.io/badge/Prisma-5.22.0-2D3748.svg)
+![Prisma](https://img.shields.io/badge/Prisma-6.19.2-2D3748.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)
 
-</div>
-
-**Enterprise-Grade Automated Mathematical Modeling Competition Platform**
+**CompetiMath AutoModel System**
 
 One-stop solution providing full-cycle automation from data preprocessing, model training, and evaluation to report generation for teams and individuals.
 
-[Website](https://cmamsys.com) | [Documentation](https://docs.cmamsys.com) | [Demo](https://demo.cmamsys.com) | [GitHub](https://github.com/your-org/cmamsys)
+[Documentation](#documentation) | [Demo](#demo) | [GitHub](https://github.com/Yogdunana/CMAMSys)
 
 </div>
 
@@ -32,1607 +26,601 @@ One-stop solution providing full-cycle automation from data preprocessing, model
 - [Technical Architecture](#technical-architecture)
 - [Feature Modules](#feature-modules)
 - [Database Design](#database-design)
-- [API Documentation](#api-documentation)
 - [Quick Start](#quick-start)
 - [Detailed Installation Guide](#detailed-installation-guide)
 - [Configuration Guide](#configuration-guide)
 - [Development Guide](#development-guide)
 - [Deployment Guide](#deployment-guide)
+- [API Documentation](#api-documentation)
 - [Testing Guide](#testing-guide)
-- [Performance Optimization](#performance-optimization)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
-- [Changelog](#changelog)
-- [Contributing Guide](#contributing-guide)
-- [License](#license)
-- [Contact](#contact)
 
 ---
 
 ## 📖 Project Overview
 
-### Background and Vision
+### What is CMAMSys?
 
-CMAMSys (CompetiMath AutoModel System) is an enterprise-grade platform for mathematical modeling competitions, designed to provide a one-stop solution for participants, streamlining the modeling process and improving competition efficiency.
+**CMAMSys (CompetiMath AutoModel System)** is an enterprise-grade platform for mathematical modeling competitions, designed to provide a one-stop solution for participants, streamlining the modeling process and improving competition efficiency.
 
 Mathematical modeling competitions (such as MCM/ICM, CUMCM, etc.) typically require participants to complete the following tasks within a limited time:
-1. Understand the problem and develop strategy
-2. Data collection and preprocessing
-3. Model building and solving
-4. Result analysis and visualization
-5. Paper writing
 
-This process is time-consuming and complex. CMAMSys uses automation and intelligent techniques to significantly reduce repetitive work, allowing participants to focus on core problems.
+1. **Problem Analysis & Strategy Development** - Understand requirements and develop modeling approach
+2. **Data Collection & Preprocessing** - Acquire, clean, and transform data
+3. **Model Building & Solving** - Select algorithms, train models
+4. **Result Analysis & Visualization** - Evaluate models and display results
+5. **Paper Writing** - Write papers that meet competition requirements
 
-### Design Philosophy
+CMAMSys uses automation and intelligent techniques to significantly reduce repetitive work, allowing participants to focus on core problems.
 
-- **Automation First**: Automate repetitive tasks whenever possible
-- **Intelligent Assistance**: AI-driven recommendations and optimizations
-- **Team Collaboration**: Multi-user support with role-based access control
-- **Ready to Use**: Competition-specific templates and presets
-- **Enterprise Quality**: Comprehensive testing, documentation, and deployment solutions
+### Core Value Proposition
+
+- 🤖 **AI-Powered**: Integration of multiple AI Providers for intelligent modeling and code generation assistance
+- 🔄 **Automated Workflow**: End-to-end automation from discussion to paper generation
+- 👥 **Team Collaboration**: Real-time multi-user collaboration with clear role division
+- 📊 **Data Visualization**: Rich chart and report generation capabilities
+- 🔒 **Enterprise Security**: Comprehensive permission control and data encryption
+- 🌐 **Multi-language Support**: Supports Chinese, English, and other languages
 
 ### Supported Competitions
 
-| Competition Name | Acronym | Organizer | Difficulty | Template Support |
-|-----------------|---------|-----------|------------|------------------|
-| Mathematical Contest in Modeling | MCM/ICM | COMAP | ⭐⭐⭐⭐⭐ | ✅ Full Support |
-| China Undergraduate Mathematical Contest in Modeling | CUMCM | CSIAM | ⭐⭐⭐⭐ | ✅ Full Support |
-| Shenzhen Cup Mathematical Modeling Challenge | Shenzhen Cup | Shenzhen Association for Science and Technology | ⭐⭐⭐⭐ | ✅ Full Support |
-| International Mathematical Modeling Challenge | IMMC | IMMC Committee | ⭐⭐⭐⭐⭐ | ✅ Full Support |
-| MathorCup Mathematical Modeling Challenge | MathorCup | CSOR | ⭐⭐⭐ | ✅ Basic Support |
-| Electric Mathematical Modeling Competition | EMMC | CSEE | ⭐⭐⭐ | ✅ Basic Support |
-| Teddy Cup Data Mining Challenge | Teddy Cup | Teddy Cup Committee | ⭐⭐⭐⭐ | ✅ Full Support |
-| BlueBridge Cup Mathematical Modeling | BlueBridge | MIIT | ⭐⭐ | ✅ Basic Support |
-
-### Editions
-
-#### Community Edition
-
-**Free and Open Source, MIT License**
-
-- ✅ Basic modeling features
-- ✅ Team collaboration (up to 10 members)
-- ✅ Report generation
-- ✅ 3 AI Providers
-- ✅ Basic template library
-- ✅ Community support
-
-**Best for**: Personal learning, small teams, educational demonstrations
-
-#### Enterprise Edition
-
-**Commercial License, Paid**
-
-- ✅ All Community Edition features
-- ✅ Unlimited team members
-- ✅ Unlimited AI Providers
-- ✅ Advanced template library
-- ✅ SSO (Single Sign-On)
-- ✅ Private deployment
-- ✅ Priority technical support
-- ✅ Custom development
-- ✅ SLA guarantee
-
-**Best for**: University labs, training institutions, corporate R&D teams
+| Competition Name | Acronym | Support Level |
+|-----------------|---------|---------------|
+| Mathematical Contest in Modeling | MCM/ICM | ✅ Full Support |
+| China Undergraduate Mathematical Contest in Modeling | CUMCM | ✅ Full Support |
+| Shenzhen Cup Mathematical Modeling Challenge | Shenzhen Cup | ✅ Full Support |
+| International Mathematical Modeling Challenge | IMMC | ✅ Full Support |
+| MathorCup Mathematical Modeling Challenge | MathorCup | ✅ Basic Support |
+| Electric Mathematical Modeling Competition | EMMC | ✅ Basic Support |
 
 ---
 
 ## ✨ Key Features
 
-### 1. Automated Modeling Pipeline
+### 1. Automated Modeling Workflow
 
-CMAMSys provides end-to-end automated modeling workflow from data input to report output with minimal human intervention.
-
-#### Pipeline Stages
+CMAMSys provides end-to-end automated modeling workflow with 4 core phases:
 
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ Problem      │ →  │ Data         │ →  │ Model        │ →  │ Result       │
-│ Analysis     │    │ Preprocess   │    │ Training     │    │ Evaluation   │
+│ Discussion  │ →  │    Code     │ →  │ Validation  │ →  │    Paper    │
+│ AI Analysis │    │ Code Gen &  │    │ Result      │    │ Paper Gen   │
+│             │    │ Execution   │    │ Validation  │    │ & Export    │
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-        ↓                   ↓                   ↓                   ↓
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ Strategy     │    │ Feature      │    │ Hyperparameter│   │ Visualization│
-│ Formulation  │    │ Engineering  │    │ Optimization  │   │              │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-                                                              ↓
-                                                    ┌─────────────┐
-                                                    │ Report      │
-                                                    │ Generation  │
-                                                    └─────────────┘
 ```
 
-#### Supported Modeling Types
-
-| Modeling Type | Supported Algorithms | Use Cases | Templates |
-|---------------|---------------------|-----------|-----------|
-| **Prediction Models** | Linear Regression, XGBoost, LightGBM, LSTM, Transformer | Time series forecasting, sales prediction | ✅ |
-| **Classification Models** | Logistic Regression, Random Forest, SVM, Deep Learning | Image recognition, text classification | ✅ |
-| **Clustering Models** | K-Means, DBSCAN, Hierarchical Clustering | Customer segmentation, anomaly detection | ✅ |
-| **Optimization Models** | Linear Programming, Integer Programming, Genetic Algorithms | Resource scheduling, path optimization | ✅ |
-| **Evaluation Models** | AHP, TOPSIS, Fuzzy Comprehensive Evaluation | Scheme evaluation, decision support | ✅ |
-| **Simulation Models** | Monte Carlo, Cellular Automata, System Dynamics | Risk assessment, trend prediction | ✅ |
-
-### 2. Multi-Algorithm Support
-
-Integrated with mainstream machine learning and deep learning libraries:
-
-#### Traditional Machine Learning
-
-- **Scikit-learn**: 100+ traditional algorithms
-  - Supervised learning: regression, classification
-  - Unsupervised learning: clustering, dimensionality reduction
-  - Model selection: cross-validation, grid search
-
-- **XGBoost**: Gradient Boosting Decision Trees
-  - GPU acceleration support
-  - Automatic missing value handling
-  - Feature importance analysis
-
-- **LightGBM**: Lightweight Gradient Boosting
-  - Low memory footprint
-  - Fast training speed
-  - Categorical feature support
-
-#### Deep Learning
-
-- **PyTorch**: Flexible deep learning framework
-  - Custom network architecture
-  - Distributed training
-  - Model export (ONNX)
-
-- **TensorFlow/Keras**: User-friendly deep learning interface
-  - Pre-trained model library
-  - Automatic differentiation
-  - Model deployment tools
-
-#### Statistical Modeling
-
-- **Statsmodels**: Statistical modeling and econometrics
-  - Linear regression, time series analysis
-  - Hypothesis testing, ANOVA
-  - Strong interpretability
-
-### 3. AI Integration
-
-#### Supported AI Providers
-
-| Provider | Models | Usage | Billing |
-|----------|--------|-------|---------|
-| **DeepSeek** | DeepSeek-V3 | General chat, code generation | By Tokens |
-| **VolcEngine (Doubao)** | Doubao-Pro | Chinese optimized, multimodal | By requests |
-| **Aliyun Qwen** | Qwen-Max | Chinese understanding, long text | By calls |
-| **OpenAI** | GPT-4 | General reasoning, complex tasks | By Tokens |
-| **Zhipu AI** | ChatGLM-4 | Chinese dialogue, knowledge Q&A | By calls |
-| **Moonshot AI** | Kimi | Long text processing | By input length |
-
-#### AI Features
-
-- **Intelligent Strategy Formulation**: Auto-recommend modeling strategy based on problem description
-- **Code Generation**: Auto-generate modeling code (Python/Matlab)
-- **Result Interpretation**: AI-assisted explanation of model results
-- **Paper Polishing**: Grammar and logic optimization for papers
-- **Scheme Comparison**: Multi-scheme comparison and recommendation
-
-#### Streaming Output
-
-Uses SSE (Server-Sent Events) technology for real-time streaming output:
-
-```javascript
-// Client-side example
-const eventSource = new EventSource('/api/ai/stream');
-
-eventSource.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log(data.content); // Real-time output
-};
-```
-
-**Advantages**:
-- Real-time feedback, better user experience
-- Reduced server memory pressure
-- Support for long text output
-- Automatic reconnection on disconnection
-
-### 4. Team Collaboration
-
-#### Role System
-
-| Role | Permissions | Description |
-|------|-------------|-------------|
-| **Administrator (ADMIN)** | All permissions | System management, user management, configuration |
-| **Captain (CAPTAIN)** | Team management | Create teams, invite members, assign tasks |
-| **Member (MEMBER)** | Basic permissions | Participate in tasks, view results, submit code |
-| **Observer (OBSERVER)** | Read-only permissions | View progress, read reports |
-
-#### Collaboration Features
-
-- **Real-time Collaboration**: Multiple users editing the same document simultaneously
-- **Task Assignment**: Decompose modeling tasks and assign to members
-- **Progress Tracking**: Visual display of task progress
-- **Code Sharing**: Version control for code repository
-- **Message Notifications**: Real-time notifications for task changes
-- **Comment System**: Discuss and provide feedback on results
-
-### 5. Daily Learning Module
-
-#### Bilibili Learning System
-
-Automatically learns mathematical modeling knowledge from Bilibili to build a professional knowledge base.
-
-**Features**:
-
-1. **Automatic Crawling**: Periodically crawl videos from specified UP hosts
-2. **Content Parsing**: Extract video titles, descriptions, bullet comments (danmu)
-3. **Knowledge Extraction**: AI extracts key knowledge points
-4. **Smart Classification**: Categorize by algorithm and competition type
-5. **Progress Tracking**: Record learning progress
-6. **Knowledge Graph**: Build knowledge point relationship graph
-
-**Configuration Example**:
-
-```typescript
-// bilibili-learning-config.json
-{
-  "upUsers": [
-    "数学建模学习交流",
-    "老哥教你学建模"
-  ],
-  "keywords": [
-    "数学建模",
-    "Matlab",
-    "Python",
-    "机器学习"
-  ],
-  "schedule": {
-    "frequency": "daily",
-    "time": "02:00"
-  }
-}
-```
-
-#### User Material Learning
-
-Support users uploading their own learning materials (PDF, videos, documents), automatically organized and categorized by the system.
-
-### 6. Beautiful Visualizations
-
-#### Competition-Themed Charts
-
-Automatically apply different theme colors based on competition type:
-
-```typescript
-// Theme configuration
-const competitionThemes = {
-  MCM: { primary: '#DC2626', secondary: '#FECACA' },      // Red
-  CUMCM: { primary: '#2563EB', secondary: '#DBEAFE' },     // Blue
-  SHENZHEN: { primary: '#7C3AED', secondary: '#DDD6FE' },  // Purple
-  IMMC: { primary: '#059669', secondary: '#D1FAE5' },      // Green
-  MathorCup: { primary: '#EA580C', secondary: '#FFEDD5' }, // Orange
-};
-```
-
-#### Supported Chart Types
-
-| Chart Type | Usage | Library |
-|------------|-------|---------|
-| **Line Chart** | Trend analysis, time series | Recharts |
-| **Bar Chart** | Comparative analysis, categorical statistics | Recharts |
-| **Scatter Plot** | Correlation analysis, clustering visualization | Recharts |
-| **Heatmap** | Data distribution, correlation matrix | Recharts |
-| **Pie Chart** | Proportion analysis, composition analysis | Recharts |
-| **Radar Chart** | Multi-dimensional evaluation | Recharts |
-| **3D Charts** | Spatial data, complex models | Three.js |
-| **Flowchart** | Business process, algorithm flow | React Flow |
-| **UML Diagrams** | System design, class diagrams | Mermaid |
-| **Gantt Chart** | Project management, progress tracking | Recharts |
-
-### 7. Enterprise-Grade Security
-
-#### Authentication and Authorization
-
-**Authentication Methods**:
-
-1. **JWT Authentication**
-   - Access Token: 15 minutes expiration
-   - Refresh Token: 7 days expiration
-   - Automatic refresh mechanism
-
-2. **Multi-Factor Authentication (MFA)**
-   - SMS verification code
-   - Email verification code
-   - TOTP (Time-based One-Time Password)
-
-3. **Single Sign-On (SSO)**
-   - OAuth 2.0 / OpenID Connect
-   - SAML 2.0 support (Enterprise Edition)
-   - LDAP integration (Enterprise Edition)
-
-**Access Control**:
-
-```typescript
-// Role-Based Access Control (RBAC)
-const permissions = {
-  ADMIN: ['*'], // All permissions
-  CAPTAIN: [
-    'team:create',
-    'team:invite',
-    'task:assign',
-    'task:delete',
-  ],
-  MEMBER: [
-    'task:view',
-    'task:update',
-    'result:view',
-  ],
-  OBSERVER: [
-    'task:view',
-    'result:view',
-  ],
-};
-```
-
-#### Anti-Attack Measures
-
-| Threat Type | Protection Measures | Implementation |
-|-------------|-------------------|----------------|
-| **SQL Injection** | Parameterized queries | Prisma ORM |
-| **XSS Attacks** | Input sanitization + CSP | DOMPurify + Helmet |
-| **CSRF Attacks** | CSRF Token + SameSite | Middleware validation |
-| **Brute Force** | Rate limiting + account lockout | Token bucket algorithm |
-| **DDoS Attacks** | CDN + rate limiting | Cloudflare |
-| **Sensitive Data Leakage** | Encrypted storage | AES-256-GCM |
-
-#### Data Encryption
-
-```typescript
-// API Key encrypted storage
-const encryptedKey = await encrypt(apiKey, {
-  algorithm: 'aes-256-gcm',
-  keyLength: 32,
-  ivLength: 12,
-});
-
-// Password hashing
-const hashedPassword = await bcrypt.hash(password, 12);
-```
-
-### 8. API-First Design
-
-Comprehensive REST API support for third-party integration.
-
-#### API Versions
-
-- **v1**: Stable version, long-term maintenance
-- **v2**: Latest version, recommended
-
-#### API Features
-
-- RESTful style
-- JSON data format
-- JWT authentication
-- Rate limiting (100 requests/minute)
-- Automatic documentation generation (OpenAPI)
-- SDK support (Python, Java, JavaScript)
-
-### 9. Docker One-Click Deployment
-
-Supports Docker and Docker Compose for rapid deployment to any environment.
-
-#### Supported Platforms
-
-- Linux (x86_64, ARM64)
-- macOS
-- Windows (WSL2)
-- NAS (Synology, QNAP)
-
-#### Deployment Methods
-
-```bash
-# Quick deployment
-cd docker
-./deploy.sh community up
-
-# Custom configuration
-./deploy.sh enterprise up --with-redis --with-minio
-```
-
-### 10. Internationalization Support
-
-#### Supported Languages
-
-- 🇨🇳 Simplified Chinese (Default)
-- 🇺🇸 English
-- 🇯🇵 日本語 (Planned)
-- 🇰🇷 한국어 (Planned)
-
-#### Internationalization Implementation
-
-```typescript
-// next-intl configuration
-const locales = ['zh', 'en'] as const;
-const defaultLocale = 'zh';
-
-// Translation files
-// messages/zh.json
-{
-  "common": {
-    "login": "登录",
-    "register": "注册",
-  }
-}
-
-// messages/en.json
-{
-  "common": {
-    "login": "Login",
-    "register": "Register",
-  }
-}
-```
+#### Detailed Phase Descriptions
+
+**Phase 1: Discussion**
+- AI-driven problem analysis
+- Modeling strategy recommendations
+- Team discussion records
+- Literature and resource retrieval
+
+**Phase 2: Code**
+- Automatic modeling code generation (Python)
+- Code execution and result collection
+- Multiple algorithm support (XGBoost, LightGBM, LSTM, etc.)
+- Code version management
+
+**Phase 3: Validation**
+- Automatic result validation
+- Model performance evaluation
+- Anomaly detection and handling
+- Result visualization
+
+**Phase 4: Paper**
+- Automatic academic paper generation
+- Support for Chinese/English papers
+- PDF export
+- Competition-compliant formatting
+
+### 2. AI Provider Integration
+
+The system supports multiple AI Providers with flexible switching based on requirements:
+
+| Provider | Model | Use Case | Configuration |
+|----------|-------|----------|---------------|
+| DeepSeek | DeepSeek-V3 | General dialogue, code generation | `DEEPSEEK_API_KEY` |
+| OpenAI | GPT-4 / GPT-3.5 | High-quality text generation | `OPENAI_API_KEY` |
+| Aliyun | Qwen | Chinese optimization | `ALIYUN_API_KEY` |
+| Volcengine | Doubao | Chinese dialogue | `VOLCENGINE_API_KEY` |
+
+**Smart Fallback Mechanism**: When an AI Provider fails, the system automatically switches to a backup provider, ensuring task completion.
+
+### 3. Team Collaboration Features
+
+- **Team Management**: Create and manage teams
+- **Member Management**: Add/remove members, assign roles
+- **Real-time Collaboration**: Multiple users editing simultaneously
+- **Access Control**: Role-Based Access Control (RBAC)
+
+### 4. Video Learning Module
+
+- **Bilibili Integration**: Import Bilibili video tutorials
+- **Knowledge Base Management**: Extract and associate video knowledge points
+- **Learning Progress Tracking**: Record learning progress
+- **Note-taking**: Add notes for videos
+
+### 5. System Administration
+
+- **User Management**: View, disable, and delete users
+- **Log Monitoring**: View login logs and operation logs
+- **System Configuration**: Adjust system settings
+- **Database Management**: Database backup and recovery
+- **Cost Statistics**: Track AI service usage costs
 
 ---
 
 ## 🏗️ Technical Architecture
 
-### Overall Architecture Diagram
+### Tech Stack
+
+#### Frontend Technologies
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Next.js** | 16.1.6 | React framework |
+| **React** | 19.2.4 | UI framework |
+| **TypeScript** | 5.9.3 | Type system |
+| **Tailwind CSS** | 4.0.0 | Styling framework |
+| **shadcn/ui** | Latest | UI component library |
+| **Recharts** | 3.7.0 | Data visualization |
+| **React Hook Form** | 7.70.0 | Form management |
+| **Zod** | 4.3.5 | Data validation |
+| **next-intl** | 4.8.3 | Internationalization |
+
+#### Backend Technologies
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Node.js** | 24+ | Runtime environment |
+| **Prisma** | 6.19.2 | ORM framework |
+| **PostgreSQL** | 16 | Database |
+| **bcrypt** | 6.0.0 | Password encryption |
+| **jsonwebtoken** | 9.0.3 | JWT authentication |
+| **jose** | 6.1.3 | JWT processing |
+| **nodemailer** | 8.0.1 | Email sending |
+| **ioredis** | 5.9.2 | Redis client |
+
+#### AI and Machine Learning
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **coze-coding-dev-sdk** | 0.7.15 | AI Provider integration |
+| **chart.js** | 4.5.1 | Chart rendering |
+| **katex** | 0.16.28 | Mathematical formula rendering |
+| **react-katex** | 3.1.0 | React KaTeX components |
+
+#### Tools and Deployment
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Docker** | Latest | Containerized deployment |
+| **pnpm** | 9.0.0 | Package manager |
+| **ESLint** | 9+ | Code linting |
+| **Vitest** | 4.0.18 | Unit testing |
+| **Playwright** | 1.58.2 | E2E testing |
+| **Sentry** | 10.39.0 | Error tracking |
+
+### System Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Client Layer                          │
-├─────────────────────────────────────────────────────────────┤
-│  Web Browser  │  Mobile (Planned)  │  Desktop (Planned)      │
-│  (React 19)   │  (React Native)   │  (Electron)             │
-└────────────┬────────────────────────────────────────────────┘
-             │ HTTPS
-┌────────────▼────────────────────────────────────────────────┐
-│                   Gateway Layer (Nginx)                      │
-│  SSL Termination │ Load Balancer │ Static Files │ Rate Limit │
-└────────────┬────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                  Application Layer (Next.js 16)               │
-├─────────────────────────────────────────────────────────────┤
-│  Frontend Render │ API Routes │ Middleware │ Server Components│
-│  (SSR/ISR)       │  (REST)    │   (Auth)   │     (RSC)        │
-└────────────┬────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────────────────┐
+│                    User Interface Layer                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │   Admin  │  │ Dashboard │  │ Team Collab│ │ Learning │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      API Route Layer                        │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │   Auth   │  │  Tasks   │  │   AI     │  │   Admin  │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
 │                    Business Logic Layer                      │
-├─────────────────────────────────────────────────────────────┤
-│ Auth Service │ Modeling Service │ Learning │ Team │ AI Service│
-└────────────┬────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                   Data Access Layer (Prisma)                 │
-└────────────┬────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                    Data Storage Layer                        │
-├─────────────────────────────────────────────────────────────┤
-│  PostgreSQL  │  Redis (Cache)  │  S3 (Object Storage)        │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │   Users  │  │  Models  │  │ AI Integ  │  │ Collab   │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
 └─────────────────────────────────────────────────────────────┘
-             │
-┌────────────▼────────────────────────────────────────────────┐
-│                   External Service Layer                      │
-├─────────────────────────────────────────────────────────────┤
-│  AI Provider  │  Bilibili  │  SMS Service  │  Email Service  │
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Access Layer                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │ Prisma   │  │  Redis   │  │  S3      │  │  Files   │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
 └─────────────────────────────────────────────────────────────┘
-```
-
-### Frontend Architecture
-
-#### Tech Stack
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Next.js 16 (App Router)              │
-├─────────────────────────────────────────────────────────┤
-│  React 19              │  TypeScript 5                 │
-├─────────────────────────────────────────────────────────┤
-│  State Management                                    │
-│  ├─ React Hooks      │  ├─ Context API                │
-│  ├─ Zustand (Optional)│  └─ React Query (Data Fetching) │
-├─────────────────────────────────────────────────────────┤
-│  UI Component Library                              │
-│  ├─ shadcn/ui         │  ├─ Radix UI                  │
-│  ├─ Lucide Icons      │  └─ Tailwind CSS 4            │
-├─────────────────────────────────────────────────────────┤
-│  Data Visualization                              │
-│  ├─ Recharts          │  ├─ Three.js                  │
-│  ├─ React Flow        │  └─ Mermaid                   │
-├─────────────────────────────────────────────────────────┤
-│  Form Handling                                    │
-│  ├─ React Hook Form   │  ├─ Zod (Validation)          │
-│  └─ TanStack Form     │                               │
-├─────────────────────────────────────────────────────────┤
-│  Internationalization                             │
-│  └─ next-intl                                         │
-└─────────────────────────────────────────────────────────┘
-```
-
-#### Page Structure
-
-```
-src/app/
-├── (auth)/                 # Authentication pages
-│   ├── login/
-│   ├── register/
-│   └── forgot-password/
-├── (dashboard)/            # Dashboard layout
-│   ├── dashboard/          # Main dashboard
-│   ├── competitions/       # Competition management
-│   ├── modeling/           # Modeling tasks
-│   ├── teams/              # Team management
-│   ├── learning/           # Learning module
-│   ├── ai-providers/       # AI Provider management
-│   └── settings/           # System settings
-├── api/                    # API routes
-│   ├── auth/
-│   ├── competitions/
-│   ├── modeling/
-│   ├── teams/
-│   └── ...
-├── admin/                  # Admin pages
-│   └── users/
-├── layout.tsx              # Root layout
-└── page.tsx                # Homepage
-```
-
-### Backend Architecture
-
-#### Tech Stack
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Next.js API Routes                     │
-├─────────────────────────────────────────────────────────┤
-│  Authentication & Authorization                     │
-│  ├─ JWT               │  ├─ BCrypt                     │
-│  ├─ OAuth 2.0         │  └─ MFA                        │
-├─────────────────────────────────────────────────────────┤
-│  Data Validation                                 │
-│  └─ Zod Schema                                       │
-├─────────────────────────────────────────────────────────┤
-│  ORM Layer                                       │
-│  └─ Prisma 5                                         │
-├─────────────────────────────────────────────────────────┤
-│  Cache Layer                                     │
-│  └─ Redis (Optional)                                 │
-├─────────────────────────────────────────────────────────┤
-│  File Storage                                   │
-│  └─ AWS S3 / MinIO                                   │
-├─────────────────────────────────────────────────────────┤
-│  Task Queue                                     │
-│  └─ BullMQ (Planned)                                 │
-└─────────────────────────────────────────────────────────┘
-```
-
-#### API Route Design
-
-```
-/api
-├── v1/                     # API v1 (Stable)
-│   ├── auth/              # Authentication
-│   │   ├── login
-│   │   ├── register
-│   │   ├── refresh
-│   │   └── logout
-│   ├── user/              # User
-│   │   └── profile
-│   ├── competitions/      # Competitions
-│   ├── modeling-tasks/    # Modeling tasks
-│   ├── teams/             # Teams
-│   ├── ai-providers/      # AI Provider
-│   ├── dashboard/         # Dashboard
-│   └── learning/          # Learning
-└── /                      # Versionless API (Internal)
-    ├── init/
-    ├── settings/
-    └── ...
-```
-
-### Database Architecture
-
-#### Database Selection
-
-- **Primary Database**: PostgreSQL 14+
-  - Relational data
-  - JSON support
-  - Full-text search
-  - Transaction support
-
-- **Cache Database**: Redis 7+ (Optional)
-  - Session storage
-  - API caching
-  - Rate limiting
-  - Pub/Sub
-
-- **Object Storage**: S3 / MinIO
-  - File uploads
-  - Report storage
-  - Static assets
-
-#### Connection Pool Configuration
-
-```typescript
-// prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-
-  // Connection pool configuration
-  pool_timeout = 10
-  connection_limit = 10
-}
-```
-
-### Deployment Architecture
-
-#### Production Deployment
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                Load Balancer (Nginx)                     │
-│        SSL Termination / Reverse Proxy / Static Files   │
-└────────────┬────────────────────────────────────────────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-┌───▼────────┐  ┌────▼─────┐
-│  Container 1│  │Container 2│
-│  Next.js    │  │Next.js   │
-└───┬────────┘  └────┬─────┘
-    │                 │
-    └────────┬────────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-┌───▼────────┐  ┌────▼─────┐
-│ PostgreSQL │  │ Redis    │
-│ (Primary)  │  │ (Cache)  │
-└────────────┘  └──────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  External Services Layer                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │ AI Prov. │  │   Email  │  │  Logging │  │ Monitor  │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Feature Modules
+## 🧩 Feature Modules
 
-### 1. Competition Management Module
-
-#### Features
-
-- Create and edit competitions
-- Competition template management
-- Problem bank management
-- Solution library
-- Competition progress tracking
-- Historical competition queries
-
-#### Data Model
-
-```prisma
-model Competition {
-  id          String    @id @default(cuid())
-  name        String
-  type        CompetitionType
-  year        Int
-  startDate   DateTime
-  endDate     DateTime
-  status      CompetitionStatus
-  description String?   @db.Text
-  ownerId     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  owner       User      @relation("UserCompetitions", fields: [ownerId], references: [id])
-  problems    Problem[]
-  solutions   Solution[]
-
-  @@index([type])
-  @@index([year])
-  @@map("competitions")
-}
-```
-
-### 2. Modeling Task Module
+### 1. Authentication & Authorization Module
 
 #### Features
+- ✅ User registration (email verification)
+- ✅ User login (JWT Token)
+- ✅ Password reset (email verification)
+- ✅ Multi-factor authentication (MFA) - optional
+- ✅ Session management (Refresh Token)
+- ✅ Login logging
+- ✅ Account lockout protection
 
-- Create and manage tasks
-- Task status tracking
-- Subtask decomposition
-- Task assignment
-- Task logs
-- Result export
+#### API Endpoints
 
-#### Task Flow
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/register` | POST | User registration |
+| `/api/auth/login` | POST | User login |
+| `/api/auth/logout` | POST | User logout |
+| `/api/auth/refresh` | POST | Refresh Token |
+| `/api/auth/verify` | POST | Verify Token |
+| `/api/auth/forgot-password` | POST | Forgot password |
+| `/api/auth/reset-password` | POST | Reset password |
+| `/api/v1/auth/csrf-token` | GET | Get CSRF Token |
 
-```
-PENDING (Pending)
-    ↓
-RUNNING (Running)
-    ↓
-PAUSED (Paused)
-    ↓
-COMPLETED (Completed)
-    ↓
-FAILED (Failed)
-```
+#### Security Mechanisms
+- **Password Encryption**: bcrypt (14 rounds)
+- **JWT Token**: Access Token (15 min) + Refresh Token (7 days)
+- **CSRF Protection**: All POST/PUT/DELETE requests require CSRF Token
+- **Rate Limiting**: Prevent brute force attacks (10 requests/minute)
+- **Account Lockout**: Lock account after 5 failed attempts for 15 minutes
 
-#### Data Model
-
-```prisma
-model ModelingTask {
-  id            String          @id @default(cuid())
-  title         String
-  description   String?         @db.Text
-  competitionId String?
-  userId        String
-  status        TaskStatus      @default(PENDING)
-  progress      Int             @default(0)
-  config        Json?
-  result        Json?
-  errorLog      String?         @db.Text
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  user          User            @relation("UserTasks", fields: [userId], references: [id])
-  competition   Competition?    @relation(fields: [competitionId], references: [id])
-
-  @@index([status])
-  @@index([userId])
-  @@map("modeling_tasks")
-}
-```
-
-### 3. AI Provider Module
+### 2. AI Provider Management Module
 
 #### Features
+- ✅ Add/remove AI Providers
+- ✅ Test AI Provider connections
+- ✅ View usage statistics
+- ✅ Encrypted API Key storage
+- ✅ Automatic fallback mechanism
 
-- Provider configuration management
-- Encrypted API Key storage
-- Provider connection testing
-- Usage statistics
-- Cost control
-- Automatic switching
+#### Supported Provider Types
+- `deepseek` - DeepSeek V3
+- `openai` - OpenAI GPT series
+- `aliyun` - Aliyun Qwen
+- `volcengine` - Volcengine Doubao
 
-#### Supported Providers
+#### API Endpoints
 
-```typescript
-enum AIProviderType {
-  DEEPSEEK = 'DEEPSEEK',
-  DOUBAO = 'DOUBAO',
-  QWEN = 'QWEN',
-  OPENAI = 'OPENAI',
-  CHATGLM = 'CHATGLM',
-  KIMI = 'KIMI',
-}
-```
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/ai-providers` | GET | Get all Providers |
+| `/api/ai-providers` | POST | Add Provider |
+| `/api/ai-providers/[id]` | PUT | Update Provider |
+| `/api/ai-providers/[id]` | DELETE | Delete Provider |
+| `/api/ai-providers/test` | POST | Test connection |
+| `/api/ai-providers/types` | GET | Get supported types |
+| `/api/ai-providers/[id]/usage` | GET | Get usage statistics |
+| `/api/ai-providers/chat-stream` | POST | Streamed dialogue |
 
-#### API Key Encryption
-
-```typescript
-// Using AES-256-GCM encryption
-const encrypted = await encrypt(apiKey, {
-  key: process.env.ENCRYPTION_KEY!,
-  algorithm: 'aes-256-gcm',
-});
-
-// Decrypt
-const decrypted = await decrypt(encrypted, {
-  key: process.env.ENCRYPTION_KEY!,
-});
-```
-
-### 4. Learning Module
+### 3. Auto Modeling Module
 
 #### Features
+- ✅ Create modeling tasks
+- ✅ 4-phase automated workflow
+- ✅ Code generation and execution
+- ✅ Result validation and optimization
+- ✅ Automatic paper generation
+- ✅ Real-time progress tracking
+- ✅ Task management (pause/resume/stop)
 
-- Bilibili video learning
-- Knowledge point extraction
-- Knowledge base management
-- Learning progress tracking
-- Personalized recommendations
-- Learning reports
+#### API Endpoints
 
-#### Scheduled Tasks
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auto-modeling/start` | POST | Start modeling task |
+| `/api/auto-modeling/latest` | GET | Get latest task |
+| `/api/auto-modeling/[id]/status` | GET | Get task status |
+| `/api/auto-modeling/[id]/manage` | POST | Manage task (pause/resume) |
+| `/api/auto-modeling/[id]/stop` | POST | Stop task |
+| `/api/auto-modeling/[id]/task-list` | GET | Get task list |
+| `/api/auto-modeling/[id]/generate-paper` | POST | Generate paper |
+| `/api/auto-modeling/[id]/paper` | GET | Get paper content |
+| `/api/auto-modeling/[id]/regenerate-code` | POST | Regenerate code |
+| `/api/auto-modeling/[id]/regenerate-paper` | POST | Regenerate paper |
+| `/api/auto-modeling/[id]/execution-logs` | GET | Get execution logs |
+| `/api/auto-modeling/[id]/generation-logs` | GET | Get generation logs |
+| `/api/auto-modeling/[id]/optimization` | GET | Get optimization results |
+| `/api/auto-modeling/[id]/optimization/export` | GET | Export optimization results |
 
-```typescript
-// Execute daily at 2 AM
-cron.schedule('0 2 * * *', async () => {
-  await bilibiliLearningService.fetchNewVideos();
-  await bilibiliLearningService.extractKnowledge();
-  await bilibiliLearningService.updateProgress();
-});
-```
-
-### 5. Team Management Module
-
-#### Features
-
-- Team creation and joining
-- Member management
-- Role assignment
-- Access control
-- Team messaging
-- Activity logs
-
-#### Team Roles
-
-```typescript
-enum TeamRole {
-  CAPTAIN = 'CAPTAIN',  // Team leader
-  MEMBER = 'MEMBER',    // Member
-  OBSERVER = 'OBSERVER', // Observer
-}
-```
-
-### 6. System Settings Module
+### 4. Team Collaboration Module
 
 #### Features
+- ✅ Create teams
+- ✅ Add/remove members
+- ✅ Member role management
+- ✅ Team discussions
+- ✅ Real-time collaboration
 
-- User settings
-- System configuration
-- Database configuration
-- AI Provider configuration
-- Notification settings
-- Security settings
+#### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/teams` | GET | Get team list |
+| `/api/teams` | POST | Create team |
+| `/api/teams/[id]/members` | GET | Get member list |
+| `/api/teams/[id]/members` | POST | Add member |
+| `/api/collaboration/[id]` | GET | Get collaboration info |
+| `/api/discussion/[id]/messages` | GET | Get discussion messages |
+| `/api/discussion/stream/[id]` | GET | Stream discussion messages |
+
+### 5. Video Learning Module
+
+#### Features
+- ✅ Video import (Bilibili)
+- ✅ Knowledge base management
+- ✅ Video notes
+- ✅ Learning progress tracking
+
+#### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/learning/videos` | GET | Get video list |
+| `/api/learning/videos` | POST | Add video |
+| `/api/learning/videos/[id]` | PUT | Update video |
+| `/api/learning/videos/[id]/knowledge` | GET | Get knowledge points |
+| `/api/learning/knowledge` | GET | Get knowledge base |
+| `/api/learning/config` | GET | Get configuration |
+| `/api/learning/control` | POST | Control playback |
+| `/api/learning/tasks` | GET | Get learning tasks |
+
+### 6. System Administration Module
+
+#### Features
+- ✅ User management (view, disable, delete)
+- ✅ Log viewing (login logs, operation logs)
+- ✅ System configuration
+- ✅ Database management
+- ✅ Cost statistics
+
+#### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/admin/users` | GET | Get user list |
+| `/api/admin/logs` | GET | Get logs |
+| `/api/settings/system` | GET | Get system configuration |
+| `/api/settings/system` | PUT | Update system configuration |
+| `/api/settings/database` | POST | Database operations |
+| `/api/cost/stats` | GET | Get cost statistics |
+| `/api/cost/anomaly` | GET | Get cost anomalies |
+
+### 7. Installation Wizard Module
+
+#### Features
+- ✅ One-click installation wizard
+- ✅ Environment checking
+- ✅ Database configuration
+- ✅ Admin account creation
+- ✅ Installation lock mechanism
+- ✅ SSE real-time progress
+
+#### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/install/lock` | GET | Check installation lock |
+| `/api/install/check-env` | GET | Check environment |
+| `/api/install/test-db` | POST | Test database connection |
+| `/api/install` | POST | Execute installation (SSE) |
+
+### 8. Debug Tools Module
+
+#### Features
+- ✅ Task status checking
+- ✅ Code generation debugging
+- ✅ Token cleanup
+- ✅ Exception handling
+
+#### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/debug/tasks-status` | GET | Check task status |
+| `/api/debug/test-code-generation` | POST | Test code generation |
+| `/api/debug/clear-tokens` | POST | Clear tokens |
+| `/api/debug/fix-task-status` | POST | Fix task status |
 
 ---
 
-## 💾 Database Design
+## 🗄️ Database Design
 
-### Core Data Models
+### Data Models
 
-#### 1. User (User Table)
+#### Core Tables
 
+**1. User Table**
 ```prisma
 model User {
-  id                  String         @id @default(cuid())
-  email               String         @unique
-  username            String         @unique
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  username            String               @unique
   passwordHash        String?
-  role                UserRole       @default(USER)
-  authProvider        AuthProvider   @default(LOCAL)
-  isVerified          Boolean        @default(false)
-  isMfaEnabled        Boolean        @default(false)
-  mfaSecret           String?
+  role                UserRole             @default(USER)
+  authProvider        AuthProvider         @default(LOCAL)
+  isVerified          Boolean              @default(false)
+  isMfaEnabled        Boolean              @default(false)
   avatar              String?
   bio                 String?
   organization        String?
-  failedLoginAttempts Int            @default(0)
+  failedLoginAttempts Int                  @default(0)
   lockedUntil         DateTime?
   lastLoginAt         DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   deletedAt           DateTime?
-
   aiProviders         AIProvider[]
   competitions        Competition[]
-  modelingTasks       ModelingTask[]
+  loginLogs           LoginLog[]
+  passwordResetTokens PasswordResetToken[]
   refreshTokens       RefreshToken[]
   teamMemberships     TeamMember[]
   ownedTeams          Team[]
-
-  @@index([email])
-  @@index([username])
-  @@map("users")
 }
 ```
 
-**Field Descriptions**:
-
-- `id`: Unique user identifier (CUID)
-- `email`: Email address (unique)
-- `username`: Username (unique)
-- `passwordHash`: Password hash (BCrypt)
-- `role`: User role (USER/ADMIN)
-- `authProvider`: Authentication provider (LOCAL/OAUTH)
-- `isVerified`: Email verified status
-- `isMfaEnabled`: Multi-factor authentication enabled
-- `mfaSecret`: MFA secret key (TOTP)
-- `failedLoginAttempts`: Failed login attempts count
-- `lockedUntil`: Account lock expiration time
-- `lastLoginAt`: Last login time
-
-**Indexes**:
-- `email`: Accelerate email queries
-- `username`: Accelerate username queries
-
-#### 2. AIProvider (AI Provider Table)
-
+**2. AIProvider Table**
 ```prisma
 model AIProvider {
-  id               String           @id @default(cuid())
-  name             String
-  type             AIProviderType
-  apiKey           String
-  endpoint         String?
-  region           String?
-  priority         Int              @default(0)
-  isDefault        Boolean          @default(false)
-  status           AIProviderStatus @default(ACTIVE)
-  supportedModels  String[]
-  capabilities     String[]
-  config           Json?
-  totalRequests    Int              @default(0)
-  totalTokensUsed  Int              @default(0)
-  lastUsedAt       DateTime?
-  userId           String
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([type])
-  @@index([status])
-  @@index([userId])
-  @@map("ai_providers")
+  id          String      @id @default(cuid())
+  name        String
+  type        AIProviderType
+  apiKey      String      // Encrypted storage
+  endpoint    String?
+  config      Json?
+  userId      String
+  enabled     Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id])
 }
 ```
 
-**Field Descriptions**:
-
-- `id`: Provider unique identifier
-- `name`: Provider name
-- `type`: Provider type (DEEPSEEK/DOUBAO/QWEN, etc.)
-- `apiKey`: API Key (encrypted storage)
-- `endpoint`: Custom endpoint
-- `region`: Region
-- `priority`: Priority (used for automatic switching)
-- `isDefault`: Is default provider
-- `status`: Status (ACTIVE/INACTIVE)
-- `supportedModels`: Supported model list
-- `capabilities`: Capability list (chat/code/image, etc.)
-- `config`: Additional configuration (JSON)
-- `totalRequests`: Total request count
-- `totalTokensUsed`: Total tokens used
-- `lastUsedAt`: Last usage time
-
-**Enum Types**:
-
-```typescript
-enum AIProviderType {
-  DEEPSEEK = 'DEEPSEEK',
-  DOUBAO = 'DOUBAO',
-  QWEN = 'QWEN',
-  OPENAI = 'OPENAI',
-  CHATGLM = 'CHATGLM',
-  KIMI = 'KIMI',
-}
-
-enum AIProviderStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  ERROR = 'ERROR',
-}
-```
-
-#### 3. Competition (Competition Table)
-
+**3. Competition Table**
 ```prisma
 model Competition {
-  id          String             @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
   type        CompetitionType
   year        Int
-  startDate   DateTime
-  endDate     DateTime
-  status      CompetitionStatus  @default(UPCOMING)
-  description String?            @db.Text
+  status      CompetitionStatus @default(DRAFT)
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   ownerId     String
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  owner       User               @relation("UserCompetitions", fields: [ownerId], references: [id])
   problems    Problem[]
-  solutions   Solution[]
-
-  @@index([type])
-  @@index([year])
-  @@index([status])
-  @@map("competitions")
+  teams       Team[]
+  owner       User              @relation("UserCompetitions", fields: [ownerId], references: [id])
 }
 ```
 
-**Enum Types**:
+**4. AutoModelingTask Table**
+```prisma
+model AutoModelingTask {
+  id              String                @id @default(cuid())
+  name            String
+  description     String?
+  status          TaskStatus            @default(PENDING)
+  currentPhase    TaskPhase             @default(DISCUSSION)
+  config          Json?
+  discussionData  Json?
+  codeData        Json?
+  validationData  Json?
+  paperData       Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  completedAt     DateTime?
+  executionLogs   ExecutionLog[]
+  generationLogs  GenerationLog[]
+}
+```
 
-```typescript
+**5. DiscussionMessage Table**
+```prisma
+model DiscussionMessage {
+  id        String   @id @default(cuid())
+  content   String
+  role      MessageRole @default(USER)
+  tokens    Int?
+  taskId    String
+  createdAt DateTime @default(now())
+  task      AutoModelingTask @relation(fields: [taskId], references: [id])
+}
+```
+
+**6. ExecutionLog Table**
+```prisma
+model ExecutionLog {
+  id          String   @id @default(cuid())
+  level       LogLevel @default(INFO)
+  message     String
+  metadata    Json?
+  taskId      String
+  createdAt   DateTime @default(now())
+  task        AutoModelingTask @relation(fields: [taskId], references: [id])
+}
+```
+
+#### Enum Types
+
+```prisma
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  GITHUB
+}
+
+enum AIProviderType {
+  DEEPSEEK
+  OPENAI
+  ALIYUN
+  VOLCENGINE
+}
+
 enum CompetitionType {
-  MCM = 'MCM',
-  ICM = 'ICM',
-  CUMCM = 'CUMCM',
-  SHENZHEN = 'SHENZHEN',
-  IMMC = 'IMMC',
-  MATHORCUP = 'MATHORCUP',
-  EMMC = 'EMMC',
-  TEDDYCUP = 'TEDDYCUP',
-  BLUEBRIDGE = 'BLUEBRIDGE',
+  MCM
+  ICM
+  CUMCM
+  SHENZHEN_CUP
+  IMMC
 }
 
 enum CompetitionStatus {
-  UPCOMING = 'UPCOMING',
-  ONGOING = 'ONGOING',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
+  DRAFT
+  ONGOING
+  COMPLETED
+  CANCELLED
 }
-```
 
-#### 4. ModelingTask (Modeling Task Table)
-
-```prisma
-model ModelingTask {
-  id            String      @id @default(cuid())
-  title         String
-  description   String?     @db.Text
-  competitionId String?
-  userId        String
-  status        TaskStatus  @default(PENDING)
-  progress      Int         @default(0)
-  config        Json?
-  result        Json?
-  errorLog      String?     @db.Text
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  user          User        @relation("UserTasks", fields: [userId], references: [id])
-  competition   Competition? @relation(fields: [competitionId], references: [id])
-
-  @@index([status])
-  @@index([userId])
-  @@map("modeling_tasks")
-}
-```
-
-**Enum Types**:
-
-```typescript
 enum TaskStatus {
-  PENDING = 'PENDING',
-  RUNNING = 'RUNNING',
-  PAUSED = 'PAUSED',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
+  PENDING
+  RUNNING
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
 }
-```
 
-#### 5. Team (Team Table)
-
-```prisma
-model Team {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  ownerId     String
-  maxMembers  Int      @default(10)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  members     TeamMember[]
-  owner       User     @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-
-  @@index([ownerId])
-  @@map("teams")
+enum TaskPhase {
+  DISCUSSION    // Discussion phase
+  CODE          // Code phase
+  VALIDATION    // Validation phase
+  PAPER         // Paper phase
 }
-```
 
-#### 6. TeamMember (Team Member Table)
-
-```prisma
-model TeamMember {
-  id       String   @id @default(cuid())
-  teamId   String
-  userId   String
-  role     TeamRole @default(MEMBER)
-  joinedAt DateTime @default(now())
-
-  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([teamId, userId])
-  @@index([teamId])
-  @@index([userId])
-  @@map("team_members")
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
 }
-```
 
-**Enum Types**:
-
-```typescript
-enum TeamRole {
-  CAPTAIN = 'CAPTAIN',
-  MEMBER = 'MEMBER',
-  OBSERVER = 'OBSERVER',
-}
-```
-
-#### 7. RefreshToken (Refresh Token Table)
-
-```prisma
-model RefreshToken {
-  id        String    @id @default(cuid())
-  token     String    @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime  @default(now())
-  revokedAt DateTime?
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
-  @@index([userId])
-  @@map("refresh_tokens")
-}
-```
-
-### Database Relationship Diagram
-
-```
-User (Users)
-├── RefreshToken (1:N)
-├── AIProvider (1:N)
-├── Competition (1:N)
-├── ModelingTask (1:N)
-├── Team (1:N, as owner)
-└── TeamMember (1:N)
-
-Team (Teams)
-└── TeamMember (1:N)
-
-Competition (Competitions)
-├── Problem (1:N)
-└── Solution (1:N)
-```
-
-### Indexing Strategy
-
-#### Primary Index
-
-- All tables use `@id` to define primary keys
-- Use `cuid()` to generate unique identifiers
-
-#### Unique Indexes
-
-- `User.email`: Email unique
-- `User.username`: Username unique
-- `RefreshToken.token`: Token unique
-- `TeamMember.teamId + userId`: Team member unique
-
-#### Regular Indexes
-
-- `User.email`: Accelerate email login
-- `User.username`: Accelerate username queries
-- `AIProvider.type`: Accelerate queries by type
-- `AIProvider.status`: Accelerate queries by status
-- `Competition.type`: Accelerate queries by type
-- `ModelingTask.status`: Accelerate queries by status
-
-### Database Migration
-
-#### Create Migration
-
-```bash
-# Development environment
-pnpm prisma migrate dev --name add_user_preferences
-
-# Production environment
-pnpm prisma migrate deploy
-```
-
-#### Rollback Migration
-
-```bash
-# View migration history
-pnpm prisma migrate status
-
-# Rollback to specific migration
-pnpm prisma migrate resolve --rolled-back [migration-name]
-```
-
-#### Reset Database
-
-```bash
-# Development environment: delete all data and reapply migrations
-pnpm prisma migrate reset
-
-# Production environment: Use with caution! Will delete all data
-```
-
----
-
-## 🔌 API Documentation
-
-### API Overview
-
-- **Base URL**: `http://localhost:5000/api`
-- **Authentication**: JWT Bearer Token
-- **Data Format**: JSON
-- **Character Encoding**: UTF-8
-- **Rate Limiting**: 100 requests/minute
-
-### Authentication
-
-#### Get Token
-
-**Request**:
-
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-X-CSRF-Token: <csrf-token>
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 900,
-    "user": {
-      "id": "user-123",
-      "email": "user@example.com",
-      "username": "johndoe",
-      "role": "USER"
-    }
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-#### Refresh Token
-
-**Request**:
-
-```http
-POST /api/v1/auth/refresh
-Content-Type: application/json
-
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 900
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-### User API
-
-#### Get User Profile
-
-**Request**:
-
-```http
-GET /api/v1/user/profile
-Authorization: Bearer <access-token>
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "user-123",
-    "email": "user@example.com",
-    "username": "johndoe",
-    "role": "USER",
-    "avatar": "https://example.com/avatar.jpg",
-    "bio": "Math modeling enthusiast",
-    "organization": "Tsinghua University",
-    "createdAt": "2026-01-01T00:00:00.000Z"
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-#### Update User Profile
-
-**Request**:
-
-```http
-PUT /api/v1/user/profile
-Authorization: Bearer <access-token>
-Content-Type: application/json
-
-{
-  "username": "newusername",
-  "bio": "New bio",
-  "organization": "Peking University"
-}
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "user-123",
-    "email": "user@example.com",
-    "username": "newusername",
-    "bio": "New bio",
-    "organization": "Peking University"
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-### Modeling Tasks API
-
-#### Get Task List
-
-**Request**:
-
-```http
-GET /api/v1/modeling-tasks?status=RUNNING&page=1&limit=20
-Authorization: Bearer <access-token>
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "task-123",
-      "title": "MCM 2026 Problem A",
-      "description": "...",
-      "status": "RUNNING",
-      "progress": 45,
-      "createdAt": "2026-02-10T10:00:00.000Z"
-    }
-  ],
-  "meta": {
-    "total": 100,
-    "page": 1,
-    "limit": 20,
-    "hasMore": true
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-#### Create Task
-
-**Request**:
-
-```http
-POST /api/v1/modeling-tasks
-Authorization: Bearer <access-token>
-Content-Type: application/json
-
-{
-  "title": "New Modeling Task",
-  "description": "Task description",
-  "competitionId": "comp-123",
-  "config": {
-    "algorithm": "xgboost",
-    "parameters": {
-      "max_depth": 6,
-      "learning_rate": 0.1
-    }
-  }
-}
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "task-456",
-    "title": "New Modeling Task",
-    "status": "PENDING",
-    "createdAt": "2026-02-10T12:00:00.000Z"
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-### AI Provider API
-
-#### Get Provider List
-
-**Request**:
-
-```http
-GET /api/v1/ai-providers
-Authorization: Bearer <access-token>
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "provider-123",
-      "name": "DeepSeek",
-      "type": "DEEPSEEK",
-      "status": "ACTIVE",
-      "isDefault": true,
-      "supportedModels": ["deepseek-chat", "deepseek-coder"],
-      "totalRequests": 1000,
-      "totalTokensUsed": 500000
-    }
-  ],
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-#### Create Provider
-
-**Request**:
-
-```http
-POST /api/v1/ai-providers
-Authorization: Bearer <access-token>
-Content-Type: application/json
-
-{
-  "name": "My DeepSeek",
-  "type": "DEEPSEEK",
-  "apiKey": "sk-xxx",
-  "endpoint": "https://api.deepseek.com",
-  "isDefault": false
-}
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": "provider-456",
-    "name": "My DeepSeek",
-    "type": "DEEPSEEK",
-    "status": "ACTIVE",
-    "createdAt": "2026-02-10T12:00:00.000Z"
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-### Dashboard API
-
-#### Get Statistics
-
-**Request**:
-
-```http
-GET /api/v1/dashboard/stats?days=7
-Authorization: Bearer <access-token>
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "activeCompetitions": 5,
-    "modelingTasks": 20,
-    "teamMembers": 3,
-    "aiRequests": 1500,
-    "aiProviders": 3,
-    "totalTasks": 100,
-    "completedTasks": 80,
-    "successRate": 0.8,
-    "avgProgress": 0.65,
-    "period": {
-      "days": 7,
-      "startDate": "2026-02-03T00:00:00.000Z",
-      "endDate": "2026-02-10T00:00:00.000Z"
-    }
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-#### Get Activity Logs
-
-**Request**:
-
-```http
-GET /api/v1/dashboard/activities?type=tasks&limit=10
-Authorization: Bearer <access-token>
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "activity-123",
-      "type": "task",
-      "action": "created",
-      "message": "Created task 'MCM 2026 Problem A'",
-      "userId": "user-123",
-      "createdAt": "2026-02-10T11:00:00.000Z"
-    }
-  ],
-  "meta": {
-    "count": 10,
-    "type": "tasks",
-    "limit": 10
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-### Error Codes
-
-| Error Code | HTTP Status | Description |
-|-----------|-------------|-------------|
-| `SUCCESS` | 200 | Success |
-| `UNAUTHORIZED` | 401 | Unauthorized |
-| `FORBIDDEN` | 403 | Forbidden |
-| `NOT_FOUND` | 404 | Not Found |
-| `VALIDATION_ERROR` | 400 | Validation Error |
-| `TOO_MANY_REQUESTS` | 429 | Too Many Requests |
-| `INTERNAL_ERROR` | 500 | Internal Error |
-
-**Error Response Format**:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Invalid or expired token",
-    "details": {}
-  },
-  "timestamp": "2026-02-10T12:00:00.000Z"
-}
-```
-
-### Rate Limiting
-
-- **Limit Rule**: Maximum 100 requests per minute per IP
-- **Response Headers**:
-
-```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1644480000
-```
-
-- **Exceeded Limit**: Returns `429 Too Many Requests`
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "TOO_MANY_REQUESTS",
-    "message": "Rate limit exceeded. Please try again later.",
-    "retryAfter": 60
-  }
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
 }
 ```
 
@@ -1642,1209 +630,1240 @@ X-RateLimit-Reset: 1644480000
 
 ### Prerequisites
 
-- **Node.js**: 24.0.0 or higher
-- **pnpm**: 9.0.0 or higher
-- **PostgreSQL**: 14.0 or higher
-- **Redis**: 7.0 or higher (optional, for caching)
-- **Docker**: 20.10 or higher (for deployment)
+| Software | Minimum Version | Recommended Version |
+|----------|---------------|---------------------|
+| Node.js | 20.x | 24.x |
+| pnpm | 8.x | 9.0.0+ |
+| PostgreSQL | 14.x | 16.x |
+| Redis | 6.x | 7.x (optional) |
+| Docker | 20.x | Latest (optional) |
 
-### Verify Environment
+### Method 1: Web Installation Wizard (Recommended)
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Yogdunana/CMAMSys.git
+   cd CMAMSys
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Start development server**
+   ```bash
+   pnpm dev
+   ```
+
+4. **Access the installation wizard**
+   ```
+   http://localhost:5000/install
+   ```
+
+5. **Follow the wizard to complete installation**
+   - Environment check
+   - Database configuration
+   - Admin account creation
+   - System configuration
+
+### Method 2: Command Line Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Yogdunana/CMAMSys.git
+   cd CMAMSys
+   ```
+
+2. **Run installation script**
+   ```bash
+   pnpm install:system
+   ```
+
+3. **Enter admin information when prompted**
+   ```
+   Admin email: admin@example.com
+   Admin username: admin
+   Admin password: ********
+   ```
+
+4. **Start the service**
+   ```bash
+   pnpm start
+   ```
+
+5. **Access the system**
+   ```
+   http://localhost:5000
+   ```
+
+### Method 3: Docker Deployment
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Yogdunana/CMAMSys.git
+   cd CMAMSys
+   ```
+
+2. **Configure environment variables**
+   ```bash
+   cp docker/.env.community docker/.env
+   # Edit docker/.env file and fill in your configuration
+   ```
+
+3. **Start services**
+   ```bash
+   docker compose -f docker/docker-compose.community.yml up -d
+   ```
+
+4. **Access the system**
+   ```
+   http://localhost:5000
+   ```
+
+---
+
+## 📝 Detailed Installation Guide
+
+### Step 1: Install Dependencies
+
+#### Using pnpm (Recommended)
 
 ```bash
-# Check Node.js version
-node --version  # Should output v24.x.x
+# Install pnpm globally (if not already installed)
+npm install -g pnpm@9.0.0
 
-# Check pnpm version
-pnpm --version  # Should output 9.x.x
-
-# Check PostgreSQL version
-psql --version  # Should output 14.x or higher
-
-# Check Redis version (optional)
-redis-server --version  # Should output 7.x or higher
-```
-
-### Installation Steps
-
-#### 1. Clone Repository
-
-```bash
-git clone https://github.com/your-org/cmamsys.git
-cd cmamsys
-```
-
-#### 2. Install Dependencies
-
-```bash
+# Install project dependencies
 pnpm install
 ```
 
-#### 3. Configure Environment Variables
+#### Using npm (Not Recommended)
 
 ```bash
-# Copy environment variable template
-cp .env.example .env
-
-# Edit .env file
-nano .env
+npm install
 ```
 
-**Required Environment Variables**:
+### Step 2: Configure Environment Variables
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/cmamsys"
+1. **Copy environment variable template**
+   ```bash
+   cp .env.example .env
+   ```
 
-# JWT
-JWT_SECRET="your-super-secret-jwt-key-at-least-32-characters"
-JWT_ACCESS_TOKEN_EXPIRES_IN="15m"
-JWT_REFRESH_TOKEN_EXPIRES_IN="7d"
+2. **Edit `.env` file**
 
-# Encryption
-ENCRYPTION_KEY="your-32-character-encryption-key"
+   **Required configuration**:
+   ```env
+   # Database
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/cmamsys"
 
-# Application
-NEXT_PUBLIC_APP_URL="http://localhost:5000"
-NEXT_PUBLIC_APP_NAME="CMAMSys"
+   # JWT secrets (generate using the following command)
+   # openssl rand -base64 32
+   JWT_SECRET="your-jwt-secret-here"
+   REFRESH_TOKEN_SECRET="your-refresh-secret-here"
 
-# AI Provider (Optional)
-DEEPSEEK_API_KEY=""
-DOUBAO_API_KEY=""
+   # Encryption key (very important!)
+   # openssl rand -base64 32
+   ENCRYPTION_KEY="your-encryption-key-here"
+
+   # CSRF secret
+   # openssl rand -base64 32
+   CSRF_SECRET="your-csrf-secret-here"
+
+   # Session secret
+   # openssl rand -base64 32
+   SESSION_SECRET="your-session-secret-here"
+   ```
+
+   **Optional configuration**:
+   ```env
+   # Email service (for password reset)
+   SMTP_ENABLED="true"
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT="587"
+   SMTP_SECURE="false"
+   SMTP_USER="your-email@gmail.com"
+   SMTP_PASSWORD="your-app-password"
+   SMTP_FROM="noreply@example.com"
+   SMTP_FROM_NAME="CMAMSys"
+
+   # Redis (for caching and session management)
+   REDIS_URL="redis://localhost:6379"
+
+   # AI Providers
+   DEEPSEEK_API_KEY="your-deepseek-api-key"
+   OPENAI_API_KEY="your-openai-api-key"
+   ALIYUN_API_KEY="your-aliyun-api-key"
+   VOLCENGINE_API_KEY="your-volcengine-api-key"
+
+   # Sentry (error tracking)
+   SENTRY_DSN="your-sentry-dsn"
+   NEXT_PUBLIC_SENTRY_DSN="your-sentry-dsn"
+   ```
+
+### Step 3: Initialize Database
+
+```bash
+# Run database migrations
+pnpm prisma migrate deploy
+
+# Generate Prisma Client
+pnpm prisma generate
+```
+
+### Step 4: Create Admin Account
+
+#### Method 1: Use Installation Wizard
+
+Visit `http://localhost:5000/install` and follow the wizard to create an admin account.
+
+#### Method 2: Use Script
+
+```bash
+# Run admin creation script
+node scripts/create-admin.js
+```
+
+#### Method 3: Manual Creation
+
+```bash
+# Open Prisma Studio
+pnpm prisma studio
+
+# Manually create admin account in User table
+# - role: ADMIN
+# - isVerified: true
+# - passwordHash: bcrypt-hashed password
+```
+
+### Step 5: Build Project
+
+```bash
+# Development build
+pnpm build
+
+# Production build
+NODE_ENV=production pnpm build
+```
+
+### Step 6: Start Service
+
+#### Development Environment
+
+```bash
+pnpm dev
+```
+
+Service will start at `http://localhost:5000`.
+
+#### Production Environment
+
+```bash
+pnpm start
+```
+
+Service will start at `http://localhost:5000`.
+
+### Step 7: Verify Installation
+
+1. **Access system**
+   ```
+   http://localhost:5000
+   ```
+
+2. **Login with admin account**
+
+3. **Check system status**
+   - Visit `/settings/system` to view system configuration
+   - Visit `/admin/users` to view user list
+   - Visit `/admin/logs` to view system logs
+
+---
+
+## ⚙️ Configuration Guide
+
+### Complete Environment Variables List
+
+#### Database Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | - | ✅ |
+
+#### Authentication Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `JWT_SECRET` | JWT signing secret | - | ✅ |
+| `JWT_ACCESS_TOKEN_EXPIRY` | Access Token expiry | `15m` | - |
+| `JWT_REFRESH_TOKEN_EXPIRY` | Refresh Token expiry | `7d` | - |
+| `REFRESH_TOKEN_SECRET` | Refresh Token signing secret | - | ✅ |
+| `SESSION_SECRET` | Session encryption secret | - | ✅ |
+| `SESSION_MAX_AGE` | Session max age (ms) | `604800000` | - |
+
+#### Security Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `ENCRYPTION_KEY` | Data encryption key | - | ✅ |
+| `CSRF_SECRET` | CSRF protection secret | - | ✅ |
+| `BCRYPT_ROUNDS` | bcrypt encryption rounds | `14` | - |
+| `MAX_LOGIN_ATTEMPTS` | Max login attempts | `5` | - |
+| `LOCKOUT_DURATION_MS` | Account lockout duration (ms) | `900000` | - |
+
+#### Application Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `APP_NAME` | Application name | `CMAMSys` | - |
+| `APP_URL` | Application URL | `http://localhost:5000` | - |
+| `APP_PORT` | Application port | `5000` | - |
+| `NODE_ENV` | Runtime environment | `development` | - |
+
+#### Email Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `SMTP_ENABLED` | Enable email | `false` | - |
+| `SMTP_HOST` | SMTP server address | `smtp.gmail.com` | - |
+| `SMTP_PORT` | SMTP port | `587` | - |
+| `SMTP_SECURE` | Use SSL/TLS | `false` | - |
+| `SMTP_USER` | SMTP username | - | - |
+| `SMTP_PASSWORD` | SMTP password | - | - |
+| `SMTP_FROM` | Sender email | `noreply@example.com` | - |
+| `SMTP_FROM_NAME` | Sender name | `CMAMSys` | - |
+
+#### Redis Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `REDIS_URL` | Redis connection string | - | - |
+
+#### AI Provider Configuration
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DEEPSEEK_API_KEY` | DeepSeek API Key | - |
+| `OPENAI_API_KEY` | OpenAI API Key | - |
+| `ALIYUN_API_KEY` | Aliyun API Key | - |
+| `VOLCENGINE_API_KEY` | Volcengine API Key | - |
+
+#### Object Storage Configuration (S3)
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `S3_ENDPOINT` | S3 endpoint | `https://s3.amazonaws.com` | - |
+| `S3_ACCESS_KEY_ID` | S3 access key ID | - | - |
+| `S3_SECRET_ACCESS_KEY` | S3 access key | - | - |
+| `S3_REGION` | S3 region | `us-east-1` | - |
+| `S3_BUCKET` | S3 bucket name | - | - |
+
+#### Monitoring Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `SENTRY_DSN` | Sentry DSN | - | - |
+| `SENTRY_AUTH_TOKEN` | Sentry auth token | - | - |
+| `SENTRY_ENVIRONMENT` | Sentry environment | `production` | - |
+| `NEXT_PUBLIC_SENTRY_DSN` | Client-side Sentry DSN | - | - |
+
+#### Logging Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `LOG_LEVEL` | Log level | `info` | - |
+| `LOG_FILE` | Log file path | `/app/work/logs/bypass/app.log` | - |
+
+#### CORS Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `ALLOWED_ORIGINS` | Allowed origins | `http://localhost:5000` | - |
+| `ALLOWED_METHODS` | Allowed methods | `GET,POST,PUT,DELETE,PATCH,OPTIONS` | - |
+| `ALLOWED_HEADERS` | Allowed headers | `Content-Type,Authorization,X-CSRF-Token` | - |
+
+#### File Upload Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `MAX_FILE_SIZE` | Max file size (bytes) | `10485760` | - |
+| `ALLOWED_FILE_TYPES` | Allowed file types | `.pdf,.doc,.docx,.txt,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.gif` | - |
+
+#### Path Configuration
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `INSTALL_PATH` | Installation path | `./` | - |
+| `DATA_PATH` | Data path | `./data` | - |
+| `LOG_PATH` | Log path | `./logs` | - |
+| `UPLOAD_PATH` | Upload path | `./uploads` | - |
+| `TEMP_PATH` | Temporary path | `./temp` | - |
+
+### Configuration Files Description
+
+#### `.env` - Environment Variables
+
+Main configuration file containing all environment variables.
+
+#### `prisma/schema.prisma` - Database Models
+
+Define database structure and relationships.
+
+#### `tsconfig.json` - TypeScript Configuration
+
+TypeScript compiler options and path aliases.
+
+#### `next.config.js` - Next.js Configuration
+
+Next.js framework configuration.
+
+#### `tailwind.config.js` - Tailwind CSS Configuration
+
+Tailwind CSS theme and plugin configuration.
+
+---
+
+## 👨‍💻 Development Guide
+
+### Project Structure
+
+```
+CMAMSys/
+├── .coze/                    # Coze CLI configuration
+├── docker/                   # Docker configuration
+│   ├── docker-compose.yml    # Docker Compose configuration
+│   ├── Dockerfile            # Docker image build file
+│   └── .env                  # Docker environment variables
+├── prisma/                   # Prisma ORM
+│   ├── schema.prisma         # Database models
+│   ├── seed.ts               # Database seed data
+│   └── migrations/           # Database migration files
+├── public/                   # Static assets
+│   ├── logo.svg             # Logo image
+│   └── favicon.ico          # Website icon
+├── scripts/                  # Script files
+│   ├── install.sh           # Installation script
+│   ├── build.sh             # Build script
+│   ├── start.sh             # Start script
+│   └── dev.sh               # Development script
+├── src/                      # Source code
+│   ├── app/                  # Next.js App Router
+│   │   ├── (auth)/          # Authentication related pages
+│   │   ├── admin/           # Admin dashboard
+│   │   ├── api/             # API routes
+│   │   ├── dashboard/       # Dashboard
+│   │   ├── install/         # Installation wizard
+│   │   ├── settings/        # System settings
+│   │   ├── learning/        # Learning center
+│   │   └── layout.tsx       # Root layout
+│   ├── components/          # React components
+│   ├── lib/                 # Utility libraries
+│   └── types/              # TypeScript type definitions
+├── .env.example             # Environment variables example
+├── .eslintrc.json           # ESLint configuration
+├── .gitignore               # Git ignore files
+├── next.config.js           # Next.js configuration
+├── package.json             # Project dependencies
+├── pnpm-lock.yaml           # pnpm lock file
+├── README.md                # Project documentation
+├── tailwind.config.js       # Tailwind CSS configuration
+└── tsconfig.json            # TypeScript configuration
+```
+
+### Development Commands
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server (with hot reload)
+pnpm dev
+
+# Build project
+pnpm build
+
+# Start production server
+pnpm start
+
+# Run tests
+pnpm test
+
+# Run tests (watch mode)
+pnpm test:watch
+
+# Generate test coverage report
+pnpm test:coverage
+
+# Run type checking
+pnpm ts-check
+
+# Code linting
+pnpm lint
+
+# Database migration
+pnpm prisma migrate dev
+
+# Database migration (production)
+pnpm prisma migrate deploy
+
+# Generate Prisma Client
+pnpm prisma generate
+
+# Open Prisma Studio (database visualization tool)
+pnpm prisma studio
+
+# Populate seed data
+pnpm prisma seed
+
+# Reset database (delete all data)
+pnpm prisma migrate reset
+
+# Docker build
+pnpm docker:build
+
+# Docker deployment
+pnpm docker:deploy
+
+# Docker development environment
+pnpm docker:dev
+
+# Docker production environment
+pnpm docker:prod
+```
+
+### Code Standards
+
+#### Naming Conventions
+
+- **File names**: kebab-case (e.g., `user-profile.tsx`)
+- **Component names**: PascalCase (e.g., `UserProfile`)
+- **Function names**: camelCase (e.g., `getUserProfile`)
+- **Constant names**: UPPER_SNAKE_CASE (e.g., `API_BASE_URL`)
+- **Type names**: PascalCase (e.g., `UserProfile`)
+
+#### Import Order
+
+```typescript
+// 1. External libraries
+import { useState, useEffect } from 'react';
+import { NextResponse } from 'next/server';
+
+// 2. Internal modules
+import { prisma } from '@/lib/prisma';
+import { Button } from '@/components/ui/button';
+
+// 3. Type definitions
+import type { User } from '@/types';
+
+// 4. Relative imports
+import { formatDate } from '../utils';
+```
+
+#### TypeScript Standards
+
+```typescript
+// Use interfaces for object structures
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Use type aliases for union types
+type UserRole = 'USER' | 'ADMIN' | 'MODERATOR';
+
+// Use generics to improve code reusability
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+// Avoid using any, use unknown or specific types
+function processData(data: unknown) {
+  if (typeof data === 'string') {
+    // ...
+  }
+}
+```
+
+### API Route Development
+
+#### Creating API Routes
+
+```typescript
+// src/app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+
+// Define request validation schema
+const CreateUserSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+});
+
+// GET request
+export async function GET() {
+  try {
+    const users = await prisma.user.findMany();
+    return NextResponse.json({ success: true, data: users });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch users' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST request
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = CreateUserSchema.parse(body);
+
+    const user = await prisma.user.create({
+      data: validatedData,
+    });
+
+    return NextResponse.json({ success: true, data: user }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to create user' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### Component Development
+
+#### Using shadcn/ui Components
+
+```typescript
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+export function UserProfileForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>User Profile</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <Button type="submit">Save</Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### State Management
+
+#### Using React Hooks
+
+```typescript
+'use client';
+
+import { useState, useEffect } from 'react';
+
+export function UserList() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await fetch('/api/users');
+        const data = await response.json();
+        setUsers(data.data);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUsers();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <ul>
+      {users.map((user) => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### Error Handling
+
+#### API Error Handling
+
+```typescript
+import { NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    // Process logic
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    // Log error
+    console.error('API error:', error);
+
+    // Return error response
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}
+```
+
+#### Frontend Error Handling
+
+```typescript
+'use client';
+
+import { useState } from 'react';
+import { toast } from 'sonner';
+
+export function CreateUserForm() {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create user');
+      }
+
+      const data = await response.json();
+      toast.success('User created successfully');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+
+---
+
+## 🐳 Deployment Guide
+
+### Docker Deployment
+
+#### 1. Using Docker Compose (Recommended)
+
+```bash
+# Copy environment file
+cp docker/.env.community docker/.env
+
+# Edit environment variables
+vim docker/.env
+
+# Start services
+docker compose -f docker/docker-compose.community.yml up -d
+
+# View logs
+docker compose -f docker/docker-compose.community.yml logs -f
+
+# Stop services
+docker compose -f docker/docker-compose.community.yml down
+
+# Restart services
+docker compose -f docker/docker-compose.community.yml restart
+```
+
+#### 2. Custom Deployment
+
+```bash
+# Build Docker image
+docker build -f docker/Dockerfile -t cmamsys:latest .
+
+# Run container
+docker run -d \
+  --name cmamsys \
+  -p 5000:5000 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
+  -e JWT_SECRET="your-secret" \
+  --restart unless-stopped \
+  cmamsys:latest
+```
+
+### Server Deployment
+
+#### 1. Prepare Server
+
+```bash
+# Install Node.js 24
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install pnpm
+npm install -g pnpm@9.0.0
+
+# Install PostgreSQL 16
+sudo apt install -y postgresql-16
+
+# Install Redis (optional)
+sudo apt install -y redis-server
+```
+
+#### 2. Clone Code
+
+```bash
+# Clone repository
+git clone https://github.com/Yogdunana/CMAMSys.git
+cd CMAMSys
+
+# Install dependencies
+pnpm install
+```
+
+#### 3. Configure Environment
+
+```bash
+# Copy environment file
+cp .env.example .env
+
+# Edit environment file
+vim .env
 ```
 
 #### 4. Initialize Database
 
 ```bash
 # Run database migrations
-pnpm prisma migrate dev
-
-# (Optional) Populate test data
-pnpm prisma seed
-```
-
-#### 5. Start Development Server
-
-```bash
-pnpm dev
-```
-
-Server will run at `http://localhost:5000`
-
-#### 6. Access Application
-
-Open `http://localhost:5000` in your browser
-
-Default admin account:
-- Email: `admin@cmamsys.com`
-- Password: `REDACTED_PASSWORD`
-
-**⚠️ Please change the default password immediately!**
-
-### Docker Quick Start
-
-#### Using Docker Compose
-
-```bash
-# Start all services (including database)
-cd docker
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-#### Start Application Only
-
-```bash
-# Build image
-docker build -t cmamsys:latest .
-
-# Run container
-docker run -p 5000:5000 \
-  -e DATABASE_URL="postgresql://user:password@host:5432/cmamsys" \
-  -e JWT_SECRET="your-secret" \
-  cmamsys:latest
-```
-
----
-
-## 📖 Detailed Installation Guide
-
-### Prerequisites Installation
-
-#### Install Node.js
-
-**Using nvm (Recommended)**:
-
-```bash
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# Reload shell configuration
-source ~/.bashrc
-
-# Install Node.js 24
-nvm install 24
-nvm use 24
-
-# Set as default version
-nvm alias default 24
-```
-
-**Official Installer**:
-
-Visit [Node.js website](https://nodejs.org/) to download and install.
-
-#### Install pnpm
-
-```bash
-# Install using npm
-npm install -g pnpm@latest
-
-# Or use corepack (Node.js 16.10+)
-corepack enable
-corepack prepare pnpm@latest --activate
-```
-
-#### Install PostgreSQL
-
-**Ubuntu/Debian**:
-
-```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# Start service
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-```
-
-**macOS (Homebrew)**:
-
-```bash
-brew install postgresql@14
-brew services start postgresql@14
-```
-
-**Windows**:
-
-Download [PostgreSQL installer](https://www.postgresql.org/download/windows/)
-
-#### Create Database
-
-```bash
-# Switch to postgres user
-sudo -u postgres psql
-
-# Create database and user
-CREATE DATABASE cmamsys;
-CREATE USER cmamsys_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE cmamsys TO cmamsys_user;
-
-# Exit
-\q
-```
-
-### Detailed Configuration
-
-#### Environment Variables Explained
-
-```env
-# ============================================
-# Application Configuration
-# ============================================
-NEXT_PUBLIC_APP_URL="http://localhost:5000"
-NEXT_PUBLIC_APP_NAME="CMAMSys"
-NODE_ENV="development"
-
-# ============================================
-# Database Configuration
-# ============================================
-DATABASE_URL="postgresql://cmamsys_user:password@localhost:5432/cmamsys"
-DATABASE_POOL_MIN=2
-DATABASE_POOL_MAX=10
-
-# ============================================
-# JWT Configuration
-# ============================================
-JWT_SECRET="your-super-secret-jwt-key-min-32-characters"
-JWT_ACCESS_TOKEN_EXPIRES_IN="15m"
-JWT_REFRESH_TOKEN_EXPIRES_IN="7d"
-
-# ============================================
-# Encryption Configuration
-# ============================================
-ENCRYPTION_KEY="your-32-character-encryption-key-here"
-
-# ============================================
-# Redis Configuration (Optional)
-# ============================================
-REDIS_URL="redis://localhost:6379"
-REDIS_PASSWORD=""
-
-# ============================================
-# AI Provider Configuration
-# ============================================
-# DeepSeek
-DEEPSEEK_API_KEY="sk-xxx"
-DEEPSEEK_ENDPOINT="https://api.deepseek.com"
-
-# VolcEngine (Doubao)
-DOUBAO_API_KEY="xxx"
-DOUBAO_ENDPOINT="https://ark.cn-beijing.volces.com/api/v3"
-
-# Aliyun Qwen
-QWEN_API_KEY="sk-xxx"
-QWEN_ENDPOINT="https://dashscope.aliyuncs.com/api/v1"
-
-# OpenAI
-OPENAI_API_KEY="sk-xxx"
-OPENAI_ENDPOINT="https://api.openai.com/v1"
-
-# ============================================
-# Bilibili Learning Configuration
-# ============================================
-BILIBILI_LEARNING_ENABLED="true"
-BILIBILI_LEARNING_SCHEDULE="0 2 * * *"  # Daily at 2 AM
-
-# ============================================
-# Object Storage Configuration (Optional)
-# ============================================
-# AWS S3
-AWS_ACCESS_KEY_ID="your-access-key"
-AWS_SECRET_ACCESS_KEY="your-secret-key"
-AWS_REGION="us-east-1"
-AWS_BUCKET="cmamsys-uploads"
-
-# MinIO
-MINIO_ENDPOINT="localhost:9000"
-MINIO_ACCESS_KEY="minioadmin"
-MINIO_SECRET_KEY="minioadmin"
-MINIO_BUCKET="cmamsys"
-MINIO_USE_SSL="false"
-
-# ============================================
-# Email Configuration (Optional)
-# ============================================
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT="587"
-SMTP_USER="your-email@gmail.com"
-SMTP_PASSWORD="your-password"
-SMTP_FROM="noreply@cmamsys.com"
-
-# ============================================
-# SMS Configuration (Optional)
-# ============================================
-SMS_PROVIDER="aliyun"  # aliyun / tencent
-SMS_ACCESS_KEY="your-access-key"
-SMS_SECRET_KEY="your-secret-key"
-SMS_SIGN_NAME="CMAMSys"
-SMS_TEMPLATE_CODE="SMS_123456789"
-
-# ============================================
-# Sentry Error Tracking (Optional)
-# ============================================
-SENTRY_DSN="https://xxx@sentry.io/xxx"
-SENTRY_ENVIRONMENT="development"
-
-# ============================================
-# Security Configuration
-# ============================================
-CSRF_SECRET="your-csrf-secret-key"
-RATE_LIMIT_MAX=100
-RATE_LIMIT_WINDOW=60000
-
-# ============================================
-# Log Configuration
-# ============================================
-LOG_LEVEL="info"  # debug / info / warn / error
-LOG_FORMAT="json"  # json / pretty
-
-# ============================================
-# Feature Flags
-# ============================================
-ENABLE_REGISTRATION="true"
-ENABLE_MFA="false"
-ENABLE_SSO="false"
-ENABLE_BILIBILI_LEARNING="true"
-```
-
-#### Generate Keys
-
-```bash
-# Generate JWT_SECRET
-openssl rand -base64 32
-
-# Generate ENCRYPTION_KEY
-openssl rand -base64 32
-
-# Generate CSRF_SECRET
-openssl rand -base64 32
-```
-
-### Database Migration
-
-#### Create Migration
-
-```bash
-# Create new migration
-pnpm prisma migrate dev --name add_user_preferences
-
-# View migration status
-pnpm prisma migrate status
-```
-
-#### Apply Migration
-
-```bash
-# Development environment
-pnpm prisma migrate dev
-
-# Production environment
 pnpm prisma migrate deploy
+
+# Generate Prisma Client
+pnpm prisma generate
 ```
 
-#### Reset Database
+#### 5. Build and Start
 
 ```bash
-# Delete all data and reapply migrations (development only)
-pnpm prisma migrate reset
-
-# Populate with seed data
-pnpm prisma db seed
-```
-
-### Verify Installation
-
-```bash
-# Run type checking
-pnpm ts-check
-
-# Run unit tests
-pnpm test
-
-# Run E2E tests
-pnpm exec playwright test
-
-# Start development server
-pnpm dev
-```
-
-Visit `http://localhost:5000`, if you see the login page, installation is successful!
-
----
-
-## ⚙️ Configuration Guide
-
-### Application Configuration
-
-#### App Settings
-
-Located at `src/config/app.ts`:
-
-```typescript
-export const appConfig = {
-  name: process.env.NEXT_PUBLIC_APP_NAME || 'CMAMSys',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5000',
-  version: '1.0.0',
-  environment: process.env.NODE_ENV || 'development',
-};
-```
-
-#### Feature Flags
-
-Located at `src/config/features.ts`:
-
-```typescript
-export const features = {
-  registration: process.env.ENABLE_REGISTRATION === 'true',
-  mfa: process.env.ENABLE_MFA === 'true',
-  sso: process.env.ENABLE_SSO === 'true',
-  bilibiliLearning: process.env.ENABLE_BILIBILI_LEARNING === 'true',
-};
-```
-
-### Database Configuration
-
-#### Prisma Configuration
-
-Located at `prisma/schema.prisma`:
-
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-
-  // Connection pool configuration
-  pool_timeout = 10
-  connection_limit = 10
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-```
-
-#### Optimization Configuration
-
-```prisma
-// Index optimization
-@@index([field1, field2])
-
-// Composite unique index
-@@unique([field1, field2])
-
-// Ignore fields (not generated)
-@@ignore([deprecatedField])
-```
-
-### Redis Configuration
-
-#### Redis Client Configuration
-
-Located at `src/lib/redis.ts`:
-
-```typescript
-import { Redis } from 'ioredis';
-
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  maxRetriesPerRequest: 3,
-  retryStrategy(times) {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  },
-});
-
-export default redis;
-```
-
-#### Cache Strategies
-
-```typescript
-// Session cache (15 minutes)
-await redis.setex(`session:${userId}`, 900, sessionData);
-
-// API cache (5 minutes)
-await redis.setex(`api:${url}`, 300, responseData);
-
-// Rate limiting (100 requests per minute)
-const key = `ratelimit:${ip}`;
-const count = await redis.incr(key);
-if (count === 1) {
-  await redis.expire(key, 60);
-}
-```
-
-### AI Provider Configuration
-
-#### Provider Configuration Example
-
-```typescript
-// DeepSeek configuration
-const deepseekConfig = {
-  type: 'DEEPSEEK',
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  endpoint: process.env.DEEPSEEK_ENDPOINT || 'https://api.deepseek.com',
-  models: ['deepseek-chat', 'deepseek-coder'],
-};
-
-// Doubao configuration
-const doubaoConfig = {
-  type: 'DOUBAO',
-  apiKey: process.env.DOUBAO_API_KEY,
-  endpoint: process.env.DOUBAO_ENDPOINT,
-  models: ['doubao-pro', 'doubao-lite'],
-};
-```
-
-#### Encrypted Storage
-
-```typescript
-// Encrypt API Key
-import { encrypt } from '@/lib/encryption';
-
-const encryptedKey = await encrypt(apiKey, {
-  key: process.env.ENCRYPTION_KEY!,
-  algorithm: 'aes-256-gcm',
-});
-
-// Store in database
-await prisma.aIProvider.create({
-  data: {
-    name: 'My DeepSeek',
-    type: 'DEEPSEEK',
-    apiKey: encryptedKey,
-  },
-});
-```
-
-### Logging Configuration
-
-#### Pino Configuration
-
-Located at `src/lib/logger.ts`:
-
-```typescript
-import pino from 'pino';
-
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development'
-    ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'HH:MM:ss Z',
-        },
-      }
-    : undefined,
-});
-
-export default logger;
-```
-
-#### Usage Example
-
-```typescript
-import logger from '@/lib/logger';
-
-// Info log
-logger.info({ userId, action: 'login' }, 'User logged in');
-
-// Error log
-logger.error({ error, userId }, 'Login failed');
-
-// Debug log
-logger.debug({ data }, 'Processing request');
-```
-
-### Sentry Configuration
-
-#### Sentry Initialization
-
-Located at `sentry.server.config.ts`:
-
-```typescript
-import * as Sentry from '@sentry/nextjs';
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  tracesSampleRate: 1.0,
-  beforeSend(event) {
-    // Filter sensitive information
-    if (event.request) {
-      delete event.request.cookies;
-    }
-    return event;
-  },
-});
-```
-
-#### Error Tracking
-
-```typescript
-import * as Sentry from '@sentry/nextjs';
-
-try {
-  // Operation that might fail
-} catch (error) {
-  Sentry.captureException(error);
-  logger.error({ error }, 'Operation failed');
-}
-```
-
----
-
-## 🛠️ Development Guide
-
-### Development Environment Setup
-
-#### Install Development Dependencies
-
-```bash
-# Install all dependencies
-pnpm install
-
-# Install Playwright browsers (for E2E testing)
-pnpm exec playwright install --with-deps chromium
-```
-
-#### Code Style
-
-```bash
-# ESLint check
-pnpm lint
-
-# Auto fix
-pnpm lint --fix
-
-# TypeScript type checking
-pnpm ts-check
-```
-
-### Project Structure
-
-```
-cmamsys/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── (auth)/            # Authentication pages group
-│   │   │   ├── login/
-│   │   │   └── register/
-│   │   ├── (dashboard)/       # Dashboard layout group
-│   │   │   ├── dashboard/
-│   │   │   ├── competitions/
-│   │   │   ├── modeling/
-│   │   │   ├── teams/
-│   │   │   ├── learning/
-│   │   │   ├── ai-providers/
-│   │   │   └── settings/
-│   │   ├── api/               # API routes
-│   │   │   ├── v1/           # API v1
-│   │   │   │   ├── auth/
-│   │   │   │   ├── user/
-│   │   │   │   ├── modeling-tasks/
-│   │   │   │   ├── ai-providers/
-│   │   │   │   └── dashboard/
-│   │   │   └── init/
-│   │   ├── admin/             # Admin pages
-│   │   │   └── users/
-│   │   ├── layout.tsx         # Root layout
-│   │   └── page.tsx           # Homepage
-│   ├── components/            # React components
-│   │   ├── ui/                # shadcn/ui components
-│   │   ├── auth/              # Authentication components
-│   │   ├── dashboard/         # Dashboard components
-│   │   ├── modeling/          # Modeling components
-│   │   └── common/            # Common components
-│   ├── lib/                   # Utility libraries
-│   │   ├── auth.ts           # Authentication logic
-│   │   ├── db.ts             # Prisma client
-│   │   ├── cache.ts          # Cache utilities
-│   │   ├── encryption.ts     # Encryption utilities
-│   │   ├── logger.ts         # Logging utilities
-│   │   └── validators.ts     # Validators
-│   ├── services/              # Business logic
-│   │   ├── auth.service.ts
-│   │   ├── modeling.service.ts
-│   │   ├── ai.service.ts
-│   │   └── learning.service.ts
-│   ├── types/                 # TypeScript types
-│   │   ├── auth.ts
-│   │   ├── modeling.ts
-│   │   └── api.ts
-│   ├── hooks/                 # Custom hooks
-│   │   ├── useAuth.ts
-│   │   ├── useModeling.ts
-│   │   └── useAI.ts
-│   ├── store/                 # State management (optional)
-│   │   └── auth.ts
-│   ├── config/                # Configuration files
-│   │   ├── app.ts
-│   │   ├── features.ts
-│   │   └── ai.ts
-│   ├── middleware.ts          # Next.js middleware
-│   └── __tests__/            # Unit tests
-├── prisma/
-│   ├── schema.prisma         # Database schema
-│   └── seed.ts               # Data seed
-├── e2e/                       # E2E tests
-│   ├── auth.spec.ts
-│   ├── dashboard.spec.ts
-│   └── ...
-├── public/                    # Static assets
-│   ├── images/
-│   └── fonts/
-├── docs/                      # Documentation
-├── docker/                    # Docker configuration
-├── scripts/                   # Scripts
-├── .env.example              # Environment variable example
-├── .coze                     # Coze configuration
-├── package.json
-├── tsconfig.json
-├── next.config.ts
-├── tailwind.config.ts
-├── playwright.config.ts
-├── vitest.config.ts
-└── README.md
-```
-
-### Development Workflow
-
-#### Creating New Features
-
-1. **Create Branch**
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-2. **Develop Feature**
-
-```bash
-# Start development server
-pnpm dev
-
-# Run tests in another terminal
-pnpm test:watch
-```
-
-3. **Commit Code**
-
-```bash
-# Add files
-git add .
-
-# Commit
-git commit -m "feat: add new feature"
-
-# Push
-git push origin feature/your-feature-name
-```
-
-4. **Create Pull Request**
-
-#### Code Review Checklist
-
-- [ ] Code follows ESLint standards
-- [ ] TypeScript type checking passes
-- [ ] Unit tests pass
-- [ ] E2E tests pass
-- [ ] Code has appropriate comments
-- [ ] Documentation updated
-
-### Debugging Tips
-
-#### VS Code Debug Configuration
-
-Create `.vscode/launch.json`:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Next.js: debug server-side",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "pnpm dev"
-    },
-    {
-      "name": "Next.js: debug client-side",
-      "type": "chrome",
-      "request": "launch",
-      "url": "http://localhost:5000"
-    }
-  ]
-}
-```
-
-#### Log Debugging
-
-```typescript
-import logger from '@/lib/logger';
-
-// Output detailed information in development
-if (process.env.NODE_ENV === 'development') {
-  logger.debug({ data }, 'Detailed debug info');
-}
-
-// Output only key information in production
-logger.info({ userId, action }, 'User action');
-```
-
-#### Database Debugging
-
-```bash
-# View SQL queries
-pnpm prisma studio
-
-# Enable query logging
-# Add to .env
-DIRECT_URL="postgresql://user:password@localhost:5432/cmamsys?statement_cache_size=0"
-```
-
-### Testing
-
-#### Unit Testing
-
-Using Vitest:
-
-```typescript
-// src/__tests__/lib/auth.test.ts
-import { describe, it, expect } from 'vitest';
-import { generateToken, verifyToken } from '@/lib/auth';
-
-describe('Auth Utils', () => {
-  it('should generate and verify token', () => {
-    const payload = { userId: '123' };
-    const token = generateToken(payload);
-    const decoded = verifyToken(token);
-
-    expect(decoded.userId).toBe('123');
-  });
-});
-```
-
-Run tests:
-
-```bash
-# Run all tests
-pnpm test
-
-# Run specific file
-pnpm test auth.test.ts
-
-# Watch mode
-pnpm test:watch
-
-# Generate coverage report
-pnpm test:coverage
-```
-
-#### E2E Testing
-
-Using Playwright:
-
-```typescript
-// e2e/login.spec.ts
-import { test, expect } from '@playwright/test';
-
-test('should login successfully', async ({ page }) => {
-  await page.goto('/auth/login');
-  await page.fill('input[name="email"]', 'test@example.com');
-  await page.fill('input[name="password"]', 'password123');
-  await page.click('button[type="submit"]');
-
-  await expect(page).toHaveURL('/dashboard');
-});
-```
-
-Run tests:
-
-```bash
-# Run all E2E tests
-pnpm exec playwright test
-
-# Run specific test
-pnpm exec playwright test login.spec.ts
-
-# UI mode
-pnpm exec playwright test --ui
-```
-
-### Performance Optimization
-
-#### Code Splitting
-
-```typescript
-// Dynamic import for large components
-const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
-  loading: () => <LoadingSpinner />,
-});
-```
-
-#### Image Optimization
-
-```tsx
-import Image from 'next/image';
-
-<Image
-  src="/logo.png"
-  alt="Logo"
-  width={200}
-  height={200}
-  loading="lazy"
-/>
-```
-
-#### Caching Strategies
-
-```typescript
-// API route caching
-export const revalidate = 60; // Cache for 60 seconds
-
-// ISR incremental static regeneration
-export async function generateStaticParams() {
-  return [{ id: '1' }, { id: '2' }];
-}
-```
-
----
-
-## 🚀 Deployment Guide
-
-### Development Environment Deployment
-
-```bash
-# Start development server
-pnpm dev
-
-# Access http://localhost:5000
-```
-
-### Production Environment Deployment
-
-#### Method 1: Direct Deployment
-
-```bash
-# Build production version
+# Build project
 pnpm build
 
-# Start production server
+# Start service
 pnpm start
 ```
 
-#### Method 2: Docker Deployment
-
-**Build Image**:
-
-```bash
-docker build -t cmamsys:latest .
-```
-
-**Run Container**:
-
-```bash
-docker run -d \
-  --name cmamsys \
-  -p 5000:5000 \
-  -e DATABASE_URL="postgresql://user:password@host:5432/cmamsys" \
-  -e JWT_SECRET="your-secret" \
-  cmamsys:latest
-```
-
-**Docker Compose**:
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  app:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/cmamsys
-      - JWT_SECRET=your-secret
-    depends_on:
-      - db
-
-  db:
-    image: postgres:14
-    environment:
-      - POSTGRES_DB=cmamsys
-      - POSTGRES_USER=cmamsys
-      - POSTGRES_PASSWORD=cmamsys
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-```
-
-```bash
-docker-compose up -d
-```
-
-#### Method 3: PM2 Deployment
+#### 6. Use PM2 for Process Management (Recommended)
 
 ```bash
 # Install PM2
-pnpm add -g pm2
+npm install -g pm2
 
 # Start application
 pm2 start pnpm --name "cmamsys" -- start
 
-# View status
+# Check status
 pm2 status
 
 # View logs
 pm2 logs cmamsys
 
-# Restart
+# Restart application
 pm2 restart cmamsys
+
+# Stop application
+pm2 stop cmamsys
+
+# Start on boot
+pm2 startup
+pm2 save
 ```
 
-**PM2 Configuration File**:
-
-```javascript
-// ecosystem.config.js
-module.exports = {
-  apps: [{
-    name: 'cmamsys',
-    script: 'pnpm',
-    args: 'start',
-    instances: 2,
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 5000,
-    },
-  }],
-};
-```
-
-### Nginx Reverse Proxy
-
-#### Configuration Example
+#### 7. Configure Nginx Reverse Proxy
 
 ```nginx
 # /etc/nginx/sites-available/cmamsys
-upstream cmamsys {
-    server localhost:5000;
-}
-
 server {
     listen 80;
-    server_name example.com;
+    server_name your-domain.com;
 
     location / {
-        proxy_pass http://cmamsys;
+        proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
     }
 }
-```
 
-#### Enable Configuration
-
-```bash
+# Enable configuration
 sudo ln -s /etc/nginx/sites-available/cmamsys /etc/nginx/sites-enabled/
+
+# Test configuration
 sudo nginx -t
-sudo systemctl reload nginx
+
+# Restart Nginx
+sudo systemctl restart nginx
 ```
 
-### SSL/HTTPS Configuration
-
-#### Using Let's Encrypt
+#### 8. Configure SSL (Using Let's Encrypt)
 
 ```bash
 # Install Certbot
-sudo apt install certbot python3-certbot-nginx
+sudo apt install -y certbot python3-certbot-nginx
 
-# Get certificate
-sudo certbot --nginx -d example.com
+# Get SSL certificate
+sudo certbot --nginx -d your-domain.com
 
 # Auto renewal
 sudo certbot renew --dry-run
 ```
 
-#### Nginx SSL Configuration
+### Cloud Platform Deployment
 
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name example.com;
+#### 1. Vercel Deployment
 
-    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+```bash
+# Install Vercel CLI
+npm install -g vercel
 
-    location / {
-        proxy_pass http://cmamsys;
-        # ... other configurations
+# Login
+vercel login
+
+# Deploy
+vercel
+
+# Production deployment
+vercel --prod
+```
+
+#### 2. Railway Deployment
+
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login
+railway login
+
+# Initialize project
+railway init
+
+# Deploy
+railway up
+```
+
+#### 3. Render Deployment
+
+1. Connect GitHub repository
+2. Configure environment variables
+3. Deploy application
+
+---
+
+## 📚 API Documentation
+
+### Authentication Related
+
+#### User Registration
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "username": "username",
+  "password": "password123"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "cuid",
+      "email": "user@example.com",
+      "username": "username"
+    },
+    "tokens": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+      "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
     }
-}
-
-server {
-    listen 80;
-    server_name example.com;
-    return 301 https://$server_name$request_uri;
+  }
 }
 ```
 
-### Load Balancing
+#### User Login
 
-#### Nginx Load Balancing
+```http
+POST /api/auth/login
+Content-Type: application/json
 
-```nginx
-upstream cmamsys_cluster {
-    least_conn;
-    server localhost:5001 weight=3;
-    server localhost:5002 weight=2;
-    server localhost:5003 weight=1;
+{
+  "email": "user@example.com",
+  "password": "password123"
 }
+```
 
-server {
-    listen 80;
-    server_name example.com;
-
-    location / {
-        proxy_pass http://cmamsys_cluster;
-        # ... other configurations
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "cuid",
+      "email": "user@example.com",
+      "username": "username"
+    },
+    "tokens": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+      "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
     }
+  }
 }
 ```
 
-### Monitoring and Logging
+#### Refresh Token
 
-#### Log Management
+```http
+POST /api/auth/refresh
+Content-Type: application/json
 
-```bash
-# View application logs
-pm2 logs cmamsys
-
-# View error logs
-pm2 logs cmamsys --err
-
-# Clear logs
-pm2 flush
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
 ```
 
-#### Performance Monitoring
-
-Use PM2 Plus:
-
-```bash
-# Install PM2 Plus
-pm2 link <public_key> <secret_key>
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+  }
+}
 ```
 
-### Backup and Recovery
+### AI Provider Related
 
-#### Database Backup
+#### Get All Providers
 
-```bash
-# Backup
-pg_dump -U cmamsys cmamsys > backup.sql
-
-# Restore
-psql -U cmamsys cmamsys < backup.sql
+```http
+GET /api/ai-providers
+Authorization: Bearer {accessToken}
 ```
 
-#### Automatic Backup Script
-
-```bash
-#!/bin/bash
-# backup.sh
-
-BACKUP_DIR="/backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/cmamsys_$DATE.sql"
-
-mkdir -p $BACKUP_DIR
-pg_dump -U cmamsys cmamsys > $BACKUP_FILE
-
-# Keep backups from last 7 days
-find $BACKUP_DIR -name "cmamsys_*.sql" -mtime +7 -delete
+**Response**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "cuid",
+      "name": "DeepSeek",
+      "type": "deepseek",
+      "enabled": true
+    }
+  ]
+}
 ```
 
-Add to crontab:
+#### Add Provider
 
-```bash
-# Backup daily at 2 AM
-0 2 * * * /path/to/backup.sh
+```http
+POST /api/ai-providers
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "name": "DeepSeek",
+  "type": "deepseek",
+  "apiKey": "your-api-key",
+  "enabled": true
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cuid",
+    "name": "DeepSeek",
+    "type": "deepseek",
+    "enabled": true
+  }
+}
+```
+
+#### Test Connection
+
+```http
+POST /api/ai-providers/test
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "type": "deepseek",
+  "apiKey": "your-api-key"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "message": "Connection successful"
+  }
+}
+```
+
+### Auto Modeling Related
+
+#### Start Modeling Task
+
+```http
+POST /api/auto-modeling/start
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "name": "Math Modeling Task",
+  "description": "Task description",
+  "config": {
+    "competitionType": "MCM",
+    "aiProviderId": "cuid",
+    "phases": ["discussion", "code", "validation", "paper"]
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cuid",
+    "name": "Math Modeling Task",
+    "status": "RUNNING",
+    "currentPhase": "DISCUSSION"
+  }
+}
+```
+
+#### Get Task Status
+
+```http
+GET /api/auto-modeling/{id}/status
+Authorization: Bearer {accessToken}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cuid",
+    "name": "Math Modeling Task",
+    "status": "RUNNING",
+    "currentPhase": "CODE",
+    "progress": 50,
+    "createdAt": "2026-02-18T00:00:00Z",
+    "updatedAt": "2026-02-18T00:30:00Z"
+  }
+}
+```
+
+#### Generate Paper
+
+```http
+POST /api/auto-modeling/{id}/generate-paper
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "language": "english",
+  "format": "pdf"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "paperId": "cuid",
+    "downloadUrl": "/api/auto-modeling/{id}/paper?download=true"
+  }
+}
 ```
 
 ---
@@ -2853,275 +1872,103 @@ Add to crontab:
 
 ### Unit Testing
 
-#### Running Tests
-
-```bash
-# Run all tests
-pnpm test
-
-# Run specific file
-pnpm test auth.test.ts
-
-# Watch mode
-pnpm test:watch
-
-# Coverage report
-pnpm test:coverage
-
-# UI mode
-pnpm test:ui
-```
-
-#### Writing Tests
+#### Using Vitest
 
 ```typescript
-// src/__tests__/lib/password.test.ts
+// src/lib/__tests__/utils.test.ts
 import { describe, it, expect } from 'vitest';
-import { hashPassword, verifyPassword } from '@/lib/password';
+import { formatDate } from '../utils';
 
-describe('Password Utils', () => {
-  it('should hash and verify password', async () => {
-    const password = 'test123';
-    const hash = await hashPassword(password);
-    const isValid = await verifyPassword(password, hash);
+describe('formatDate', () => {
+  it('should format date correctly', () => {
+    const date = new Date('2026-02-18');
+    const formatted = formatDate(date);
+    expect(formatted).toBe('2026-02-18');
+  });
+});
+```
 
-    expect(isValid).toBe(true);
+### Integration Testing
+
+#### Testing API Routes
+
+```typescript
+// src/app/api/__tests__/users.test.ts
+import { describe, it, expect, beforeAll } from 'vitest';
+import { prisma } from '@/lib/prisma';
+
+describe('User API', () => {
+  beforeAll(async () => {
+    // Initialize test database
+    await prisma.$executeRawUnsafe('TRUNCATE TABLE users CASCADE');
   });
 
-  it('should reject incorrect password', async () => {
-    const password = 'test123';
-    const hash = await hashPassword(password);
-    const isValid = await verifyPassword('wrong', hash);
+  it('should create a user', async () => {
+    const response = await fetch('http://localhost:5000/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Test User',
+        email: 'test@example.com',
+      }),
+    });
 
-    expect(isValid).toBe(false);
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.data.name).toBe('Test User');
   });
 });
 ```
 
 ### E2E Testing
 
-#### Running Tests
+#### Using Playwright
+
+```typescript
+// e2e/auth.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('user can login', async ({ page }) => {
+  await page.goto('http://localhost:5000/auth/login');
+
+  await page.fill('input[name="email"]', 'admin@example.com');
+  await page.fill('input[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+
+  await expect(page).toHaveURL('http://localhost:5000/dashboard');
+});
+```
+
+### Running Tests
 
 ```bash
 # Run all tests
-pnpm exec playwright test
+pnpm test
 
-# Run specific test
-pnpm exec playwright test login.spec.ts
+# Run unit tests
+pnpm test --run
 
-# UI mode
-pnpm exec playwright test --ui
+# Run tests (watch mode)
+pnpm test:watch
 
-# Debug mode
-pnpm exec playwright test --debug
-```
-
-#### Writing Tests
-
-```typescript
-// e2e/dashboard.spec.ts
-import { test, expect } from '@playwright/test';
-
-test.describe('Dashboard', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.fill('input[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-  });
-
-  test('should display dashboard', async ({ page }) => {
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.locator('h1')).toContainText('Dashboard');
-  });
-
-  test('should show statistics', async ({ page }) => {
-    await page.goto('/dashboard');
-    
-    await expect(page.locator('[data-testid="active-competitions"]')).toBeVisible();
-    await expect(page.locator('[data-testid="modeling-tasks"]')).toBeVisible();
-  });
-});
-```
-
-### API Testing
-
-#### Using curl
-
-```bash
-# Test login
-curl -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}'
-
-# Test protected endpoint
-curl -X GET http://localhost:5000/api/v1/user/profile \
-  -H "Authorization: Bearer <token>"
-```
-
-#### Using Postman
-
-Import API collection: `docs/postman-collection.json`
-
-### Test Coverage
-
-```bash
 # Generate coverage report
 pnpm test:coverage
 
-# View report
-open coverage/index.html
-```
-
-Target coverage:
-- Statement coverage: > 80%
-- Branch coverage: > 75%
-- Function coverage: > 80%
-- Line coverage: > 80%
-
----
-
-## ⚡ Performance Optimization
-
-### Frontend Optimization
-
-#### Code Splitting
-
-```typescript
-// Route-level code splitting (automatic)
-// Next.js App Router automatically splits
-
-// Component-level code splitting
-const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
-  loading: () => <LoadingSpinner />,
-});
-```
-
-#### Image Optimization
-
-```tsx
-import Image from 'next/image';
-
-<Image
-  src="/image.jpg"
-  alt="Description"
-  width={800}
-  height={600}
-  loading="lazy"
-  placeholder="blur"
-/>
-```
-
-#### Caching Strategies
-
-```typescript
-// Static asset caching
-// next.config.ts
-module.exports = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'example.com',
-      },
-    ],
-  },
-};
-
-// API caching
-export const revalidate = 60; // Cache for 60 seconds
-```
-
-### Backend Optimization
-
-#### Database Optimization
-
-```prisma
-// Add indexes
-@@index([field1, field2])
-
-// Selective queries
-const users = await prisma.user.findMany({
-  select: {
-    id: true,
-    email: true,
-    username: true,
-  },
-});
-```
-
-#### Redis Caching
-
-```typescript
-// Cache query results
-const cacheKey = `users:page:${page}`;
-const cached = await redis.get(cacheKey);
-
-if (cached) {
-  return JSON.parse(cached);
-}
-
-const users = await prisma.user.findMany();
-await redis.setex(cacheKey, 300, JSON.stringify(users));
-
-return users;
-```
-
-#### Connection Pool Optimization
-
-```prisma
-// prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-
-  pool_timeout = 10
-  connection_limit = 10
-}
-```
-
-### Performance Monitoring
-
-#### Lighthouse
-
-```bash
-# Install Lighthouse
-pnpm add -g lighthouse
-
-# Run audit
-lighthouse http://localhost:5000 --view
-```
-
-#### Web Vitals
-
-```typescript
-// Use next/web-vitals
-import { useReportWebVitals } from 'next/web-vitals';
-
-export function WebVitals() {
-  useReportWebVitals((metric) => {
-    console.log(metric);
-  });
-
-  return null;
-}
+# Run E2E tests
+npx playwright test
 ```
 
 ---
 
-## 🔍 Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
 #### 1. Database Connection Failed
 
-**Error Message**:
-```
-Error: Can't reach database server at `localhost:5432`
-```
+**Problem**: `Error: P1001: Can't reach database server`
 
 **Solution**:
-
 ```bash
 # Check if PostgreSQL is running
 sudo systemctl status postgresql
@@ -3129,326 +1976,276 @@ sudo systemctl status postgresql
 # Start PostgreSQL
 sudo systemctl start postgresql
 
-# Check connection
-psql -U cmamsys -d cmamsys -c "SELECT 1"
+# Check DATABASE_URL configuration
+echo $DATABASE_URL
 ```
 
-#### 2. Invalid JWT Token
+#### 2. Prisma Client Generation Failed
 
-**Error Message**:
-```
-Error: Invalid or expired token
-```
+**Problem**: `Error: P5006`
 
 **Solution**:
-
-1. Check if JWT_SECRET is configured correctly
-2. Check if token has expired
-3. Re-login to get new token
-
-#### 3. Port Already in Use
-
-**Error Message**:
-```
-Error: Port 5000 is already in use
-```
-
-**Solution**:
-
 ```bash
-# Find process using the port
+# Regenerate Prisma Client
+pnpm prisma generate
+
+# Clear cache
+rm -rf node_modules/.prisma
+pnpm prisma generate
+```
+
+#### 3. Dependency Installation Failed
+
+**Problem**: `npm ERR! code ERESOLVE`
+
+**Solution**:
+```bash
+# Use pnpm (recommended)
+pnpm install
+
+# Or force resolve dependency conflicts
+npm install --legacy-peer-deps
+```
+
+#### 4. Port Already in Use
+
+**Problem**: `Error: listen EADDRINUSE: address already in use :::5000`
+
+**Solution**:
+```bash
+# Find process occupying the port
 lsof -i :5000
 
 # Kill process
 kill -9 <PID>
 
-# Or use a different port
-PORT=5001 pnpm dev
+# Or use different port
+PORT=3000 pnpm dev
 ```
 
-#### 4. Memory Overflow
+#### 5. JWT Token Invalid
 
-**Error Message**:
-```
-JavaScript heap out of memory
-```
+**Problem**: `Error: Invalid token`
 
 **Solution**:
-
 ```bash
-# Increase Node.js memory limit
-export NODE_OPTIONS="--max-old-space-size=4096"
-pnpm dev
+# Check JWT_SECRET configuration
+echo $JWT_SECRET
+
+# Regenerate secret
+openssl rand -base64 32
+
+# Update .env file
+# Restart service
 ```
 
-#### 5. API Rate Limiting
+#### 6. AI Provider Connection Failed
 
-**Error Message**:
-```
-429 Too Many Requests
-```
+**Problem**: `Error: AI Provider connection failed`
 
 **Solution**:
+```bash
+# Check if API Key is correct
+# Check network connection
+# Test connection
+curl -X POST http://localhost:5000/api/ai-providers/test \
+  -H "Content-Type: application/json" \
+  -d '{"type":"deepseek","apiKey":"your-key"}'
+```
 
-1. Wait for rate limit reset
-2. Increase rate limit (with caution)
-3. Use Redis cache to reduce requests
-
-### Log Analysis
-
-#### View Application Logs
+### Viewing Logs
 
 ```bash
-# Development environment logs
-pnpm dev 2>&1 | tee app.log
+# View application logs
+tail -f /app/work/logs/bypass/app.log
 
-# Production environment logs (PM2)
+# View Docker logs
+docker compose -f docker/docker-compose.yml logs -f app
+
+# View PM2 logs
 pm2 logs cmamsys
-
-# Docker logs
-docker logs cmamsys
 ```
-
-#### View Database Logs
-
-```bash
-# PostgreSQL logs
-sudo tail -f /var/log/postgresql/postgresql-14-main.log
-```
-
-#### Error Tracking
-
-View Sentry error reports: `https://sentry.io/`
 
 ### Performance Issues
 
-#### Slow Database Queries
+#### 1. Slow Database Queries
 
+**Solution**:
 ```bash
-# Enable query logging
-# prisma/schema.prisma
-datasource db {
-  logLevel = "query"
-}
+# Add indexes
+# In prisma/schema.prisma add
+@@index([fieldName])
+
+# Generate migration
+pnpm prisma migrate dev
 ```
 
-#### Slow Frontend Loading
+#### 2. High Memory Usage
 
+**Solution**:
 ```bash
-# Analyze bundle size
-pnpm build
-pnpm analyze
+# Check memory usage
+node --max-old-space-size=4096 pnpm start
+
+# Or configure in package.json
+{
+  "scripts": {
+    "start": "node --max-old-space-size=4096 node_modules/.bin/next start"
+  }
+}
 ```
 
 ---
 
 ## ❓ FAQ
 
-### Q1: How to upgrade to the latest version?
+### General Questions
 
+**Q: Which competitions does CMAMSys support?**
+
+A: Currently supports MCM/ICM, CUMCM, Shenzhen Cup, IMMC, and other mainstream competitions. Other competitions can be supported through custom templates.
+
+**Q: Can it be used offline?**
+
+A: Yes, but AI features require internet access. You can configure local AI Providers or use offline mode.
+
+**Q: How to backup data?**
+
+A: Use PostgreSQL's backup tools:
 ```bash
-# Pull latest code
+pg_dump cmamsys > backup.sql
+```
+
+**Q: How to upgrade to a new version?**
+
+A: Pull the latest code and run migrations:
+```bash
 git pull origin main
-
-# Update dependencies
 pnpm install
-
-# Run database migrations
 pnpm prisma migrate deploy
-
-# Rebuild
 pnpm build
-
-# Restart service
-pm2 restart cmamsys
+pnpm start
 ```
 
-### Q2: How to backup data?
+### Technical Questions
 
+**Q: How to customize the theme?**
+
+A: Modify theme configuration in `tailwind.config.js`.
+
+**Q: How to add a new AI Provider?**
+
+A: Add new Provider configuration in `src/lib/ai-providers.ts`.
+
+**Q: How to optimize performance?**
+
+A: 
+1. Enable Redis caching
+2. Add database indexes
+3. Use CDN for static assets
+4. Enable Gzip compression
+
+### Deployment Questions
+
+**Q: Cannot access after Docker deployment?**
+
+A: Check port mapping and network configuration:
 ```bash
-# Backup database
-pg_dump -U cmamsys cmamsys > backup.sql
-
-# Backup uploaded files
-tar -czf uploads-backup.tar.gz public/uploads/
+docker ps
+docker network inspect cmamsys-network
 ```
 
-### Q3: How to change admin password?
+**Q: How to configure HTTPS?**
 
+A: Use Nginx + Let's Encrypt:
 ```bash
-# Use Prisma Studio
-pnpm prisma studio
-
-# Or use script
-node scripts/reset-admin-password.js
-```
-
-### Q4: How to enable HTTPS?
-
-Refer to [SSL/HTTPS Configuration](#sslhttps-configuration) section.
-
-### Q5: How to add new AI Provider?
-
-1. Create new Provider in `src/lib/ai/`
-2. Implement unified interface
-3. Add configuration in database
-4. Test connection
-
-### Q6: How to customize theme?
-
-Edit `src/styles/globals.css` and `tailwind.config.ts`.
-
-### Q7: How to disable certain features?
-
-Set feature flags in `.env` file:
-
-```env
-ENABLE_REGISTRATION="false"
-ENABLE_MFA="false"
-ENABLE_BILIBILI_LEARNING="false"
-```
-
----
-
-## 📝 Changelog
-
-### v1.0.0 (2026-02-10)
-
-#### New Features
-
-- ✨ Complete automated modeling pipeline
-- ✨ Multi AI Provider support (DeepSeek, Doubao, Qwen, OpenAI)
-- ✨ Bilibili learning system
-- ✨ Team collaboration features
-- ✨ Competition management
-- ✨ Beautiful visualizations
-- ✨ Enterprise-grade security
-- ✨ Internationalization support (Chinese and English)
-- ✨ Docker deployment
-
-#### Tech Stack
-
-- Next.js 16 (App Router)
-- React 19
-- TypeScript 5
-- Prisma 5
-- PostgreSQL
-- shadcn/ui
-- Tailwind CSS 4
-
-#### Testing
-
-- 126 unit tests all passed
-- E2E testing framework completed
-
-#### Documentation
-
-- Complete API documentation
-- Detailed deployment guide
-- Development guide
-
----
-
-## 🤝 Contributing Guide
-
-### How to Contribute
-
-We welcome contributions in all forms!
-
-1. **Report Bugs**: Submit issues at [GitHub Issues](https://github.com/your-org/cmamsys/issues)
-2. **Suggest Features**: Discuss at [GitHub Discussions](https://github.com/your-org/cmamsys/discussions)
-3. **Submit Code**: Submit Pull Requests
-4. **Improve Documentation**: Improve docs and examples
-
-### Contribution Process
-
-1. Fork repository
-2. Create feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m 'feat: add some feature'`
-4. Push branch: `git push origin feature/your-feature`
-5. Submit Pull Request
-
-### Code Standards
-
-- Use ESLint and Prettier for code formatting
-- Follow TypeScript strict mode
-- Write unit tests
-- Update related documentation
-
-### Commit Convention
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: add new feature
-fix: fix bug
-docs: update documentation
-style: format code
-refactor: refactor code
-test: add tests
-chore: update dependencies
+sudo certbot --nginx -d your-domain.com
 ```
 
 ---
 
 ## 📄 License
 
-### Community Edition
+MIT License
 
-MIT License - See [LICENSE](LICENSE) file for details.
+Copyright (c) 2026 CMAMSys Team
 
-**Free to use, modify, and distribute**
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-### Enterprise Edition
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-Commercial License - Requires commercial authorization.
-
-**Contact licensing**: [license@cmamsys.com](mailto:license@cmamsys.com)
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
 ## 📞 Contact
 
-### Technical Support
-
-- 📧 Email: [support@cmamsys.com](mailto:support@cmamsys.com)
-- 📚 Documentation: [docs.cmamsys.com](https://docs.cmamsys.com)
-- 🐛 Issue Reporting: [GitHub Issues](https://github.com/your-org/cmamsys/issues)
-
-### Business Cooperation
-
-- 💼 Business: [business@cmamsys.com](mailto:business@cmamsys.com)
-- 🔐 Enterprise License: [license@cmamsys.com](mailto:license@cmamsys.com)
-
-### Community
-
-- 💬 Discussions: [GitHub Discussions](https://github.com/your-org/cmamsys/discussions)
-- 📱 WeChat Group: Scan QR code to join
+- **GitHub**: https://github.com/Yogdunana/CMAMSys
+- **Issues**: https://github.com/Yogdunana/CMAMSys/issues
+- **Email**: support@cmamsys.com
 
 ---
 
 ## 🙏 Acknowledgments
 
-Thanks to the following open source projects and services:
+Thanks to the following open source projects:
 
-- [Next.js](https://nextjs.org/) - React framework
-- [React](https://reactjs.org/) - UI library
-- [Prisma](https://www.prisma.io/) - ORM
-- [shadcn/ui](https://ui.shadcn.com/) - UI component library
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
-- [TypeScript](https://www.typescriptlang.org/) - Type system
-- [Vitest](https://vitest.dev/) - Testing framework
-- [Playwright](https://playwright.dev/) - E2E testing
-- And all contributors
+- [Next.js](https://nextjs.org/)
+- [React](https://react.dev/)
+- [Prisma](https://www.prisma.io/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Radix UI](https://www.radix-ui.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+
+---
+
+## 📝 Changelog
+
+### v1.0.0 (2026-02-18)
+
+#### New Features
+- ✅ Complete installation wizard
+- ✅ AI Provider integration (DeepSeek, OpenAI, Aliyun, Volcengine)
+- ✅ Automated modeling workflow (Discussion, Code, Validation, Paper)
+- ✅ Team collaboration features
+- ✅ Video learning module
+- ✅ System administration dashboard
+- ✅ JWT authentication system
+- ✅ MFA support
+- ✅ Docker deployment support
+
+#### Tech Stack
+- Next.js 16.1.6
+- React 19.2.4
+- TypeScript 5.9.3
+- Prisma 6.19.2
+- PostgreSQL 16
+
+#### Documentation
+- ✅ Complete API documentation
+- ✅ Deployment guide
+- ✅ Development guide
+- ✅ Troubleshooting
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for the Mathematical Modeling Community**
+**If this project helps you, please give us a ⭐️**
 
-[⬆ Back to Top](#cmamsys---competimath-automodel-system)
-
-**If this project helps you, please give it a ⭐ Star!**
+Made with ❤️ by CMAMSys Team
 
 </div>
