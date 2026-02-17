@@ -41,48 +41,32 @@ jobs:
           LOG_FILE_PATH: /tmp/app.log
         run: pnpm run build
 
-      - name: Check Dockerfile
-        run: |
-          echo "Checking Dockerfile..."
-          ls -la Dockerfile
-          cat Dockerfile | head -20
-
       - name: Build Docker image
         run: |
           VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\///' | sed 's/refs\/heads\///')
           if [ "$VERSION" = "main" ]; then
             VERSION=$(git rev-parse --short HEAD)
           fi
-          echo "Building Docker image with tag: $VERSION"
           echo "IMAGE_TAG=$VERSION" >> $GITHUB_ENV
-          docker build --no-cache -t ghcr.io/yogdunana/cmamsys:$VERSION . 2>&1 | tee build.log
-
-      - name: Check Docker image
-        if: success()
-        run: |
-          docker images | grep cmamsys
+          echo "Building Docker image with tag: $VERSION"
+          docker build --no-cache -t ghcr.io/yogdunana/cmamsys:$VERSION .
 
       - name: Login to GitHub Container Registry
-        if: success()
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push Docker image
-        if: success()
         run: docker push ghcr.io/yogdunana/cmamsys:$IMAGE_TAG
 
       - name: Tag and push as latest
-        if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: |
           docker tag ghcr.io/yogdunana/cmamsys:$IMAGE_TAG ghcr.io/yogdunana/cmamsys:latest
           docker push ghcr.io/yogdunana/cmamsys:latest
 
       - name: Output image info
-        if: always()
         run: |
-          echo "Docker image build completed!"
-          if [ "$?" -eq 0 ]; then
-            echo "Image: ghcr.io/yogdunana/cmamsys:$IMAGE_TAG"
-            echo "Latest: ghcr.io/yogdunana/cmamsys:latest"
-          else
-            echo "Build failed. Check logs for details."
+          echo "✅ Docker image built and pushed successfully!"
+          echo "📦 Image: ghcr.io/yogdunana/cmamsys:$IMAGE_TAG"
+          if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then
+            echo "📦 Latest: ghcr.io/yogdunana/cmamsys:latest"
           fi
