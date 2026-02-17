@@ -9,7 +9,7 @@ echo "Installing dependencies..."
 pnpm install --prefer-frozen-lockfile --prefer-offline
 
 echo "Generating Prisma Client..."
-npx prisma generate
+pnpm exec prisma generate
 
 echo "Building the project..."
 npx next build
