@@ -15,176 +15,56 @@ permissions:
   deployments: write
 
 jobs:
-  build-docker:
-    name: Build and Push Docker Image
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    env:
-      LOG_FILE_PATH: /tmp/app.log
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build application
-        run: pnpm run build
-        env:
-          NODE_ENV: production
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
-          JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
-          REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
-          ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
-          CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
-          SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
-          LOG_FILE_PATH: /tmp/app.log
-        env:
-          NODE_ENV: production
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
-          JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
-          REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
-          ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
-          CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
-          SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
-          LOG_FILE_PATH: /tmp/app.log
-
-      - name: Build Docker image
-        run: |
-          docker build -t cmamsys:latest .
-
-      - name: Login to GitHub Container Registry
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Tag and push Docker image
-        run: |
-          docker tag cmamsys:latest ghcr.io/yogdunana/cmamsys:latest
-          docker push ghcr.io/yogdunana/cmamsys:latest
-
-      - name: Tag with SHA and push
-        run: |
-          docker tag cmamsys:latest ghcr.io/yogdunana/cmamsys:${{ github.sha }}
-          docker push ghcr.io/yogdunana/cmamsys:${{ github.sha }}
-
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build-docker
-    environment:
-      name: production
-      url: https://cmamsys.com
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.PRODUCTION_HOST }}
-          username: ${{ secrets.PRODUCTION_USER }}
-          key: ${{ secrets.PRODUCTION_SSH_KEY }}
-          script: |
-            cd /opt/cmamsys
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
-
-      - name: Run database migrations
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.PRODUCTION_HOST }}
-          username: ${{ secrets.PRODUCTION_USER }}
-          key: ${{ secrets.PRODUCTION_SSH_KEY }}
-          script: |
-            cd /opt/cmamsys
-            docker compose exec -T app npx prisma migrate deploy
-
-      - name: Notify deployment success
-        if: success()
-        run: |
-          echo "🚀 Deployment successful!"
-          echo "Environment: Production"
-          echo "Commit: ${{ github.sha }}"
-          echo "Author: ${{ github.actor }}"
-
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.base_ref == 'develop'
-    environment:
-      name: staging
-      url: https://staging.cmamsys.com
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Deploy to staging via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          script: |
-            cd /opt/cmamsys-staging
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
-
   release:
     name: Create Release
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
 
-    env:
-      LOG_FILE_PATH: /tmp/app.log
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build application
-        run: pnpm run build
-
       - name: Generate changelog
-        id: changelog
         run: |
-          echo "## Release Notes" > changelog.md
+          echo "## 📦 Release ${{ github.ref_name }}" > changelog.md
+          echo "" >> changelog.md
+          echo "### 🚀 What's New" >> changelog.md
           echo "" >> changelog.md
           echo "Changes in this release:" >> changelog.md
-          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> changelog.md
+          git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "HEAD^")..HEAD >> changelog.md || echo "- Initial release" >> changelog.md
           echo "" >> changelog.md
-          echo "### Docker Image" >> changelog.md
-          echo "To build and push the image manually, run:" >> changelog.md
+          echo "### 🔧 Deployment Instructions" >> changelog.md
+          echo "" >> changelog.md
+          echo "#### Option 1: Using Docker Compose (Recommended)" >> changelog.md
           echo "\`\`\`bash" >> changelog.md
-          echo "docker build -t ghcr.io/yogdunana/cmamsys:${{ github.ref_name }} ." >> changelog.md
-          echo "echo \${GITHUB_TOKEN} | docker login ghcr.io -u \${{ github.actor }} --password-stdin" >> changelog.md
-          echo "docker push ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "git clone https://github.com/Yogdunana/CMAMSys.git" >> changelog.md
+          echo "cd CMAMSys" >> changelog.md
+          echo "git checkout ${{ github.ref_name }}" >> changelog.md
+          echo "cp .env.docker.example .env" >> changelog.md
+          echo "# Edit .env with your configuration" >> changelog.md
+          echo "docker compose up -d" >> changelog.md
           echo "\`\`\`" >> changelog.md
+          echo "" >> changelog.md
+          echo "#### Option 2: Manual Docker Build" >> changelog.md
+          echo "\`\`\`bash" >> changelog.md
+          echo "docker build -t cmamsys:${{ github.ref_name }} ." >> changelog.md
+          echo "docker run -p 3000:3000 --env-file .env cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "\`\`\`" >> changelog.md
+          echo "" >> changelog.md
+          echo "#### Option 3: Using Deployment Script" >> changelog.md
+          echo "\`\`\`bash" >> changelog.md
+          echo "chmod +x scripts/manual-deploy.sh" >> changelog.md
+          echo "./scripts/manual-deploy.sh production" >> changelog.md
+          echo "\`\`\`" >> changelog.md
+          echo "" >> changelog.md
+          echo "### 📚 Documentation" >> changelog.md
+          echo "- [Deployment Guide](https://github.com/Yogdunana/CMAMSys/blob/main/docs/MANUAL_DEPLOYMENT.md)" >> changelog.md
+          echo "- [API Documentation](https://github.com/Yogdunana/CMAMSys/blob/main/API.md)" >> changelog.md
+          echo "" >> changelog.md
+          echo "### ⚠️ Important Notes" >> changelog.md
+          echo "- Make sure to configure all required environment variables" >> changelog.md
+          echo "- Run database migrations: \`docker compose exec -T app npx prisma migrate deploy\`" >> changelog.md
+          echo "- Ensure PostgreSQL is running and accessible" >> changelog.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -192,16 +72,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
           body_path: changelog.md
           draft: false
           prerelease: false
 
-      - name: Notify Docker Image Build Instructions
+      - name: Notify Release
         run: |
-          echo "🎉 Release ${{ github.ref }} created successfully!"
-          echo ""
-          echo "📦 To build and push the Docker image, run:"
-          echo "   docker build -t ghcr.io/yogdunana/cmamsys:${{ github.ref_name }} ."
-          echo "   echo \${GITHUB_TOKEN} | docker login ghcr.io -u \${{ github.actor }} --password-stdin"
-          echo "   docker push ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
+          echo "🎉 Release ${{ github.ref_name }} created successfully!"
+          echo "📦 View release: https://github.com/Yogdunana/CMAMSys/releases/tag/${{ github.ref_name }}"
