@@ -44,6 +44,7 @@ jobs:
 
   type-check:
     name: TypeScript Type Check
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -145,6 +146,7 @@ jobs:
 
   build:
     name: Build
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -174,6 +176,16 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Debug - Check environment
+        run: |
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "PNPM version: $(pnpm --version)"
+          echo "NODE_ENV: $NODE_ENV"
+          echo "DATABASE_URL: ${DATABASE_URL:+SET}"
+          echo "Working directory: $(pwd)"
+          ls -la
 
       - name: Build application
         run: pnpm build
