@@ -10,15 +10,82 @@ on:
 
 # 配置 Actions 权限（GitHub Pro 必需）
 permissions:
-  contents: read
+  contents: write  # 创建 Release 需要 write 权限
   packages: write
   deployments: write
+  metadata: read
 
 jobs:
+  build-and-push-docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build application
+        run: pnpm run build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_cmamsys
+          JWT_SECRET: test-jwt-secret-for-ci-build-only-32-char
+          REFRESH_TOKEN_SECRET: test-refresh-token-secret-for-ci-build-32
+          ENCRYPTION_KEY: test-encryption-key-for-ci-build-only-32-chars
+          CSRF_SECRET: test-csrf-secret-for-ci-build-only-32-chars
+          SESSION_SECRET: test-session-secret-for-ci-build-only-32-chars
+          LOG_FILE_PATH: /tmp/app.log
+
+      - name: Set up Docker Buildx
+        run: |
+          docker buildx create --use
+          docker buildx install
+
+      - name: Build Docker image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag ghcr.io/yogdunana/cmamsys:${{ github.ref_name }} \
+            --tag ghcr.io/yogdunana/cmamsys:latest \
+            --load \
+            .
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}
+          docker push ghcr.io/yogdunana/cmamsys:latest
+
+      - name: Output image info
+        run: |
+          echo "🎉 Docker images pushed successfully!"
+          echo "📦 Image tags:"
+          echo "   - ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
+          echo "   - ghcr.io/yogdunana/cmamsys:latest"
+          echo ""
+          echo "🚀 To pull the image:"
+          echo "   docker pull ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
+
   release:
     name: Create Release
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-push-docker
 
     steps:
       - name: Checkout code
@@ -33,9 +100,32 @@ jobs:
           echo "Changes in this release:" >> changelog.md
           git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "HEAD^")..HEAD >> changelog.md || echo "- Initial release" >> changelog.md
           echo "" >> changelog.md
-          echo "### 🔧 Deployment Instructions" >> changelog.md
+          echo "### 🐳 Docker Image" >> changelog.md
           echo "" >> changelog.md
-          echo "#### Option 1: Using Docker Compose (Recommended)" >> changelog.md
+          echo "Docker images have been automatically built and pushed to GitHub Container Registry:" >> changelog.md
+          echo "" >> changelog.md
+          echo "\`\`\`bash" >> changelog.md
+          echo "# Pull the image" >> changelog.md
+          echo "docker pull ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "" >> changelog.md
+          echo "# Run with Docker Compose" >> changelog.md
+          echo "cat > docker-compose.yml <<EOF" >> changelog.md
+          echo "services:" >> changelog.md
+          echo "  app:" >> changelog.md
+          echo "    image: ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}" >> changelog.md
+          echo "    ports:" >> changelog.md
+          echo "      - \"3000:3000\"" >> changelog.md
+          echo "    env_file:" >> changelog.md
+          echo "      - .env" >> changelog.md
+          echo "EOF" >> changelog.md
+          echo "" >> changelog.md
+          echo "# Start the service" >> changelog.md
+          echo "docker compose up -d" >> changelog.md
+          echo "\`\`\`" >> changelog.md
+          echo "" >> changelog.md
+          echo "### 🔧 Alternative Deployment Methods" >> changelog.md
+          echo "" >> changelog.md
+          echo "#### Option 2: Clone and Deploy" >> changelog.md
           echo "\`\`\`bash" >> changelog.md
           echo "git clone https://github.com/Yogdunana/CMAMSys.git" >> changelog.md
           echo "cd CMAMSys" >> changelog.md
@@ -43,12 +133,6 @@ jobs:
           echo "cp .env.docker.example .env" >> changelog.md
           echo "# Edit .env with your configuration" >> changelog.md
           echo "docker compose up -d" >> changelog.md
-          echo "\`\`\`" >> changelog.md
-          echo "" >> changelog.md
-          echo "#### Option 2: Manual Docker Build" >> changelog.md
-          echo "\`\`\`bash" >> changelog.md
-          echo "docker build -t cmamsys:${{ github.ref_name }} ." >> changelog.md
-          echo "docker run -p 3000:3000 --env-file .env cmamsys:${{ github.ref_name }}" >> changelog.md
           echo "\`\`\`" >> changelog.md
           echo "" >> changelog.md
           echo "#### Option 3: Using Deployment Script" >> changelog.md
@@ -81,3 +165,6 @@ jobs:
         run: |
           echo "🎉 Release ${{ github.ref_name }} created successfully!"
           echo "📦 View release: https://github.com/Yogdunana/CMAMSys/releases/tag/${{ github.ref_name }}"
+          echo "🐳 Docker images:"
+          echo "   - ghcr.io/yogdunana/cmamsys:${{ github.ref_name }}"
+          echo "   - ghcr.io/yogdunana/cmamsys:latest"
