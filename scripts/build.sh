@@ -8,6 +8,9 @@ cd "${COZE_WORKSPACE_PATH}"
 echo "Installing dependencies..."
 pnpm install --prefer-frozen-lockfile --prefer-offline
 
+echo "Generating Prisma Client..."
+pnpm prisma generate
+
 echo "Building the project..."
 npx next build
 
