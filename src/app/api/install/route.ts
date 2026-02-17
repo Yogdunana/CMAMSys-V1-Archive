@@ -1,74 +1,100 @@
 /**
  * 安装向导 - 主安装 API
  * POST /api/install
+ * 使用 Server-Sent Events (SSE) 返回实时安装进度
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { promises as fs } from 'fs';
+import path from 'path';
 
 const execAsync = promisify(exec);
 
 export async function POST(request: NextRequest) {
-  try {
-    const config = await request.json();
-    
-    // 1. 生成环境变量文件
-    const envContent = generateEnvFile(config);
-    await fs.writeFile('.env', envContent);
-    
-    // 2. 安装依赖
-    console.log('安装依赖...');
-    await execAsync('pnpm install');
-    
-    // 3. 运行数据库迁移
-    console.log('运行数据库迁移...');
-    await execAsync('pnpm prisma migrate deploy');
-    
-    // 4. 生成 Prisma Client
-    console.log('生成 Prisma Client...');
-    await execAsync('pnpm prisma generate');
-    
-    // 5. 创建管理员账户
-    console.log('创建管理员账户...');
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-    
-    // 生成密码哈希
-    const bcrypt = await import('bcrypt');
-    const passwordHash = await bcrypt.hash(config.adminPassword, 14);
-    
-    // 创建管理员用户
-    await prisma.user.create({
-      data: {
-        username: config.adminUsername,
-        email: config.adminEmail,
-        passwordHash,
-        role: 'ADMIN',
-        isVerified: true,
-      },
-    });
-    
-    await prisma.$disconnect();
-    
-    // 6. 创建安装标记文件
-    await fs.writeFile('.installed', new Date().toISOString());
-    
-    return NextResponse.json({
-      success: true,
-      message: '安装成功',
-    });
-  } catch (error) {
-    console.error('安装失败:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : '安装失败',
-      },
-      { status: 500 }
-    );
-  }
+  const encoder = new TextEncoder();
+  
+  // 创建一个可读流来发送SSE事件
+  const stream = new ReadableStream({
+    async start(controller) {
+      const sendEvent = (data: any, progress: number) => {
+        const event = `data: ${JSON.stringify({ ...data, progress })}\n\n`;
+        controller.enqueue(encoder.encode(event));
+      };
+
+      try {
+        const config = await request.json();
+        
+        sendEvent({ status: 'installing', message: '开始安装...' }, 10);
+        
+        // 1. 生成环境变量文件
+        sendEvent({ status: 'installing', message: '生成环境配置文件...' }, 20);
+        const envContent = generateEnvFile(config);
+        await fs.writeFile(path.join(process.cwd(), '.env'), envContent);
+        
+        // 2. 安装依赖
+        sendEvent({ status: 'installing', message: '安装依赖包...' }, 30);
+        await execAsync('pnpm install --frozen-lockfile');
+        
+        // 3. 运行数据库迁移
+        sendEvent({ status: 'installing', message: '配置数据库...' }, 40);
+        await execAsync('pnpm prisma migrate deploy');
+        
+        // 4. 生成 Prisma Client
+        sendEvent({ status: 'installing', message: '生成数据库客户端...' }, 50);
+        await execAsync('pnpm prisma generate');
+        
+        // 5. 创建管理员账户
+        sendEvent({ status: 'installing', message: '创建管理员账户...' }, 60);
+        const { PrismaClient } = await import('@prisma/client');
+        const prisma = new PrismaClient();
+        
+        // 生成密码哈希
+        const bcrypt = await import('bcrypt');
+        const passwordHash = await bcrypt.hash(config.adminPassword, 14);
+        
+        // 创建管理员用户
+        await prisma.user.create({
+          data: {
+            username: config.adminUsername,
+            email: config.adminEmail,
+            passwordHash,
+            role: 'ADMIN',
+            isVerified: true,
+          },
+        });
+        
+        await prisma.$disconnect();
+        
+        // 6. 创建安装标记文件
+        sendEvent({ status: 'installing', message: '创建安装锁文件...' }, 80);
+        const lockData = {
+          installedAt: new Date().toISOString(),
+          version: '1.0.0',
+          environment: process.env.NODE_ENV || 'production',
+        };
+        await fs.writeFile(path.join(process.cwd(), 'install.lock'), JSON.stringify(lockData, null, 2));
+        
+        // 7. 完成
+        sendEvent({ status: 'success', message: '安装完成！' }, 100);
+        
+        controller.close();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '安装失败';
+        sendEvent({ status: 'error', message: errorMessage }, 0);
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
 }
 
 function generateEnvFile(config: any): string {

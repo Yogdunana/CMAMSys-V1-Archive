@@ -105,23 +105,32 @@ export default function InstallWizard() {
   const [isCheckingEnv, setIsCheckingEnv] = useState(false);
   const [isTestingDb, setIsTestingDb] = useState(false);
   const [dbTestResult, setDbTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockInfo, setLockInfo] = useState<{ installedAt?: string; version?: string } | null>(null);
 
   useEffect(() => {
-    checkEnvironment();
+    checkInstallLock();
   }, []);
 
-  const steps = [
-    { title: '欢迎使用', icon: Rocket },
-    { title: '环境检查', icon: CheckCircle2 },
-    { title: '数据库配置', icon: Database },
-    { title: '管理员账户', icon: User },
-    { title: '应用配置', icon: Globe },
-    { title: '邮件配置', icon: Key },
-    { title: '路径配置', icon: Server },
-    { title: '安全配置', icon: Key },
-    { title: '安装中...', icon: Loader2 },
-    { title: '完成', icon: CheckCircle2 },
-  ];
+  const checkInstallLock = async () => {
+    try {
+      const response = await fetch('/api/install/lock');
+      if (response.status === 403) {
+        const data = await response.json();
+        setIsLocked(true);
+        setLockInfo(data);
+        toast.error(data.message || '系统已完成安装，禁止重复安装');
+        return;
+      }
+      
+      // 如果没有锁，继续检查环境
+      checkEnvironment();
+    } catch (error) {
+      console.error('检查安装锁失败:', error);
+      // 即使检查失败，也允许继续访问
+      checkEnvironment();
+    }
+  };
 
   const checkEnvironment = async () => {
     setIsCheckingEnv(true);
@@ -136,6 +145,19 @@ export default function InstallWizard() {
       setIsCheckingEnv(false);
     }
   };
+
+  const steps = [
+    { title: '欢迎使用', icon: Rocket },
+    { title: '环境检查', icon: CheckCircle2 },
+    { title: '数据库配置', icon: Database },
+    { title: '管理员账户', icon: User },
+    { title: '应用配置', icon: Globe },
+    { title: '邮件配置', icon: Key },
+    { title: '路径配置', icon: Server },
+    { title: '安全配置', icon: Key },
+    { title: '安装中...', icon: Loader2 },
+    { title: '完成', icon: CheckCircle2 },
+  ];
 
   const testDatabaseConnection = async () => {
     setIsTestingDb(true);
@@ -199,16 +221,47 @@ export default function InstallWizard() {
       });
       
       if (!response.ok) {
-        throw new Error('安装失败');
+        throw new Error('安装请求失败');
       }
       
-      const data = await response.json();
+      // 处理SSE流式响应
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
       
-      if (data.success) {
-        setInstallStatus('success');
-        toast.success('安装完成！');
-      } else {
-        throw new Error(data.error || '安装失败');
+      if (!reader) {
+        throw new Error('无法获取响应流');
+      }
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          break;
+        }
+        
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              setInstallProgress(data.progress || 0);
+              
+              if (data.status === 'success') {
+                setInstallStatus('success');
+                toast.success('安装完成！');
+                // 自动跳转到完成页面
+                setTimeout(() => setCurrentStep(9), 1500);
+              } else if (data.status === 'error') {
+                setInstallStatus('error');
+                toast.error(data.message || '安装失败');
+              }
+            } catch (e) {
+              console.error('解析SSE数据失败:', e);
+            }
+          }
+        }
       }
     } catch (error) {
       setInstallStatus('error');
@@ -265,111 +318,154 @@ export default function InstallWizard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl shadow-2xl">
-        <CardHeader className="border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl font-bold">CMAMSys 安装向导</CardTitle>
-              <CardDescription>企业级数学建模竞赛自动化系统</CardDescription>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              {steps.map((step, index) => (
-                <div key={index} className="flex items-center">
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      index === currentStep
-                        ? 'bg-primary text-primary-foreground'
-                        : index < currentStep
-                        ? 'bg-green-500 text-white'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    {index < currentStep ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`w-8 h-0.5 ${
-                        index < currentStep ? 'bg-green-500' : 'bg-muted'
-                      }`}
-                    />
+        {isLocked ? (
+          <CardContent className="p-12">
+            <div className="text-center space-y-6">
+              <XCircle className="w-20 h-20 mx-auto text-red-500" />
+              <div>
+                <h2 className="text-3xl font-bold mb-2">系统已安装</h2>
+                <p className="text-muted-foreground text-lg">
+                  该系统已完成安装，禁止重复安装
+                </p>
+              </div>
+              {lockInfo && (
+                <div className="bg-muted rounded-lg p-6 space-y-2 text-left max-w-md mx-auto">
+                  <p className="text-sm text-muted-foreground">
+                    <strong>安装时间:</strong> {lockInfo.installedAt ? new Date(lockInfo.installedAt).toLocaleString('zh-CN') : '未知'}
+                  </p>
+                  {lockInfo.version && (
+                    <p className="text-sm text-muted-foreground">
+                      <strong>版本:</strong> {lockInfo.version}
+                    </p>
                   )}
                 </div>
-              ))}
+              )}
+              <Alert className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800 max-w-md mx-auto">
+                <XCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800 dark:text-red-200">
+                  如需重新安装系统，请先删除项目根目录下的 install.lock 文件
+                </AlertDescription>
+              </Alert>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-6">
-          {currentStep === 0 && <WelcomeStep onNext={() => setCurrentStep(1)} />}
-          {currentStep === 1 && (
-            <EnvironmentCheckStep
-              checks={envChecks}
-              isChecking={isCheckingEnv}
-              onRetry={checkEnvironment}
-              onNext={nextStep}
-              onPrev={() => setCurrentStep(0)}
-            />
-          )}
-          {currentStep === 2 && (
-            <DatabaseConfigStep
-              config={config}
-              onConfigChange={setConfig}
-              onTestDb={testDatabaseConnection}
-              isTesting={isTestingDb}
-              dbTestResult={dbTestResult}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 3 && (
-            <AdminAccountStep
-              config={config}
-              onConfigChange={setConfig}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 4 && (
-            <AppConfigStep
-              config={config}
-              onConfigChange={setConfig}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 5 && (
-            <EmailConfigStep
-              config={config}
-              onConfigChange={setConfig}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 6 && (
-            <PathConfigStep
-              config={config}
-              onConfigChange={setConfig}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 7 && (
-            <SecurityConfigStep
-              config={config}
-              onConfigChange={setConfig}
-              onAutoGenerate={autoGenerateSecrets}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 8 && (
-            <InstallStep
-              progress={installProgress}
-              status={installStatus}
-              onRetry={handleInstall}
-              onPrev={prevStep}
-            />
-          )}
-          {currentStep === 9 && <CompleteStep />}
-        </CardContent>
+          </CardContent>
+        ) : (
+          <>
+            <CardHeader className="border-b">
+              <div className="space-y-4">
+                <div>
+                  <CardTitle className="text-2xl font-bold">CMAMSys 安装向导</CardTitle>
+                  <CardDescription>企业级数学建模竞赛自动化系统</CardDescription>
+                </div>
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                  {steps.map((step, index) => (
+                    <div key={index} className="flex items-center shrink-0">
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
+                          index === currentStep
+                            ? 'bg-primary text-primary-foreground'
+                            : index < currentStep
+                            ? 'bg-green-500 text-white'
+                            : 'bg-muted'
+                        }`}
+                      >
+                        {index < currentStep ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
+                      </div>
+                      <span className={`ml-2 text-sm whitespace-nowrap ${
+                        index === currentStep
+                          ? 'text-foreground font-medium'
+                          : index < currentStep
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-muted-foreground'
+                      }`}>
+                        {step.title}
+                      </span>
+                      {index < steps.length - 1 && (
+                        <div
+                          className={`w-6 h-0.5 mx-2 shrink-0 ${
+                            index < currentStep ? 'bg-green-500' : 'bg-muted'
+                          }`}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+            {currentStep === 0 && <WelcomeStep onNext={() => setCurrentStep(1)} />}
+            {currentStep === 1 && (
+              <EnvironmentCheckStep
+                checks={envChecks}
+                isChecking={isCheckingEnv}
+                onRetry={checkEnvironment}
+                onNext={nextStep}
+                onPrev={() => setCurrentStep(0)}
+              />
+            )}
+            {currentStep === 2 && (
+              <DatabaseConfigStep
+                config={config}
+                onConfigChange={setConfig}
+                onTestDb={testDatabaseConnection}
+                isTesting={isTestingDb}
+                dbTestResult={dbTestResult}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 3 && (
+              <AdminAccountStep
+                config={config}
+                onConfigChange={setConfig}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 4 && (
+              <AppConfigStep
+                config={config}
+                onConfigChange={setConfig}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 5 && (
+              <EmailConfigStep
+                config={config}
+                onConfigChange={setConfig}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 6 && (
+              <PathConfigStep
+                config={config}
+                onConfigChange={setConfig}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 7 && (
+              <SecurityConfigStep
+                config={config}
+                onConfigChange={setConfig}
+                onAutoGenerate={autoGenerateSecrets}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 8 && (
+              <InstallStep
+                progress={installProgress}
+                status={installStatus}
+                onRetry={handleInstall}
+                onPrev={prevStep}
+              />
+            )}
+            {currentStep === 9 && <CompleteStep />}
+            </CardContent>
+          </>
+        )}
       </Card>
     </div>
   );
@@ -380,7 +476,13 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="space-y-6">
       <div className="text-center py-8">
-        <Rocket className="w-16 h-16 mx-auto mb-4 text-primary" />
+        <div className="flex justify-center items-center mb-6">
+          <img
+            src="/logo-withtext.svg"
+            alt="CMAMSys Logo"
+            className="h-16 w-auto"
+          />
+        </div>
         <h2 className="text-3xl font-bold mb-2">欢迎使用 CMAMSys</h2>
         <p className="text-muted-foreground text-lg">
           企业级数学建模竞赛自动化系统
