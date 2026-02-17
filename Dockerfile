@@ -54,6 +54,9 @@ ENV LOG_FILE_PATH="/tmp/app.log"
 # Build the application (NODE_ENV is not set yet to allow devDependencies)
 RUN pnpm run build
 
+# Regenerate Prisma Client after build to ensure it's in the correct location
+RUN npx prisma generate
+
 # Set production environment after build
 ENV NODE_ENV production
 
