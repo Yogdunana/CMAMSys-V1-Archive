@@ -43,6 +43,14 @@ ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/c
 
 RUN npx prisma generate
 
+# Set required environment variables for build
+ENV JWT_SECRET="test-jwt-secret-for-ci-build-only-32-char"
+ENV REFRESH_TOKEN_SECRET="test-refresh-token-secret-for-ci-build-32"
+ENV ENCRYPTION_KEY="test-encryption-key-for-ci-build-only-32-chars"
+ENV CSRF_SECRET="test-csrf-secret-for-ci-build-only-32-chars"
+ENV SESSION_SECRET="test-session-secret-for-ci-build-only-32-chars"
+ENV LOG_FILE_PATH="/tmp/app.log"
+
 # Build the application (NODE_ENV is not set yet to allow devDependencies)
 RUN pnpm run build
 
