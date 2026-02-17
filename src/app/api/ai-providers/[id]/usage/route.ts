@@ -36,12 +36,12 @@ export async function GET(
 
     // Calculate usage statistics
     const totalRequests = provider.requests.length;
-    const successfulRequests = provider.requests.filter(r => r.status === 'success').length;
+    const successfulRequests = provider.requests.filter((r: any) => r.status === 'success').length;
     const successRate = totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 0;
 
-    const totalTokens = provider.requests.reduce((sum, r) => sum + (r.tokensUsed || 0), 0);
+    const totalTokens = provider.requests.reduce((sum: number, r: any) => sum + (r.tokensUsed || 0), 0);
     const avgLatency = totalRequests > 0
-      ? provider.requests.reduce((sum, r) => sum + r.latencyMs, 0) / totalRequests
+      ? provider.requests.reduce((sum: number, r: any) => sum + r.latencyMs, 0) / totalRequests
       : 0;
 
     // Calculate requests in last 7 and 30 days
@@ -49,8 +49,8 @@ export async function GET(
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const requestsLast7Days = provider.requests.filter(r => new Date(r.createdAt) >= sevenDaysAgo).length;
-    const requestsLast30Days = provider.requests.filter(r => new Date(r.createdAt) >= thirtyDaysAgo).length;
+    const requestsLast7Days = provider.requests.filter((r: any) => new Date(r.createdAt) >= sevenDaysAgo).length;
+    const requestsLast30Days = provider.requests.filter((r: any) => new Date(r.createdAt) >= thirtyDaysAgo).length;
 
     const usage = {
       totalRequests: provider.totalRequests || totalRequests,

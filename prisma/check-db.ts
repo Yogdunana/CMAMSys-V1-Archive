@@ -11,7 +11,7 @@ async function main() {
 
   if (userCount > 0) {
     const users = await prisma.user.findMany({ take: 3 });
-    console.log('Users:', users.map(u => ({ id: u.id, email: u.email, username: u.username })));
+    console.log('Users:', users.map((u: any) => ({ id: u.id, email: u.email, username: u.username })));
   }
 
   // Check AI providers
@@ -20,7 +20,7 @@ async function main() {
 
   if (providerCount > 0) {
     const providers = await prisma.aIProvider.findMany({ take: 3 });
-    console.log('Providers:', providers.map(p => ({
+    console.log('Providers:', providers.map((p: any) => ({
       id: p.id,
       name: p.name,
       type: p.type,
