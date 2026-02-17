@@ -1,7 +1,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Dependencies
-FROM node:24-alpine AS deps
+FROM node:25-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
@@ -23,7 +23,7 @@ ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/c
 RUN npx prisma generate
 
 # Stage 2: Builder
-FROM node:24-alpine AS builder
+FROM node:25-alpine AS builder
 RUN apk add --no-cache libc6-compat python3 make g++ bash
 WORKDIR /app
 
@@ -61,7 +61,7 @@ RUN npx prisma generate
 ENV NODE_ENV production
 
 # Stage 3: Runner
-FROM node:24-alpine AS runner
+FROM node:25-alpine AS runner
 RUN apk add --no-cache libc6-compat python3 chromium \
     --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 WORKDIR /app
