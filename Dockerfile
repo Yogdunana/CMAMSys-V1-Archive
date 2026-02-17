@@ -12,12 +12,15 @@ COPY prisma ./prisma/
 # Install pnpm
 RUN npm install -g pnpm
 
+# Install dependencies (include devDependencies for build)
+RUN pnpm install --frozen-lockfile
+
 # Set DATABASE_URL for Prisma client generation during dependency installation
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/cmamsys}
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Generate Prisma Client
+RUN npx prisma generate
 
 # Stage 2: Builder
 FROM node:24-alpine AS builder
@@ -40,6 +43,9 @@ ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/cmamsys}
 
 RUN npx prisma generate
+
+# Reinstall devDependencies to ensure build tools are available
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 # Build the application
 RUN pnpm run build
