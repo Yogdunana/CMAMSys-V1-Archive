@@ -214,14 +214,9 @@ chore: 构建/工具
 
 ---
 
-## 🙏 致谢
-
-感谢所有为本项目做出贡献的开发者！
-
----
-
 ## 📮 联系方式
 
+- 作者: [Yogdunana](https://github.com/Yogdunana)
 - 项目主页: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
 - 问题反馈: [GitHub Issues](https://github.com/Yogdunana/CMAMSys-V1-Archive/issues)
 
@@ -231,7 +226,7 @@ chore: 构建/工具
 
 **⭐ 如果这个项目对你有帮助，请给一个 Star！**
 
-Made with ❤️ by CMAMSys Team
+Made with ❤️ by Yogdunana (https://github.com/Yogdunana)
 
 </div>
 

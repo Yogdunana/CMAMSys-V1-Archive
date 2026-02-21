@@ -214,6 +214,24 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## 📮 Contact
+
+- Author: [Yogdunana](https://github.com/Yogdunana)
+- Repository: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
+- Issues: [GitHub Issues](https://github.com/Yogdunana/CMAMSys-V1-Archive/issues)
+
+---
+
+<div align="center">
+
+**⭐ If this project helps you, please give it a Star!**
+
+Made with ❤️ by Yogdunana (https://github.com/Yogdunana)
+
+</div>
+
+---
+
 ## 🌍 Language / 语言
 
 - [English](./README.md) (Current)
