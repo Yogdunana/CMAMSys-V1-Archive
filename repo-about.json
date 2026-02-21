@@ -1,0 +1,17 @@
+{
+  "name": "CMAMSys-V1-Archive",
+  "description": "CMAMSys (CompetiMath AutoModel System) - An enterprise-grade mathematical modeling competition automation platform. Archived version for learning and reference only. Built with Next.js, TypeScript, PostgreSQL, and Prisma.",
+  "homepage": "",
+  "topics": [
+    "mathematical-modeling",
+    "competition-platform",
+    "nextjs",
+    "typescript",
+    "postgresql",
+    "prisma",
+    "enterprise",
+    "education",
+    "learning",
+    "full-stack"
+  ]
+}
