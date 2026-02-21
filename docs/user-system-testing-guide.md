@@ -18,7 +18,7 @@ http://localhost:5000/auth/login
 使用测试账号登录：
 ```
 邮箱: admin@example.com
-密码: ***REDACTED_PASSWORD***
+密码: [ADMIN_PASSWORD]
 ```
 
 ### 3. 验证登录成功
@@ -380,7 +380,7 @@ curl http://localhost:5000/api/ai-providers \
 ```bash
 time curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@example.com","password":"***REDACTED_PASSWORD***"}'
+  -d '{"email":"admin@example.com","password":"[ADMIN_PASSWORD]"}'
 ```
 
 **预期**：< 500ms
@@ -421,5 +421,5 @@ time curl -X POST http://localhost:5000/api/auth/refresh \
 
 ---
 
-**测试账号**：`admin@example.com` / `***REDACTED_PASSWORD***`
+**测试账号**：`admin@example.com` / `[ADMIN_PASSWORD]`
 **应用地址**：`http://localhost:5000`

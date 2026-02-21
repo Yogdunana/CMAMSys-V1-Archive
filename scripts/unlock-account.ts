@@ -59,7 +59,7 @@ async function main() {
   console.log('');
   console.log('📝 You can now login with:');
   console.log('   Email: admin@example.com');
-  console.log('   Password: ***REDACTED_PASSWORD***');
+  console.log('   Password: (Use environment variable ADMIN_PASSWORD or default REDACTED_PASSWORD)');
 }
 
 main()

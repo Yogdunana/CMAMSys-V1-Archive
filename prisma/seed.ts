@@ -33,7 +33,9 @@ async function main() {
   console.log('🌱 Starting database seed...');
 
   // Create admin user ( Yogdunana)
-  const hashedPassword = await bcrypt.hash('***REDACTED_PASSWORD***', 10);
+  // ⚠️ Admin password should come from environment variable in production
+  const adminPassword = process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD'; // Default for development only
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
@@ -155,12 +157,13 @@ async function main() {
 
   console.log('🎉 Database seed completed!');
   console.log('');
-  console.log('📝 Test credentials:');
-  console.log('   Email: admin@example.com');
-  console.log('   Username: Yogdunana');
-  console.log('   Password: ***REDACTED_PASSWORD***');
+  console.log('📝 Admin credentials:');
+  console.log(`   Email: admin@example.com`);
+  console.log(`   Username: Yogdunana`);
+  console.log(`   Password: ${adminPassword}`);
   console.log('');
   console.log('🔐 Security Note: All API Keys are encrypted with AES-256-GCM');
+  console.log('⚠️  Please change the default password after first login!');
 }
 
 main()

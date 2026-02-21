@@ -21,7 +21,7 @@
 
 **加密示例**：
 ```
-原始 API Key: sk-REDACTED
+原始 API Key: [API_KEY]
 加密后:      bax7vImjWT5sB4JW8oysjaWCAMEYJdCSor6piixo++/sa4mOcIYVL8hUYST6mGY+...
 ```
 
@@ -70,7 +70,7 @@ ENCRYPTION_KEY=""  # 生成：openssl rand -base64 32
 **修改**：
 - 账户：`admin@cmamsys.com` → `admin@example.com`
 - 用户名：`admin` → `Yogdunana`
-- 密码：`REDACTED_PASSWORD` → `***REDACTED_PASSWORD***`
+- 密码：`REDACTED_PASSWORD` → `[ADMIN_PASSWORD]`
 - 添加 API Key 加密功能
 
 #### 2.2 验证修复
@@ -79,7 +79,7 @@ ENCRYPTION_KEY=""  # 生成：openssl rand -base64 32
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@example.com","password":"***REDACTED_PASSWORD***"}'
+  -d '{"email":"admin@example.com","password":"[ADMIN_PASSWORD]"}'
 ```
 
 ✅ 登录成功，返回正确的用户信息
@@ -108,7 +108,7 @@ curl -X POST http://localhost:5000/api/auth/login \
 |------|---|
 | 邮箱 | `admin@example.com` |
 | 用户名 | `Yogdunana` |
-| 密码 | `***REDACTED_PASSWORD***` |
+| 密码 | `[ADMIN_PASSWORD]` |
 | 角色 | ADMIN |
 
 ## 预置的 AI Providers
@@ -246,5 +246,5 @@ data: [DONE]
 ---
 
 **状态**：✅ 已修复并验证
-**测试账号**：`admin@example.com` / `***REDACTED_PASSWORD***`
+**测试账号**：`admin@example.com` / `[ADMIN_PASSWORD]`
 **加密状态**：🔐 所有 API Keys 已加密

@@ -20,7 +20,7 @@ async function main() {
   console.log(`✅ CSRF Token: ${csrfToken?.substring(0, 30)}...`);
 
   // 3. 登录
-  const password = '***REDACTED_PASSWORD***';
+  const password = process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD';
   const loginResponse = await fetch('http://localhost:5000/api/v1/auth/login', {
     method: 'POST',
     headers: {

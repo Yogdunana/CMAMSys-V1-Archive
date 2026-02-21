@@ -98,7 +98,7 @@ ENCRYPTION_KEY=""
 
 **加密后的 API Key 示例**：
 ```
-原始 API Key: sk-REDACTED
+原始 API Key: [API_KEY]
 加密后:      bax7vImjWT5sB4JW8oysjaWCAMEYJdCSor6piixo++/sa4mOcIYVL8hUYST6mGY+662zlztDQ8QTSuKlr/DOmw2YB8tx0ZslnzKov13lq1/4WBVGnrbrGkzyVA5AxNvbUOArYo60vWgNRZAKcdezsc5SB6QVDbdZGnv1fA+qTiaaLlk=
 ```
 
@@ -162,7 +162,7 @@ apiKey: "bax7vImjWT5sB4JW8oysjaWCAMEYJdCSor6piixo++/sa4mOcIYVL8hUYST6mGY+662zlzt
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@example.com","password":"***REDACTED_PASSWORD***"}'
+  -d '{"email":"admin@example.com","password":"[ADMIN_PASSWORD]"}'
 ```
 
 **获取 AI Providers**：

@@ -24,7 +24,7 @@ async function main() {
   console.log(`✅ Set-Cookie: ${setCookieHeader?.substring(0, 50)}...`);
 
   // 3. 登录（带 Cookie）
-  const password = '***REDACTED_PASSWORD***';
+  const password = process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD';
   const loginResponse = await fetch('http://localhost:5000/api/v1/auth/login', {
     method: 'POST',
     headers: {

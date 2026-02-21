@@ -25,7 +25,7 @@ test.describe('Dashboard API E2E Tests', () => {
       },
       data: {
         email: 'admin@example.com',
-        password: '***REDACTED_PASSWORD***',
+        password: process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD',
       },
     });
 

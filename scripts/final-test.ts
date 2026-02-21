@@ -22,7 +22,7 @@ async function main() {
     },
     body: JSON.stringify({
       email: 'admin@example.com',
-      password: '***REDACTED_PASSWORD***',
+      password: process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD',
     }),
   });
 

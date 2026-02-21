@@ -238,7 +238,7 @@ Authorization: Bearer <access_token>
 | 字段 | 值 |
 |------|---|
 | 邮箱 | `admin@example.com` |
-| 密码 | `***REDACTED_PASSWORD***` |
+| 密码 | `[ADMIN_PASSWORD]` |
 | 角色 | ADMIN |
 | 状态 | 已验证 |
 
@@ -324,7 +324,7 @@ http://localhost:5000/auth/login
 
 # 输入测试账号
 邮箱: admin@example.com
-密码: ***REDACTED_PASSWORD***
+密码: [ADMIN_PASSWORD]
 
 # 验证登录成功后跳转到 dashboard
 ```
@@ -416,5 +416,5 @@ http://localhost:5000/settings/profile
 ---
 
 **状态**：✅ 已完成并测试通过
-**测试账号**：`admin@example.com` / `***REDACTED_PASSWORD***`
+**测试账号**：`admin@example.com` / `[ADMIN_PASSWORD]`
 **认证状态**：🔐 已实现完整的认证系统

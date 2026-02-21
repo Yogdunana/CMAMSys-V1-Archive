@@ -10,7 +10,7 @@ async function updateAdmin() {
     // 新的管理员信息
     const newUsername = 'Yogdunana';
     const newEmail = 'admin@example.com';
-    const newPassword = '***REDACTED_PASSWORD***';
+    const newPassword = process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD';
 
     console.log(`\n📋 新的管理员信息:`);
     console.log(`   用户名: ${newUsername}`);

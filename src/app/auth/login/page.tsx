@@ -120,7 +120,6 @@ function LoginContent() {
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
-                defaultValue="***REDACTED_PASSWORD***"
               />
             </div>
 

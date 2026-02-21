@@ -20,7 +20,7 @@ async function main() {
   console.log(`✅ 找到管理员: ${admin.username} (${admin.email})`);
 
   // 2. 验证密码
-  const password = '***REDACTED_PASSWORD***';
+  const password = process.env.ADMIN_PASSWORD || 'REDACTED_PASSWORD';
   const isValid = await bcrypt.compare(password, admin.passwordHash || '');
 
   if (!isValid) {
