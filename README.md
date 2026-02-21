@@ -2,6 +2,14 @@
 >
 > This repository is an archived version and may contain hardcoded test configurations (such as database passwords and local paths). It is intended for learning and reference only. Please do not deploy directly to production.
 > Before using in production, replace all hardcoded configurations with your own secure configurations.
+>
+> ⚠️ **Archived Repository**
+>
+> This repository has been archived and is no longer actively maintained.
+> - No issues or pull requests will be accepted
+> - No technical support is provided
+> - Use at your own risk
+> - For learning and reference purposes only
 
 ---
 
