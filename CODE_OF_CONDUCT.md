@@ -1,42 +1,56 @@
-# 贡献者行为准则
+# Contributor Covenant Code of Conduct
 
-## 我们的承诺
+## Our Pledge
 
-为了营造一个开放和友好的环境，我们承诺尊重所有参与者，无论他们的经验水平、性别、性别认同和表达、性取向、残疾、个人外貌、体型、种族、民族、年龄、宗教或国籍。
+We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
-## 我们的标准
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
-积极行为的示例包括：
+## Our Standards
 
-- 使用欢迎和包容的语言
-- 尊重不同的观点和经验
-- 优雅地接受建设性批评
-- 专注于对社区最有利的事情
-- 对其他社区成员表示同理心
+Examples of behavior that contributes to a positive environment for our community include:
 
-不可接受的行为示例包括：
+* Demonstrating empathy and kindness toward other people
+* Being respectful of differing opinions, viewpoints, and experiences
+* Giving and gracefully accepting constructive feedback
+* Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience
+* Focusing on what is best not just for us as individuals, but for the overall community
 
-- 使用性化的语言或图像
-- 恶意攻击或侮辱性评论
-- 私人骚扰
-- 未经许可发布他人的私人信息
-- 其他不专业或不适当的行为
+Examples of unacceptable behavior include:
 
-## 责任
+* The use of sexualized language or imagery, and sexual attention or advances of any kind
+* Trolling, insulting or derogatory comments, and personal or political attacks
+* Public or private harassment
+* Publishing others' private information, such as a physical or email address, without their explicit permission
+* Other conduct which could reasonably be considered inappropriate in a professional setting
 
-项目维护者有责任阐明可接受行为的标准，并应采取适当和公平的纠正措施以应对任何不可接受的行为。
+## Enforcement Responsibilities
 
-## 范围
+Community leaders are responsible for clarifying and enforcing our standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful. Community leaders have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, and will communicate reasons for moderation decisions when appropriate.
 
-本行为准则适用于所有项目空间，也适用于个人在公共场所代表项目或其社区时的行为。代表项目的示例包括使用官方项目电子邮件地址、通过官方社交媒体账户发布信息或在在线或线下活动中担任指定代表。项目维护者可以进一步定义和澄清项目代表。
+## Scope
 
-## 执行
+This Code of Conduct applies within all community spaces, and also applies when an individual is officially representing the community in public spaces. Examples of representing our community include using an official e-mail address, posting via an official social media account, or acting as an appointed representative at an online or offline event.
 
-可以通过联系项目团队来报告滥用、骚扰或其他不可接受的行为。所有投诉都将被审查和调查，并将产生被认为必要和适合情况的回应。项目团队有义务对事件的报告者保密。具体执行政策的进一步细节可能会单独发布。
+## Enforcement
 
-对于那些不遵守或执行行为准则的人，项目维护者可以采取其他行动，包括暂时或永久禁止参与项目。
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at:
 
-## 联系方式
+- 📧 Email: [yogdunna@yogdunana.com](mailto:yogdunna@yogdunana.com)
+- 📧 Email: [mingyaoduan@smbu.edu.cn](mailto:mingyaoduan@smbu.edu.cn)
 
-- 📧 Email: conduct@cmamsys.com
-- 🐛 GitHub: https://github.com/Yogdunana/CMAMSys/issues
+All complaints will be reviewed and investigated promptly and fairly.
+
+## Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 2.1, available at [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html][version].
+
+Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcement ladder][mozilla coc].
+
+[homepage]: https://www.contributor-covenant.org
+[version]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
+[mozilla coc]: https://github.com mozilla/diversity
+
+---
+
+⚠️ **Note**: This repository has been archived and is no longer accepting contributions. This Code of Conduct is provided for reference purposes only.
