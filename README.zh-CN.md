@@ -5,6 +5,13 @@
 
 ---
 
+## 🌍 Language / 语言
+
+- [English](./README.md)
+- [中文](./README.zh-CN.md) (当前)
+
+---
+
 # CMAMSys - 竞赛数学建模自动化系统
 
 <div align="center">
@@ -229,10 +236,3 @@ chore: 构建/工具
 Made with ❤️ by Yogdunana (https://github.com/Yogdunana)
 
 </div>
-
----
-
-## 🌍 Language / 语言
-
-- [English](./README.md)
-- [中文](./README.zh-CN.md) (当前)

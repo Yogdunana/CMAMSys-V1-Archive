@@ -5,6 +5,13 @@
 
 ---
 
+## 🌍 Language / 语言
+
+- [English](./README.md) (Current)
+- [中文](./README.zh-CN.md)
+
+---
+
 # CMAMSys - Competitive Mathematics AutoModel System
 
 <div align="center">
@@ -229,10 +236,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Made with ❤️ by Yogdunana (https://github.com/Yogdunana)
 
 </div>
-
----
-
-## 🌍 Language / 语言
-
-- [English](./README.md) (Current)
-- [中文](./README.zh-CN.md)
