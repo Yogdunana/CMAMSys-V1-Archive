@@ -23,6 +23,25 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+.envrc
+
+# Keys and certificates
+*.key
+*.pem
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+
+***REMOVED*** and secrets
+*secrets*
+*credentials*
+*api-keys*
+*.api
 
 # Logs
 logs/
@@ -127,6 +146,17 @@ docker/ssl/
 /backups/
 /backups/*.sql
 /backups/*.tar.gz
+*.old
+*.orig
+*.rej
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+pg_data/
+postgresql-data/
 
 # Model files (optional - uncomment if you want to ignore large model files)
 # /app/models/*.pkl

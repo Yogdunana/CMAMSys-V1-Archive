@@ -1,0 +1,71 @@
+# git-secrets allowed patterns (whitelist)
+# 这些模式会在扫描时被忽略，避免误报
+
+# 环境变量示例文件
+\.env\.example
+\.env\.docker\.example
+\.env\.production\.example
+
+# 文档和报告文件
+\.md$
+\.txt$
+\.MD$
+
+# 示例和测试文件
+src/lib/(password|token|auth).*\.ts$
+src/lib/rate-limit.*\.ts$
+
+# API 文档
+API\.md
+
+# 测试设置
+tests/setup\.ts
+
+# 工作流文件
+\.github/workflows/.*\.yml$
+
+# Docker 相关
+Dockerfile
+
+# 代码中的函数名和变量名
+validatePassword
+checkPassword
+generatePassword
+hashPassword
+verifyPassword
+changePassword
+resetPassword
+forgotPassword
+
+# 技术术语
+accessToken
+refreshToken
+csrfToken
+sessionToken
+apiToken
+
+# 占位符
+your_password
+your_secret
+your_token
+your_key
+test-password
+test-token
+test-secret
+test-key
+
+# CI/CD 占位符
+test.*secret
+test.*token
+test.*key
+
+# 数据库占位符
+username:password
+DATABASE_URL
+
+# 通用术语
+passwordHash
+passwordReset
+passwordStrength
+passwordPolicy
+passwordPolicy\.ts
