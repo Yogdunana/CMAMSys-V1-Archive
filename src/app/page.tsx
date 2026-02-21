@@ -24,15 +24,6 @@ export default function HomePage() {
       <section className="relative overflow-hidden border-b bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-20 sm:py-32">
           <div className="flex flex-col items-center text-center">
-            {/* Logo */}
-            <div className="mb-8">
-              <img
-                src="/logo-withtext.svg"
-                alt="CMAMSys Logo"
-                className="h-32 w-auto object-contain dark:invert"
-              />
-            </div>
-
             <div className="mb-6 inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
               <Zap className="mr-2 h-4 w-4" />
               Enterprise-Grade Mathematical Modeling Platform

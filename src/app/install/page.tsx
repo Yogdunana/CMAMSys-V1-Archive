@@ -492,13 +492,6 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="space-y-6">
       <div className="text-center py-8">
-        <div className="flex justify-center items-center mb-6">
-          <img
-            src="/logo-withtext.svg"
-            alt="CMAMSys Logo"
-            className="h-16 w-auto"
-          />
-        </div>
         <h2 className="text-3xl font-bold mb-2">欢迎使用 CMAMSys</h2>
         <p className="text-muted-foreground text-lg">
           企业级数学建模竞赛自动化系统

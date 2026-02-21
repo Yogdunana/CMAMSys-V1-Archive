@@ -43,12 +43,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center">
         <div className="mr-8 hidden md:flex">
           <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
-            <img
-              src="/logo.svg"
-              alt="CMAMSys"
-              className="h-8 w-auto object-contain dark:invert"
-            />
-            <span className="hidden font-bold sm:inline-block">
+            <span className="font-bold">
               CMAMSys
             </span>
           </Link>
