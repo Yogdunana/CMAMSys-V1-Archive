@@ -49,7 +49,7 @@ Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcem
 
 [homepage]: https://www.contributor-covenant.org
 [version]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
-[mozilla coc]: https://github.com mozilla/diversity
+[mozilla coc]: https://github.com/mozilla/diversity
 
 ---
 
