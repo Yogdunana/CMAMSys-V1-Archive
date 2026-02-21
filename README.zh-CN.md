@@ -1,4 +1,4 @@
-# CMAMSys - Competitive Mathematics AutoModel System
+# CMAMSys - 竞赛数学建模自动化系统
 
 <div align="center">
 
@@ -195,7 +195,7 @@ chore: 构建/工具
 
 1. Fork 本仓库
 2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'feat: Add some AmazingFeature'`)
+3. 提交更改 (`git commit -m 'feat: 添加某个功能'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 创建 Pull Request
 
