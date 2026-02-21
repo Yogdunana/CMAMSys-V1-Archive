@@ -229,6 +229,34 @@ chore: 构建/工具
 
 ---
 
+## 🙏 署名要求
+
+如果您在学习和参考过程中使用了本项目，请 kindly 提及原作者：
+
+**在您的项目 README 或文档中：**
+
+```markdown
+本项目灵感来源于/使用了 [CMAMSys](https://github.com/Yogdunana/CMAMSys-V1-Archive) 的代码，由 [Yogdunana](https://github.com/Yogdunana) 开发。
+```
+
+**在学术论文或作业中：**
+
+```
+CMAMSys (竞赛数学建模自动化系统) - 企业级数学建模竞赛平台
+版权所有 (c) 2025-2026 Yogdunana
+项目地址: https://github.com/Yogdunana/CMAMSys-V1-Archive
+```
+
+**在博客或文章中：**
+
+> 本文参考了由 [Yogdunana](https://github.com/Yogdunana) 开发的 [CMAMSys](https://github.com/Yogdunana/CMAMSys-V1-Archive) 项目，这是一个企业级的数学建模竞赛平台。
+
+**在社交媒体上：**
+
+> 今天学习了由 [@Yogdunana](https://github.com/Yogdunana) 开发的 [CMAMSys](https://github.com/Yogdunana/CMAMSys-V1-Archive) 项目，非常棒的数学建模竞赛平台参考！ #编程 #开源
+
+---
+
 ## 📮 联系方式
 
 - 作者: [Yogdunana](https://github.com/Yogdunana)

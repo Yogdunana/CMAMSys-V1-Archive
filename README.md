@@ -229,6 +229,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## 🙏 Attribution
+
+If you use this project for learning or reference, please kindly mention the original author:
+
+**In your project's README or documentation:**
+
+```markdown
+This project was inspired by/uses code from [CMAMSys](https://github.com/Yogdunana/CMAMSys-V1-Archive) by [Yogdunana](https://github.com/Yogdunana).
+```
+
+**In your academic work:**
+
+```
+CMAMSys (Competitive Mathematics AutoModel System) - Enterprise-Grade Mathematical Modeling Competition Platform
+Copyright (c) 2025-2026 Yogdunana
+Repository: https://github.com/Yogdunana/CMAMSys-V1-Archive
+```
+
+**In your blog post or article:**
+
+> This work references [CMAMSys](https://github.com/Yogdunana/CMAMSys-V1-Archive), an enterprise-grade mathematical modeling competition platform developed by [Yogdunana](https://github.com/Yogdunana).
+
+**Social Media Mention:**
+
+> Just learned about [CMAMSys](https://github.com/Yogdunana/CMAMSys-V1-Archive) by [@Yogdunana](https://github.com/Yogdunana) - great reference for building mathematical modeling competition platforms! #coding #opensource
+
+---
+
 ## 📮 Contact
 
 - Author: [Yogdunana](https://github.com/Yogdunana)
