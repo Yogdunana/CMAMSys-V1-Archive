@@ -10,8 +10,12 @@ const path = require('path');
 const { Client } = require('pg');
 
 async function executeMigration() {
+  // 使用环境变量或默认连接字符串
+  const defaultConnectionString = 'postgresql://username:password@localhost:5432/cmamsys?schema=public';
+  const connectionString = process.env.DATABASE_URL || defaultConnectionString;
+
   const client = new Client({
-    connectionString: (process.env.DATABASE_URL || 'postgresql://***REDACTED_DB_USER***:***REDACTED_DB_PASSWORD***@***REDACTED_DB_IP***:5632/cmamsys') + '?sslmode=disable',
+    connectionString,
   });
 
   try {

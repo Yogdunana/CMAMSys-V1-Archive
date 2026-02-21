@@ -11,7 +11,7 @@
   - React 19
   - TypeScript 5
   - Prisma 5 (ORM)
-  - PostgreSQL (数据库: ***REDACTED_DB_IP***:5632)
+  - PostgreSQL (数据库配置见 .env)
   - Tailwind CSS 4
   - shadcn/ui (组件库)
   - next-intl (国际化)

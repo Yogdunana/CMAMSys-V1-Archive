@@ -8,8 +8,12 @@ const { Client } = require('pg');
 const crypto = require('crypto');
 
 async function testMigration() {
+  // 使用环境变量或默认连接字符串
+  const connectionString = process.env.DATABASE_URL ||
+    'postgresql://username:password@localhost:5432/cmamsys?schema=public';
+
   const client = new Client({
-    connectionString: 'postgresql://***REDACTED_DB_USER***:***REDACTED_DB_PASSWORD***@***REDACTED_DB_IP***:5632/cmamsys?sslmode=disable',
+    connectionString,
   });
 
   try {
