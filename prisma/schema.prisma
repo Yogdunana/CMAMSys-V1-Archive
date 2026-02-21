@@ -580,13 +580,13 @@ model GeneratedPaper {
 }
 
 model PaperVersion {
-  id                String   @id @default(cuid())
+  id                String         @id @default(cuid())
   paperId           String
   versionNumber     Int
   content           String
   changeDescription String
   createdBy         String?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime       @default(now())
   paper             GeneratedPaper @relation(fields: [paperId], references: [id], onDelete: Cascade)
 
   @@unique([paperId, versionNumber])
@@ -611,24 +611,22 @@ model CostControl {
   @@map("cost_control")
 }
 
-// 优化历史数据
 model OptimizationHistory {
-  id                   String   @id @default(cuid())
-  taskId               String
-  iteration            Int
-  fitness              Float
-  bestSolution         Float
-  populationDiversity  Float
-  convergenceRate      Float
-  parameters           Json?
-  timestamp            DateTime @default(now())
-  
+  id                  String   @id @default(cuid())
+  taskId              String
+  iteration           Int
+  fitness             Float
+  bestSolution        Float
+  populationDiversity Float
+  convergenceRate     Float
+  parameters          Json?
+  timestamp           DateTime @default(now())
+
   @@index([taskId])
   @@index([iteration])
   @@map("optimization_history")
 }
 
-// 性能指标
 model PerformanceMetrics {
   id           String   @id @default(cuid())
   taskId       String
@@ -638,21 +636,20 @@ model PerformanceMetrics {
   networkUsage Float?
   diskUsage    Float?
   timestamp    DateTime @default(now())
-  
+
   @@index([taskId])
   @@index([timestamp])
   @@map("performance_metrics")
 }
 
-// 优化日志
 model OptimizationLog {
   id        String   @id @default(cuid())
   taskId    String
-  level     String   @default("INFO") // INFO, WARN, ERROR, DEBUG
+  level     String   @default("INFO")
   message   String
   source    String
   timestamp DateTime @default(now())
-  
+
   @@index([taskId])
   @@index([level])
   @@index([timestamp])
