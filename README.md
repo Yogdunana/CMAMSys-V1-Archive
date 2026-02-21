@@ -20,7 +20,7 @@
 
 ---
 
-# CMAMSys - Competitive Mathematics AutoModel System
+# CMAMSys - CompetiMath AutoModel System
 
 <div align="center">
 
@@ -242,7 +242,7 @@ This project was inspired by/uses code from [CMAMSys](https://github.com/Yogduna
 **In your academic work:**
 
 ```
-CMAMSys (Competitive Mathematics AutoModel System) - Enterprise-Grade Mathematical Modeling Competition Platform
+CMAMSys (CompetiMath AutoModel System) - Enterprise-Grade Mathematical Modeling Competition Platform
 Copyright (c) 2025-2026 Yogdunana
 Repository: https://github.com/Yogdunana/CMAMSys-V1-Archive
 ```
