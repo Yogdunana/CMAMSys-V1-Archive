@@ -1,3 +1,18 @@
+> ⚠️ **Archived Repository**
+>
+> This repository has been archived and is no longer actively maintained.
+> This API documentation is provided for reference and learning purposes only.
+> For educational use, please note that:
+> - The API endpoints are preserved in their final state
+> - No new API features or improvements will be added
+> - Use this as a learning resource for API design patterns
+>
+> **Attribution**: If you use this code as a reference or in your projects, please attribute to:
+> - **Project**: CMAMSys (CompetiMath AutoModel System)
+> - **Repository**: https://github.com/Yogdunana/CMAMSys-V1-Archive
+
+---
+
 # CMAMSys API 文档
 
 本文档描述了 CMAMSys 后端 API 的使用方法。

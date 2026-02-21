@@ -1,3 +1,15 @@
+> ⚠️ **Archived Repository**
+>
+> This repository has been archived and is no longer actively maintained.
+> This changelog documents the historical development of CMAMSys.
+> No new versions or updates will be released.
+>
+> **Attribution**: If you use this code as a reference or in your projects, please attribute to:
+> - **Project**: CMAMSys (CompetiMath AutoModel System)
+> - **Repository**: https://github.com/Yogdunana/CMAMSys-V1-Archive
+
+---
+
 # Changelog
 
 All notable changes to CMAMSys project will be documented in this file.

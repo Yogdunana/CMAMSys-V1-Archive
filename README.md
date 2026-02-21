@@ -13,6 +13,12 @@
 
 ---
 
+## ⚠️ Important Notices
+
+- 📦 **[Archived Repository](./ARCHIVED.md)** - This project is no longer maintained
+- 🔒 **[Security Policy](./SECURITY.md)** - Important security warnings for this archived codebase
+- 🙏 **[Credits](./CREDITS.md)** - Acknowledgments to open-source projects and tools
+
 ## 🌍 Language / 语言
 
 - [English](./README.md) (Current)

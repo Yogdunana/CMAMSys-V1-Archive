@@ -1,3 +1,18 @@
+> ⚠️ **Archived Repository**
+>
+> This repository has been archived and is no longer actively maintained.
+> This deployment guide is provided for reference and learning purposes only.
+> For educational use, please ensure you:
+> - Replace all hardcoded configurations with your own secure settings
+> - Do not use default credentials in production
+> - Review and update all security configurations before deployment
+>
+> **Attribution**: If you use this code as a reference or in your projects, please attribute to:
+> - **Project**: CMAMSys (CompetiMath AutoModel System)
+> - **Repository**: https://github.com/Yogdunana/CMAMSys-V1-Archive
+
+---
+
 # CMAMSys 部署指南
 
 本指南介绍 CMAMSys（企业级数学建模竞赛自动化系统）的三种部署方式：

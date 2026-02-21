@@ -1,3 +1,18 @@
+> ⚠️ **Archived Repository**
+>
+> This repository has been archived and is no longer actively maintained.
+> This development guide is provided for reference and learning purposes only.
+> For educational use, please note that:
+> - No new features or bug fixes will be added
+> - The codebase is preserved in its final state
+> - Use this as a learning resource for building similar applications
+>
+> **Attribution**: If you use this code as a reference or in your projects, please attribute to:
+> - **Project**: CMAMSys (CompetiMath AutoModel System)
+> - **Repository**: https://github.com/Yogdunana/CMAMSys-V1-Archive
+
+---
+
 # CMAMSys 开发指南
 
 本文档面向想要参与 CMAMSys 开发的开发者。

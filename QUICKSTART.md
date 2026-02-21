@@ -1,3 +1,18 @@
+> ⚠️ **Archived Repository**
+>
+> This repository has been archived and is no longer actively maintained.
+> This quick start guide is provided for reference and learning purposes only.
+> For educational use, please ensure you:
+> - Replace all hardcoded configurations with your own secure settings
+> - Do not use default credentials in production
+> - Review and update all security configurations
+>
+> **Attribution**: If you use this code as a reference or in your projects, please attribute to:
+> - **Project**: CMAMSys (CompetiMath AutoModel System)
+> - **Repository**: https://github.com/Yogdunana/CMAMSys-V1-Archive
+
+---
+
 # 快速开始
 
 本指南帮助你在 5 分钟内快速部署 CMAMSys。
