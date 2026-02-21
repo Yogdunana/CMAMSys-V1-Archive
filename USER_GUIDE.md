@@ -292,10 +292,10 @@ A: 任务失败的可能原因：
 
 ### Q: 如何联系技术支持？
 
-A: 您可以通过以下方式联系我们：
-- 📧 Email: support@cmamsys.com
-- 📝 Issue: https://github.com/Yogdunana/CMAMSys/issues
-- 💬 在线客服: 工作时间 9:00-18:00
+A: 本仓库已归档，不再提供技术支持。您可以：
+- 📧 Email: [yogdunna@yogdunana.com](mailto:yogdunna@yogdunana.com)
+- 📧 Email: [mingyaoduan@smbu.edu.cn](mailto:mingyaoduan@smbu.edu.cn)
+- 🐙 GitHub: [@Yogdunana](https://github.com/Yogdunana)
 
 ### Q: 是否支持离线使用？
 
@@ -360,9 +360,10 @@ A: 部分功能支持离线：
 1. 查看 [部署文档](DEPLOYMENT.md)
 2. 查看 [API 文档](API.md)
 3. 查看 [开发指南](DEVELOPMENT.md)
-4. 提交 [GitHub Issue](https://github.com/Yogdunana/CMAMSys/issues)
-5. 联系技术支持
+4. 查看 [Support 文档](SUPPORT.md)
 
 ---
 
 **祝您使用愉快！** 🎉
+
+⚠️ **注意**: 本仓库已归档，不再接受 Issue 或技术支持。
