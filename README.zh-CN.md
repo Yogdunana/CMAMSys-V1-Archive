@@ -259,9 +259,11 @@ CMAMSys (竞赛数学建模自动化系统) - 企业级数学建模竞赛平台
 
 ## 📮 联系方式
 
-- 作者: [Yogdunana](https://github.com/Yogdunana)
-- 项目主页: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
-- 问题反馈: [GitHub Issues](https://github.com/Yogdunana/CMAMSys-V1-Archive/issues)
+- **作者**: [Yogdunana](https://github.com/Yogdunana)
+- **电子邮箱**: 
+  - [yogdunna@yogdunana.com](mailto:yogdunna@yogdunana.com)
+  - [mingyaoduan@smbu.edu.cn](mailto:mingyaoduan@smbu.edu.cn)
+- **项目主页**: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
 
 ---
 

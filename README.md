@@ -259,9 +259,11 @@ Repository: https://github.com/Yogdunana/CMAMSys-V1-Archive
 
 ## 📮 Contact
 
-- Author: [Yogdunana](https://github.com/Yogdunana)
-- Repository: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
-- Issues: [GitHub Issues](https://github.com/Yogdunana/CMAMSys-V1-Archive/issues)
+- **Author**: [Yogdunana](https://github.com/Yogdunana)
+- **Email**: 
+  - [yogdunna@yogdunana.com](mailto:yogdunna@yogdunana.com)
+  - [mingyaoduan@smbu.edu.cn](mailto:mingyaoduan@smbu.edu.cn)
+- **Repository**: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
 
 ---
 
