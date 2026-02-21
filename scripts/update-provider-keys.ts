@@ -1,51 +1,25 @@
 /**
  * 更新 AI Provider 的真实 API Key
+ * ⚠️  此脚本已废弃，原因：硬编码的 API Key 存在安全风险
  */
 
 import { PrismaClient } from '@prisma/client';
-import { encrypt } from '../src/lib/encryption';
 
 const prisma = new PrismaClient();
 
 async function updateProviderKeys() {
   try {
-    const apiKeys = {
-      'DeepSeek-Reasoner': 'sk-REDACTED',
-      '阿里百炼': 'sk-REDACTED',
-      '豆包-Volcengine': 'REDACTED-UUID',
-    };
+    console.log('⚠️  This script has been deprecated due to security concerns.');
+    console.log('');
+    console.log('    Please use one of these methods instead:');
+    console.log('    1. Add AI Providers via the UI (recommended)');
+    console.log('    2. Set environment variables and run pnpm prisma:seed');
+    console.log('       DEEPSEEK_API_KEY=your_key ALIYUN_API_KEY=your_key VOLCENGINE_API_KEY=your_key pnpm prisma:seed');
+    console.log('');
+    console.log('    For updating existing providers, use the API:');
+    console.log('    PUT /api/ai-providers/{id}');
+    console.log('    Body: { "apiKey": "new_key" }');
 
-    for (const [name, key] of Object.entries(apiKeys)) {
-      const provider = await prisma.aIProvider.findFirst({
-        where: { name },
-      });
-
-      if (provider) {
-        const encryptedKey = encrypt(key);
-        await prisma.aIProvider.update({
-          where: { id: provider.id },
-          data: { apiKey: encryptedKey },
-        });
-        console.log(`✓ Updated ${name}`);
-      } else {
-        console.log(`✗ Provider not found: ${name}`);
-      }
-    }
-
-    // 同时更新火山引擎的 endpoint
-    const volcengine = await prisma.aIProvider.findFirst({
-      where: { name: '豆包-Volcengine' },
-    });
-
-    if (volcengine) {
-      await prisma.aIProvider.update({
-        where: { id: volcengine.id },
-        data: { endpoint: 'ep-20260207034939-n2p59' },
-      });
-      console.log(`✓ Updated 豆包-Volcengine endpoint`);
-    }
-
-    console.log('\nAll API keys updated successfully!');
   } catch (error) {
     console.error('Error:', error);
   } finally {

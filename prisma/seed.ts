@@ -55,90 +55,103 @@ async function main() {
 
   console.log('✅ Created admin user:', admin.email);
 
-  // API Keys (from environment or default test keys)
-  const deepseekKey = process.env.DEEPSEEK_API_KEY || 'sk-REDACTED';
-  const aliyunKey = process.env.ALIYUN_API_KEY || 'sk-REDACTED';
-  const volcengineKey = process.env.VOLCENGINE_API_KEY || 'REDACTED-UUID';
+  // API Keys (from environment variables ONLY)
+  // ⚠️ NEVER hardcode real API keys in production!
+  const deepseekKey = process.env.DEEPSEEK_API_KEY || '';
+  const aliyunKey = process.env.ALIYUN_API_KEY || '';
+  const volcengineKey = process.env.VOLCENGINE_API_KEY || '';
 
-  console.log('🔐 Encrypting API Keys...');
-  const encryptedDeepSeek = encrypt(deepseekKey);
-  const encryptedAliyun = encrypt(aliyunKey);
-  const encryptedVolcengine = encrypt(volcengineKey);
+  // Check if any API keys are provided
+  const hasKeys = deepseekKey || aliyunKey || volcengineKey;
 
-  // Create DeepSeek provider
-  const deepseek = await prisma.aIProvider.upsert({
-    where: { id: 'default-deepseek' },
-    update: {},
-    create: {
-      id: 'default-deepseek',
-      name: 'DeepSeek (Default)',
-      type: 'DEEPSEEK',
-      apiKey: encryptedDeepSeek,
-      endpoint: 'https://api.deepseek.com/v1',
-      priority: 8,
-      isDefault: true,
-      status: 'ACTIVE',
-      supportedModels: ['deepseek-chat', 'deepseek-reasoner', 'deepseek-coder'],
-      capabilities: ['chat', 'completion', 'reasoning', 'coding'],
-      createdBy: { connect: { id: admin.id } },
-    },
-  });
+  if (!hasKeys) {
+    console.log('⚠️  No API Keys provided via environment variables.');
+    console.log('   Set DEEPSEEK_API_KEY, ALIYUN_API_KEY, or VOLCENGINE_API_KEY to create AI Providers.');
+    console.log('   AI Providers will need to be created manually via the UI.');
+  } else {
+    console.log('🔐 Encrypting API Keys...');
 
-  console.log('✅ Created DeepSeek provider');
-
-  // Create Aliyun provider
-  const aliyun = await prisma.aIProvider.upsert({
-    where: { id: 'default-aliyun' },
-    update: {},
-    create: {
-      id: 'default-aliyun',
-      name: '阿里云通义千问',
-      type: 'ALIYUN',
-      apiKey: encryptedAliyun,
-      endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-      priority: 9,
-      isDefault: false,
-      status: 'ACTIVE',
-      supportedModels: ['qwen-plus', 'qwen-turbo', 'qwen-max'],
-      capabilities: ['chat', 'completion', 'reasoning'],
-      createdBy: { connect: { id: admin.id } },
-    },
-  });
-
-  console.log('✅ Created Aliyun provider');
-
-  // Create Volcengine provider
-  const volcengine = await prisma.aIProvider.upsert({
-    where: { id: 'default-volcengine' },
-    update: {},
-    create: {
-      id: 'default-volcengine',
-      name: '火山引擎豆包',
-      type: 'VOLCENGINE',
-      apiKey: encryptedVolcengine,
-      endpoint: 'https://ark.cn-beijing.volces.com/api/v3',
-      priority: 10,
-      isDefault: false,
-      status: 'ACTIVE',
-      supportedModels: [
-        'doubao-pro-32k',
-        'doubao-pro-128k',
-        'doubao-pro-256k',
-        'doubao-lite-32k',
-        'doubao-lite-128k',
-        'doubao-speed-128k',
-      ],
-      capabilities: ['chat', 'completion', 'reasoning'],
-      config: {
-        endpointMapping: {
-          'doubao-pro-128k': 'ep-20260207034939-n2p59',
+    // Create DeepSeek provider (if key provided)
+    if (deepseekKey) {
+      const encryptedDeepSeek = encrypt(deepseekKey);
+      await prisma.aIProvider.upsert({
+        where: { id: 'default-deepseek' },
+        update: { apiKey: encryptedDeepSeek },
+        create: {
+          id: 'default-deepseek',
+          name: 'DeepSeek (Default)',
+          type: 'DEEPSEEK',
+          apiKey: encryptedDeepSeek,
+          endpoint: 'https://api.deepseek.com/v1',
+          priority: 8,
+          isDefault: true,
+          status: 'ACTIVE',
+          supportedModels: ['deepseek-chat', 'deepseek-reasoner', 'deepseek-coder'],
+          capabilities: ['chat', 'completion', 'reasoning', 'coding'],
+          createdById: admin.id,
         },
-      },
-      createdBy: { connect: { id: admin.id } },
-    },
-  });
+      });
+      console.log('✅ Created DeepSeek provider');
+    }
 
-  console.log('✅ Created Volcengine provider');
+    // Create Aliyun provider (if key provided)
+    if (aliyunKey) {
+      const encryptedAliyun = encrypt(aliyunKey);
+      await prisma.aIProvider.upsert({
+        where: { id: 'default-aliyun' },
+        update: { apiKey: encryptedAliyun },
+        create: {
+          id: 'default-aliyun',
+          name: '阿里云通义千问',
+          type: 'ALIYUN',
+          apiKey: encryptedAliyun,
+          endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+          priority: 9,
+          isDefault: false,
+          status: 'ACTIVE',
+          supportedModels: ['qwen-plus', 'qwen-turbo', 'qwen-max'],
+          capabilities: ['chat', 'completion', 'reasoning'],
+          createdById: admin.id,
+        },
+      });
+      console.log('✅ Created Aliyun provider');
+    }
+
+    // Create Volcengine provider (if key provided)
+    if (volcengineKey) {
+      const encryptedVolcengine = encrypt(volcengineKey);
+      await prisma.aIProvider.upsert({
+        where: { id: 'default-volcengine' },
+        update: { apiKey: encryptedVolcengine },
+        create: {
+          id: 'default-volcengine',
+          name: '火山引擎豆包',
+          type: 'VOLCENGINE',
+          apiKey: encryptedVolcengine,
+          endpoint: 'https://ark.cn-beijing.volces.com/api/v3',
+          priority: 10,
+          isDefault: false,
+          status: 'ACTIVE',
+          supportedModels: [
+            'doubao-pro-32k',
+            'doubao-pro-128k',
+            'doubao-pro-256k',
+            'doubao-lite-32k',
+            'doubao-lite-128k',
+            'doubao-speed-128k',
+          ],
+          capabilities: ['chat', 'completion', 'reasoning'],
+          config: {
+            endpointMapping: {
+              'doubao-pro-128k': 'ep-20260207034939-n2p59',
+            },
+          },
+          createdById: admin.id,
+        },
+      });
+      console.log('✅ Created Volcengine provider');
+    }
+  }
 
   console.log('🎉 Database seed completed!');
   console.log('');

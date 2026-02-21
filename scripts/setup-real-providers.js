@@ -30,102 +30,16 @@ function encrypt(text) {
 
 async function main() {
   try {
-    console.log('正在清除旧的 AI Provider 配置...');
-    await prisma.aIProvider.deleteMany({});
-
-    console.log('正在获取管理员用户...');
-    const admin = await prisma.user.findFirst({
-      where: { username: 'Yogdunana' },
-    });
-
-    if (!admin) {
-      console.error('未找到管理员用户 Yogdunana');
-      return;
-    }
-
-    console.log('正在加密 API Keys...');
-
-    // 用户提供的真实 API Keys
-    const deepseekKey = 'sk-REDACTED';
-    const aliyunKey = 'sk-REDACTED';
-    const volcengineKey = 'REDACTED-UUID';
-
-    const encryptedDeepSeek = encrypt(deepseekKey);
-    const encryptedAliyun = encrypt(aliyunKey);
-    const encryptedVolcengine = encrypt(volcengineKey);
-
-    console.log('正在创建 AI Provider 配置...');
-
-    // 创建 DeepSeek
-    await prisma.aIProvider.create({
-      data: {
-        id: 'default-deepseek',
-        name: 'DeepSeek (Default)',
-        type: 'DEEPSEEK',
-        apiKey: encryptedDeepSeek,
-        endpoint: 'https://api.deepseek.com/v1',
-        priority: 8,
-        isDefault: true,
-        status: 'ACTIVE',
-        supportedModels: ['deepseek-chat', 'deepseek-reasoner', 'deepseek-coder'],
-        capabilities: ['chat', 'completion', 'reasoning', 'coding'],
-        createdById: admin.id,
-      },
-    });
-    console.log('✓ DeepSeek');
-
-    // 创建阿里云
-    await prisma.aIProvider.create({
-      data: {
-        id: 'default-aliyun',
-        name: '阿里云通义千问',
-        type: 'ALIYUN',
-        apiKey: encryptedAliyun,
-        endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-        priority: 9,
-        isDefault: false,
-        status: 'ACTIVE',
-        supportedModels: ['qwen-plus', 'qwen-turbo', 'qwen-max'],
-        capabilities: ['chat', 'completion', 'reasoning'],
-        createdById: admin.id,
-      },
-    });
-    console.log('✓ 阿里云通义千问');
-
-    // 创建火山引擎
-    await prisma.aIProvider.create({
-      data: {
-        id: 'default-volcengine',
-        name: '火山引擎豆包',
-        type: 'VOLCENGINE',
-        apiKey: encryptedVolcengine,
-        endpoint: 'https://ark.cn-beijing.volces.com/api/v3',
-        priority: 10,
-        isDefault: false,
-        status: 'ACTIVE',
-        supportedModels: [
-          'doubao-pro-32k',
-          'doubao-pro-128k',
-          'doubao-pro-256k',
-          'doubao-lite-32k',
-          'doubao-lite-128k',
-          'doubao-speed-128k',
-        ],
-        capabilities: ['chat', 'completion', 'reasoning'],
-        config: {
-          endpointMapping: {
-            'doubao-pro-128k': 'ep-20260207034939-n2p59',
-          },
-        },
-        createdById: admin.id,
-      },
-    });
-    console.log('✓ 火山引擎豆包');
-
-    console.log('\n配置完成！');
+    console.log('⚠️  This script has been deprecated due to security concerns.');
+    console.log('    Please use the UI to add AI Providers manually.');
+    console.log('');
+    console.log('    Alternative: Set environment variables and run pnpm prisma:seed');
+    console.log('    DEEPSEEK_API_KEY=your_key pnpm prisma:seed');
+    console.log('    ALIYUN_API_KEY=your_key pnpm prisma:seed');
+    console.log('    VOLCENGINE_API_KEY=your_key pnpm prisma:seed');
 
   } catch (error) {
-    console.error('配置失败:', error);
+    console.error('Error:', error.message);
   } finally {
     await prisma.$disconnect();
   }

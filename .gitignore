@@ -143,3 +143,5 @@ prisma/migrations/
 *.swp
 *.swo
 *~
+clean-keys-simple.js
+clean-api-keys.js
