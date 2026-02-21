@@ -1,7 +1,7 @@
-> ⚠️ **安全提示**
+> ⚠️ **Security Notice**
 >
-> 本仓库为归档版本，代码中可能包含测试用硬编码配置（如数据库密码、本地路径），仅用于学习参考，请勿直接部署到生产环境。
-> 生产环境使用前，请替换所有硬编码配置为自己的安全配置。
+> This repository is an archived version and may contain hardcoded test configurations (such as database passwords and local paths). It is intended for learning and reference only. Please do not deploy directly to production.
+> Before using in production, replace all hardcoded configurations with your own secure configurations.
 
 ---
 
@@ -9,7 +9,7 @@
 
 <div align="center">
 
-**企业级数学建模竞赛平台**
+**Enterprise-Grade Mathematical Modeling Competition Platform**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -20,217 +20,201 @@
 
 ---
 
-## 📖 项目简介
+## 📖 Introduction
 
-CMAMSys 是一个功能完备的企业级数学建模竞赛平台，支持竞赛管理、团队协作、AI 辅助建模、作品提交、评审打分等全流程管理。
+CMAMSys is a fully functional enterprise-grade mathematical modeling competition platform, supporting comprehensive workflow management including competition organization, team collaboration, AI-assisted modeling, project submission, and evaluation scoring.
 
-### 核心功能
+### Core Features
 
-- 🔐 **用户认证** - 完整的认证系统，支持邮箱注册、多因素认证、密码重置
-- 👥 **用户管理** - 角色权限管理、团队管理、用户资料管理
-- 📊 **竞赛管理** - 创建竞赛、设置规则、管理参赛者
-- 🤖 **AI 辅助** - 集成多种 AI Provider，辅助建模任务
-- 📝 **作品管理** - 在线编辑、文档管理、版本控制
-- 📈 **数据分析** - 统计分析、可视化报表
-- 🔍 **审计日志** - 完整的操作日志追踪
-- 🌐 **多语言** - 支持国际化 (i18n)
+- 🔐 **Authentication** - Complete authentication system with email registration, MFA, and password reset
+- 👥 **User Management** - Role-based access control, team management, and user profile management
+- 📊 **Competition Management** - Create competitions, set rules, and manage participants
+- 🤖 **AI Assistance** - Integrate multiple AI providers to assist with modeling tasks
+- 📝 **Project Management** - Online editing, document management, and version control
+- 📈 **Data Analytics** - Statistical analysis and visualization reports
+- 🔍 **Audit Logs** - Complete operation log tracking
+- 🌐 **Internationalization** - Support for i18n
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Prerequisites
 
 - Node.js 24+
 - PostgreSQL 16
 - pnpm 9+
-- Redis 7+ (可选)
+- Redis 7+ (optional)
 
-### 安装步骤
+### Installation
 
-1. **克隆仓库**
+1. **Clone the repository**
 
 ```bash
 git clone https://github.com/Yogdunana/CMAMSys-V1-Archive.git
 cd CMAMSys-V1-Archive
 ```
 
-2. **安装依赖**
+2. **Install dependencies**
 
 ```bash
 pnpm install
 ```
 
-3. **配置环境变量**
+3. **Configure environment variables**
 
 ```bash
 cp .env.example .env
-# 编辑 .env 文件，填入你的配置
+# Edit .env file with your configuration
 ```
 
-4. **初始化数据库**
+4. **Initialize database**
 
 ```bash
-# 生成 Prisma Client
+# Generate Prisma Client
 pnpm prisma generate
 
-# 运行数据库迁移
+# Run database migrations
 pnpm prisma migrate deploy
 
-# 填充初始数据
+# Seed initial data
 pnpm prisma seed
 ```
 
-5. **启动开发服务器**
+5. **Start development server**
 
 ```bash
 pnpm dev
 ```
 
-访问 http://localhost:5000
+Visit http://localhost:5000
 
-### 默认账户
+### Default Account
 
-- 邮箱: `admin@cmamsys.com`
-- 密码: `REDACTED_PASSWORD`
+- Email: `admin@cmamsys.com`
+- Password: `REDACTED_PASSWORD`
 
-**⚠️ 请在生产环境中立即修改默认密码！**
+**⚠️ Please change the default password immediately in production!**
 
 ---
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
-### 前端
+### Frontend
 
-- **框架**: Next.js 16 (App Router)
-- **UI 组件**: shadcn/ui (基于 Radix UI)
-- **样式**: Tailwind CSS 4
-- **语言**: TypeScript 5
-- **状态管理**: React Context + Hooks
+- **Framework**: Next.js 16 (App Router)
+- **UI Components**: shadcn/ui (based on Radix UI)
+- **Styling**: Tailwind CSS 4
+- **Language**: TypeScript 5
+- **State Management**: React Context + Hooks
 
-### 后端
+### Backend
 
-- **框架**: Next.js API Routes
+- **Framework**: Next.js API Routes
 - **ORM**: Prisma 6
-- **数据库**: PostgreSQL 16
-- **缓存**: Redis (可选)
-- **认证**: JWT + Refresh Tokens
+- **Database**: PostgreSQL 16
+- **Cache**: Redis (optional)
+- **Authentication**: JWT + Refresh Tokens
 
-### 开发工具
+### Development Tools
 
-- **包管理器**: pnpm
-- **代码规范**: ESLint + Prettier
-- **类型检查**: TypeScript
-- **测试**: Vitest
+- **Package Manager**: pnpm
+- **Code Style**: ESLint + Prettier
+- **Type Checking**: TypeScript
+- **Testing**: Vitest
 
 ---
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 CMAMSys/
 ├── src/
 │   ├── app/              # Next.js App Router
 │   │   ├── api/          # API Routes
-│   │   ├── auth/         # 认证页面
-│   │   ├── dashboard/    # 仪表盘
-│   │   └── layout.tsx    # 根布局
-│   ├── components/       # React 组件
-│   │   └── ui/           # shadcn/ui 组件
-│   ├── lib/              # 工具函数
-│   ├── services/         # 业务逻辑
-│   └── styles/           # 样式文件
+│   │   ├── auth/         # Auth pages
+│   │   ├── dashboard/    # Dashboard
+│   │   └── layout.tsx    # Root layout
+│   ├── components/       # React components
+│   │   └── ui/           # shadcn/ui components
+│   ├── lib/              # Utility functions
+│   ├── services/         # Business logic
+│   └── styles/           # Styles
 ├── prisma/
-│   ├── schema.prisma     # 数据库模型
-│   └── migrations/       # 迁移文件
-├── docs/                 # 项目文档
-├── scripts/              # 脚本工具
-└── docker/               # Docker 配置
+│   ├── schema.prisma     # Database schema
+│   └── migrations/       # Migration files
+├── docs/                 # Documentation
+├── scripts/              # Scripts
+└── docker/               # Docker configuration
 ```
 
 ---
 
-## 🔧 开发指南
+## 🔧 Development Guide
 
-### 代码规范
+### Code Standards
 
-- 使用 TypeScript 进行类型检查
-- 遵循 ESLint 规则
-- 使用 Prettier 格式化代码
-- 组件使用 PascalCase 命名
-- 文件使用 kebab-case 命名
+- Use TypeScript for type checking
+- Follow ESLint rules
+- Format code with Prettier
+- Use PascalCase for components
+- Use kebab-case for files
 
-### Git 工作流
+### Git Workflow
 
-1. 从 main 分支创建功能分支
-2. 提交代码前运行测试
-3. 创建 Pull Request
-4. 等待 Code Review
-5. 合并到 main 分支
+1. Create a feature branch from main
+2. Run tests before committing
+3. Create a Pull Request
+4. Wait for Code Review
+5. Merge to main
 
-### 提交规范
+### Commit Convention
 
-遵循 Conventional Commits 规范:
+Follow Conventional Commits:
 
 ```
-feat: 新功能
-fix: 修复问题
-docs: 文档更新
-style: 代码格式
-refactor: 代码重构
-test: 测试相关
-chore: 构建/工具
+feat: new feature
+fix: bug fix
+docs: documentation update
+style: code formatting
+refactor: code refactoring
+test: test related
+chore: build/tool
 ```
 
 ---
 
-## 📚 功能文档
+## 📚 Documentation
 
-- [API 文档](./API.md)
-- [开发指南](./DEVELOPMENT.md)
-- [部署指南](./DEPLOYMENT.md)
-- [贡献指南](./CONTRIBUTING.md)
-- [快速开始](./QUICKSTART.md)
-
----
-
-## 🤝 贡献
-
-欢迎贡献！请查看 [贡献指南](./CONTRIBUTING.md) 了解详情。
-
-### 贡献步骤
-
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'feat: Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+- [API Documentation](./API.md)
+- [Development Guide](./DEVELOPMENT.md)
+- [Deployment Guide](./DEPLOYMENT.md)
+- [Contributing Guide](./CONTRIBUTING.md)
+- [Quick Start](./QUICKSTART.md)
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+Contributions are welcome! Please check the [Contributing Guide](./CONTRIBUTING.md) for details.
 
----
+### How to Contribute
 
-## 🙏 致谢
-
-感谢所有为本项目做出贡献的开发者！
-
----
-
-## 📮 联系方式
-
-- 项目主页: [https://github.com/Yogdunana/CMAMSys-V1-Archive](https://github.com/Yogdunana/CMAMSys-V1-Archive)
-- 问题反馈: [GitHub Issues](https://github.com/Yogdunana/CMAMSys-V1-Archive/issues)
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Create a Pull Request
 
 ---
 
-<div align="center">
+## 📄 License
 
-**⭐ 如果这个项目对你有帮助，请给一个 Star！**
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Made with ❤️ by CMAMSys Team
+---
 
-</div>
+## 🌍 Language / 语言
+
+- [English](./README.md) (Current)
+- [中文](./README.zh-CN.md)

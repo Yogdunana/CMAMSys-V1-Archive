@@ -234,3 +234,10 @@ chore: 构建/工具
 Made with ❤️ by CMAMSys Team
 
 </div>
+
+---
+
+## 🌍 Language / 语言
+
+- [English](./README.md)
+- [中文](./README.zh-CN.md) (当前)
